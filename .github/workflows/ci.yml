@@ -7,6 +7,7 @@ on:
       - develop
       - ci/**
       - feature/**
+      # - new-article
   pull_request:
 
 permissions:
@@ -57,8 +58,8 @@ jobs:
             --exclude-path node_modules
             --header "User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36"
             --exclude reddit.com
-            --retry-wait-time 2
-            --max-retries 2
+            --retry-wait-time 10
+            --max-retries 3
             "**/*.md"
           fail: true
         env:
