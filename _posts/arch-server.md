@@ -2,7 +2,7 @@
 slug: arch-server
 title: Archを身内利用のお手軽クラウド化した話
 date: 2025-11-19
-description: Arch Linux with samba環境をtailscaleでつないでdiscord botで疎通できる環境を構築した過程の備忘録です．
+description: Arch上のsamba環境をtailscaleでつないでdiscord botで疎通できる環境を構築した過程の備忘録です．
 tags:
   - Arch Linux
   - ネットワーク関連
