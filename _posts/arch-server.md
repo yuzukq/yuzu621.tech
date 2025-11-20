@@ -22,7 +22,7 @@ thumbnail: /images/blog/20251118/icatch_arch-server.png
 サーバ側になるコンピュータにsambaを導入します．環境は以下の通りです．
 
 - **CPU**: Intel(R) Core(TM) i7-6700
-- **Kernel**: 17.7-arch1-1
+- **Kernel**: 6.7.7-arch1-1
 - **Architecture**: x86_64
 - **Samba**: 2:4.23.3-2
 \\
