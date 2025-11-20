@@ -96,15 +96,10 @@ log level = 3 # 認証試行などの詳細ログを見るため
 ```bash
 sudo ufw allow samba
 ```
-次にsystemdを使用してSambaの初期起動を有効化します管理します．Sambaは通常2つのデーモン (smbd と nmbd) で構成されているためこれらを有効化します．
+次にsystemdを使用してSambaの初期起動を有効化・管理します．Sambaは通常2つのデーモン (smbd と nmbd) で構成されているため，これらを有効化します．
 ```bash
 sudo systemctl enable smbd.service
 sudo systemctl enable nmbd.service
-```
-システムをrebootすれば設定完了です．
-```bash
-sudo systemctl restart smbd.service
-sudo systemctl restart nmbd.service
 ```
 ipconfig等で確認したサーバ側のマシンのipにクライアント側から接続することでローカルアクセスは可能になりました．\\
 エクスプローラにて`\\[ローカルIP]\ArchShare`に接続できます．初回はログインを求められるので自身のシステムユーザ名と先ほど設定したsambaのパスワードを使用してください．
