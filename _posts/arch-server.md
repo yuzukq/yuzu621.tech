@@ -78,7 +78,7 @@ sudo vi /etc/samba/smb.conf
 ```bash
 [ArchShare]
 comment = Arch Linux Shared Folder
-path = /home/yuzu/share
+path = /home/yuzu/Share
 browseable = yes
 writable = yes
 
