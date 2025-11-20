@@ -11,7 +11,7 @@ tags:
 thumbnail: /images/blog/20251118/icatch_arch-server.png
 ---
 
-# 1.はじめに
+# 1. はじめに
 今週は友人からの紹介もあり，Linux上で実行したいプログラムが出てきたためずっとArchを触ってる一週間になりました．その過程で，自宅内でのファイル共有，一部宅外の友人からのアクセスが必要になったため，[Tailscale](https://tailscale.com/)で疑似的なVPN構成で試験的に運用を開始しました．今回はその実装過程の備忘録です．今回の構成では自宅内でのLinuxマシンとメインマシンでのファイルの受け渡しを主目的としています．(共有するユーザが今後増えた場合は[NextCloud](https://nextcloud.stylez.co.jp/blog/techblog/nextcloud-smb-fileserver.html)の導入を検討しています．)下記は今回のネットワーク構成図です．
 ![ネットワーク構成図](/images/blog/20251118/arch_diagram.png)
 \\
@@ -26,7 +26,7 @@ thumbnail: /images/blog/20251118/icatch_arch-server.png
 - **Architecture**: x86_64
 - **Samba**: 2:4.23.3-2
 \\
-# 2.導入
+# 2. 導入
 pacmanでインストールします．
 ```bash
 sudo pacman -S samba
@@ -195,4 +195,7 @@ ssh yuzu@100.94.6.111
 
 このように，既存のLinuxコマンドとDiscord Botを組み合わせることで，専用の監視ツールを導入せずとも，身内用の手軽なサーバ監視・管理環境を構築しています．
 
-# 3 おわりに
+# 3. おわりに
+今回はArch Linuxをベースに，Sambaでのファイル共有，Tailscaleによる外部アクセス，Discord Botによるステータス監視を検証しました．次週以降はnextcloudの導入やhomeassistantを使ったiot制御で遊んでみる予定でいます．今後も学業や就職活動と程よく両立しつつ，趣味で得られた学びを継続してアウトプットしていきたいと思います...!
+
+
