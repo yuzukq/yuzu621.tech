@@ -6,6 +6,8 @@ description: Arch Linux with samba環境をtailscaleでつないでdiscord bot�
 tags:
   - Arch Linux
   - ネットワーク関連
+  - Samba
+  - Tailscale
 thumbnail: /images/blog/20251118/icatch_arch-server.png
 ---
 
@@ -58,41 +60,49 @@ sudo smbpasswd -a visitor
 sudo usermod -aG ArchUser myuser
 ```
 
-### 共有ディレクトリへの権限設定
+### 3．共有ディレクトリへの権限設定
 今回はhomeディレクトリ内に`/home/yuzu/Share`を作成し，そこを共有ディレクトリにすることにしました．Linuxファイルシステム側の権限設定で，先ほど作成したユーザーグループでの読み書きを許可します．
 ```bash
+# 所有グループを ArchUser に変更
+sudo chgrp ArchUser /home/yuzu/Share
+```
+```bash
+# 所有者rwx, グループrwx, その他r-x
+sudo chmod 775 /home/yuzu/Share
+```
+次にSamba側の設定を行います．これらの設定は`/etc/samba/smb.conf`を編集することで設定できます．任意のエディタで編集します．
+```bash
+sudo vi /etc/samba/smb.conf
+```
+中身は下記の通り編集しています．
+```bash
+[ArchShare]
+comment = Arch Linux Shared Folder
+path = /home/yuzu/share
+browseable = yes
+writable = yes
 
+valid users = @ArchUser # ArchUserのみアクセスを許可
+create mask = 0664 # 新規ファイルの権限 (所有者:rw, グループ:rw, その他:r)
+directory mask = 0775 # 新規ディレクトリの権限 (所有者:rwx, グループ:rwx, その他:rx)
+
+[global]
+bind interfaces only = no 
+log level = 3 # 認証試行などの詳細ログを見るため
 ```
 
-
-
-
-
-
-
-
-
-
-
-共有ディレクトリの設定，アクセス権限の設定を行っていきます．これらの設定は`/etc/samba`
-
+### 4．システムの永続化とローカルアクセス
+systemdを使用してSambaの初期起動を有効化します管理します．Sambaは通常2つのデーモン (smbd と nmbd) で構成されているためこれらを有効化します．
 ```bash
-# ----------------------------------------------------
-# ArchUser グループ限定の共有設定
-# ----------------------------------------------------
-[ArchShare]
-   comment = Shared Folder for ArchUser Group
-   path = /srv/samba/arch_share
-   browseable = yes
-   writable = yes
-   
-   # **重要**: アクセスを @グループ名 のメンバーのみに限定します
-   valid users = @ArchUser
-   
-   # 作成されるファイルとディレクトリのパーミッション
-   create mask = 0664
-   directory mask = 0775
-   
-   # setgidビットと連携し、グループによるファイル共有を容易にします
-   force group = ArchUser
-   ```
+sudo systemctl enable smbd.service
+sudo systemctl enable nmbd.service
+```
+システムをrebootすれば設定完了です．
+```bash
+sudo systemctl restart smbd.service
+sudo systemctl restart nmbd.service
+```
+ipconfig等で確認したサーバ側のマシンのipにクライアント側から接続することでローカルアクセスは可能になりました．\\
+エクスプローラにて`\\[ローカルIP]\ArchShare`に接続できます．初回はログインを求められるので自身のシステムユーザ名と先ほど設定したsambaのパスワードを使用してください．
+
+## Tailscaleの導入と設定
