@@ -24,6 +24,7 @@ thumbnail: /images/blog/20251118/icatch_arch-server.png
 - **Architecture**: x86_64
 - **Samba**: 2:4.23.3-2
 \\
+### 1．導入
 pacmanでインストールします．
 ```bash
 sudo pacman -S samba
@@ -32,29 +33,38 @@ sudo pacman -S samba
 ```bash
 sudo smbpasswd -a [user-name]
 ```
+### 2．共有化のための事前準備
 自分以外のユーザーに使用してもらうためのシステムユーザを作成します．sambaでは独自にログイン用のユーザが作られるわけではなく，linux側のシステムユーザを用意，ユーザグループを作成してアクセス権限の付与を行うことにしました．\\
-1.ユーザーグループを作成します(今回はArchUserと命名しました)．
+2.1 ユーザーグループを作成します(今回はArchUserと命名しました)．
 ```bash
 sudo groupadd ArchUser
 ```
-2.ユーザを作成してグループに登録します．今回はvisitorとします．きっとボスも笑ってくれます() 
+2.2 ユーザを作成してグループに登録します．今回はvisitorとします．きっとボスも笑ってくれます() 
 ```bash
 # -r: システムユーザーとして作成, -g: プライマリグループにArchUserを指定, -s: ログインシェルを無効化
 sudo useradd -r -g ArchUser -s /sbin/nologin visitor
 ```
-3.visitor(システムユーザ)のパスワードを登録します．
+2.3 visitor(システムユーザ)のパスワードを登録します．
 ```bash
 sudo passwd visitor
 ```
-4.visitorで共有ディレクトリにアクセスしてもらうためのパスワードを登録します．
+2.4 visitorで共有ディレクトリにアクセスしてもらうためのパスワードを登録します．
 ```bash
 sudo smbpasswd -a visitor
 ```
-5.自身もユーザーグループに登録します．
+2.5 自身もユーザーグループに登録します．
 ```bash
 # -aG: ユーザーを既存のセカンダリグループに追加
 sudo usermod -aG ArchUser myuser
 ```
+
+### 共有ディレクトリへの権限設定
+今回はhomeディレクトリ内に`/home/yuzu/Share`を作成し，そこを共有ディレクトリにすることにしました．Linuxファイルシステム側の権限設定で，先ほど作成したユーザーグループでの読み書きを許可します．
+```bash
+
+```
+
+
 
 
 
