@@ -42,6 +42,13 @@ export default function BlogIndexPage() {
                         ))}
                       </HStack>
                     )}
+                    <Text fontSize="sm" color="gray.500">
+                      作成日時: {new Date(post.date).toLocaleDateString('ja-JP', { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                      })}
+                    </Text>
                   </VStack>
                 </Card.Body>
               </Box>
