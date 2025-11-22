@@ -43,7 +43,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     <Box maxW="900px" mx="auto" px={{ base: 4, md: 8 }} py={{ base: 10, md: 16 }}>
       <Heading size="2xl" mb={4}>{post.title}</Heading>
       <HStack gap={3} color="gray.400" mb={6} flexWrap="wrap">
-        <Text>{new Date(post.date).toLocaleDateString('ja-JP')}</Text>
+        <Text>作成日時: {new Date(post.date).toLocaleDateString('ja-JP')}</Text>
         {post.tags?.map((tag) => (
           <Tag.Root key={tag} variant="solid" colorPalette="gray"><Tag.Label>#{tag}</Tag.Label></Tag.Root>
         ))}
