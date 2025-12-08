@@ -65,6 +65,9 @@ export const products: Product[] = [
     screenshots: [
       "/images/products/better-portal-extension/prev_betterPortalExtension_1.png",
       "/images/products/better-portal-extension/prev_betterPortalExtension_2.png",
+      "/images/products/better-portal-extension/prev_button.png",
+      "/images/products/better-portal-extension/prev_viewer.png",
+      "/images/products/better-portal-extension/prev_timestamp.png",
     ],
     urls: {
       github: "https://github.com/yuzukq/Better-Portal-Extension",
