@@ -1,7 +1,7 @@
 # yuzu621.tech - Portfolio & Blog
 
-[![Next.js](https://img.shields.io/badge/Next.js-15.4-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-19.1-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
+[![Next.js](https://img.shields.io/badge/Next.js-15.4.8-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.2.1-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![Chakra UI](https://img.shields.io/badge/Chakra_UI-3.24-319795?style=for-the-badge&logo=chakra-ui)](https://chakra-ui.com/)
 [![Rehype](https://img.shields.io/badge/Rehype-Plugins-8B5CF6?style=for-the-badge&logo=markdown)](https://github.com/rehypejs/rehype)
