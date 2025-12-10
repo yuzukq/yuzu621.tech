@@ -4,12 +4,14 @@ import { Chart, useChart } from "@chakra-ui/charts"
 import { PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart as RechartsRadarChart } from "recharts"
 import { Box, Heading } from "@chakra-ui/react"
 import type { SkillCategory } from "@/data/skills"
+import { useInView } from "@/hooks/useInView"
 
 interface SkillRadarChartProps {
   category: SkillCategory;
 }
 
 export default function SkillRadarChart({ category }: SkillRadarChartProps) {
+  const { ref, isInView } = useInView({ threshold: 0.2 })
   // データを整形
   const formattedData = Object.entries(category.data).map(([skill, level]) => ({
     skill,
@@ -22,7 +24,7 @@ export default function SkillRadarChart({ category }: SkillRadarChartProps) {
   })
 
   return (
-    <Box>
+    <Box ref={ref}>
       <Heading size="lg" mb={4} textAlign="center">
         {category.title}
       </Heading>
@@ -39,7 +41,7 @@ export default function SkillRadarChart({ category }: SkillRadarChartProps) {
             tickLine={false}
             tick={{ fill: chart.color("fg"), fontSize: 12 }}
           />
-          {chart.series.map((item) => (
+          {isInView && chart.series.map((item) => (
             <Radar
               dot={{ fillOpacity: 1 }}
               isAnimationActive={true}

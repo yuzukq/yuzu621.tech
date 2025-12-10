@@ -51,7 +51,7 @@ export const skillCategories: SkillCategory[] = [
       "Git/Github": 4,
       "Unity": 3,
       "Arduino": 3,
-      "Processing": 1,
+      "PlayWright": 1,
     },
   },
 ];
