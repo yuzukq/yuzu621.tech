@@ -30,16 +30,16 @@ export default function SkillRadarChart({ category }: SkillRadarChartProps) {
       </Heading>
       <Chart.Root maxW="sm" chart={chart} mx="auto">
         <RechartsRadarChart data={chart.data}>
-          <PolarGrid stroke={chart.color("border")} />
+          <PolarGrid stroke="rgba(255, 255, 255, 0.3)" />
           <PolarRadiusAxis 
             angle={90} 
             domain={[0, 5]} 
-            tick={{ fill: chart.color("fg"), fontSize: 10 }}
+            tick={{ fill: "rgba(255, 255, 255, 0.8)", fontSize: 10 }}
           />
           <PolarAngleAxis 
             dataKey={chart.key("skill")} 
             tickLine={false}
-            tick={{ fill: chart.color("fg"), fontSize: 12 }}
+            tick={{ fill: "rgba(255, 255, 255, 0.9)", fontSize: 12 }}
           />
           {isInView && chart.series.map((item) => (
             <Radar
