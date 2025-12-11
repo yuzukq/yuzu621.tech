@@ -1,5 +1,9 @@
+"use client"
+
 import { Box } from "@chakra-ui/react"
-import { ReactNode } from "react"
+import { ReactNode, useEffect } from "react"
+import { useInView } from "@/hooks/useInView"
+import { useScrollTheme } from "@/context/ScrollThemeContext"
 
 interface SectionContainerProps {
   backgroundColor: "light" | "dark"
@@ -8,12 +12,25 @@ interface SectionContainerProps {
 }
 
 export const SectionContainer = ({backgroundColor, id, children}: SectionContainerProps) => {
+  const { ref, isInView } = useInView({ 
+    threshold: 0,
+    rootMargin: "-45% 0px -45% 0px", // 画面中央付近で切り替え
+    triggerOnce: false 
+  })
+  const { setTheme } = useScrollTheme()
+
+  useEffect(() => {
+    if (isInView) {
+      setTheme(backgroundColor)
+    }
+  }, [isInView, backgroundColor, setTheme])
+
   return (
     <Box
+      ref={ref}
       minH="100vh"
       id={id}
       as="section"
-      backgroundImage={backgroundColor === "light" ? "linear-gradient(to bottom, rgb(255, 255, 255) 0%, rgba(255, 255, 255, 0.78) 30%, rgba(255, 255, 255, 0.56) 100%)" : "linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(82, 93, 122, 0.66) 30%, rgba(0, 0, 0, 0.9) 100%)"}
       position="relative"
       overflow="hidden">
       {children}
