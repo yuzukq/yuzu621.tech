@@ -54,11 +54,11 @@ export default function SkillSection() {
               <Box 
                 fontWeight="bold" 
                 minW="60px"
-                color="gray.500"
+                color="gray.300"
               >
                 レベル {item.level}:
               </Box>
-              <Text color="gray.500">{item.description}</Text>
+              <Text color="gray.300">{item.description}</Text>
             </Flex>
           ))}
         </VStack>
