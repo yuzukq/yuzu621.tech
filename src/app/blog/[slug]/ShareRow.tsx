@@ -5,7 +5,12 @@ import { FaTwitter, FaLink } from "react-icons/fa"
 import { usePathname } from "next/navigation"
 import { toaster } from "../../../components/ui/toaster"
 
-export default function ShareRow({ title }: { title: string }) {
+interface ShareRowProps {
+  title: string
+  isDaily?: boolean
+}
+
+export default function ShareRow({ title, isDaily = false }: ShareRowProps) {
   const pathname = usePathname()
 
   const getShareUrl = () => {
@@ -37,17 +42,19 @@ export default function ShareRow({ title }: { title: string }) {
     }
   }
 
+  const colorPalette = isDaily ? "blue" : "gray"
+
   return (
     <HStack justify="space-between" w="100%" mt={10}>
       <Link href="/blog">
-        <Button variant="subtle" colorPalette="gray" size="lg">一覧に戻る</Button>
+        <Button variant="subtle" colorPalette={colorPalette} size="lg">一覧に戻る</Button>
       </Link>
 
       <HStack gap={2}>
-        <IconButton aria-label="Share on Twitter" onClick={handleShareTwitter} variant="subtle" colorPalette="gray" size="lg">
+        <IconButton aria-label="Share on Twitter" onClick={handleShareTwitter} variant="subtle" colorPalette={colorPalette} size="lg">
           <FaTwitter />
         </IconButton>
-        <IconButton aria-label="Copy link" onClick={handleCopyLink} variant="subtle" colorPalette="gray" size="lg">
+        <IconButton aria-label="Copy link" onClick={handleCopyLink} variant="subtle" colorPalette={colorPalette} size="lg">
           <FaLink />
         </IconButton>
       </HStack>
