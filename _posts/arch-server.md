@@ -9,6 +9,7 @@ tags:
   - Samba
   - Tailscale
 thumbnail: /images/blog/20251118/icatch_arch-server.png
+category: tech
 ---
 
 # 1. はじめに

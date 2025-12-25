@@ -8,6 +8,7 @@ tags:
   - Yasb
   - r/desktop
 thumbnail: /images/blog/20251029/thumb.png
+category: tech
 ---
 # はじめに
 　この記事では下記のようなデスクトップ環境をwindows11で構築するために利用したOSSやセットアップ，カスタマイズ方法についてご紹介します！

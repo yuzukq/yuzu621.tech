@@ -8,6 +8,7 @@ tags:
   - マークダウンパーサー
   - テスト投稿
 thumbnail: /images/blog/20251027/hello_icatch.png
+category: tech
 ---
 
 この記事は，Markdown ファイルを Git で管理し，Vercel のビルドで自動公開されるブログ機能の第一弾です．
