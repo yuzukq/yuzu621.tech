@@ -55,14 +55,14 @@ function BlogCard({ post, index, category }: { post: PostMeta; index: number; ca
                       <Tag.Root 
                         key={tag} 
                         variant="subtle" 
-                        colorPalette= "gray"
+                        colorPalette="gray"
                       >
                         <Tag.Label>{tag}</Tag.Label>
                       </Tag.Root>
                     ))}
                   </HStack>
                 )}
-                <Text fontSize="sm" color='gray.500'>
+                <Text fontSize="sm" color="gray.500">
                   作成日時: {new Date(post.date).toLocaleDateString('ja-JP', { 
                     year: 'numeric', 
                     month: 'long', 
@@ -129,19 +129,12 @@ export default function BlogIndexPage() {
               onClick={() => setCategory('tech')}
               size="sm"
               borderRadius="full"
-              color={category === 'tech' 
-                ? (isDaily ? 'white' : 'white') 
-                : (isDaily ? 'gray.700' : 'gray.300')
-              }
+              color={category === 'tech' ? 'white' : (isDaily ? 'gray.700' : 'gray.300')}
               borderColor={isDaily ? 'gray.400' : 'gray.600'}
               bg={category === 'tech' ? undefined : 'transparent'}
-              _hover={{
-                bg: category === 'tech' 
-                  ? undefined 
-                  : (isDaily ? 'gray.200' : 'whiteAlpha.200'),
-                color: category === 'tech' 
-                  ? undefined 
-                  : (isDaily ? 'gray.900' : 'white')
+              _hover={category === 'tech' ? undefined : {
+                bg: isDaily ? 'gray.200' : 'whiteAlpha.200',
+                color: isDaily ? 'gray.900' : 'white'
               }}
             >
               技術関連
@@ -152,19 +145,12 @@ export default function BlogIndexPage() {
               onClick={() => setCategory('daily')}
               size="sm"
               borderRadius="full"
-              color={category === 'daily' 
-                ? 'white' 
-                : (isDaily ? 'gray.700' : 'gray.300')
-              }
+              color={category === 'daily' ? 'white' : (isDaily ? 'gray.700' : 'gray.300')}
               borderColor={isDaily ? 'gray.400' : 'gray.600'}
               bg={category === 'daily' ? undefined : 'transparent'}
-              _hover={{
-                bg: category === 'daily' 
-                  ? undefined 
-                  : (isDaily ? 'gray.200' : 'whiteAlpha.200'),
-                color: category === 'daily' 
-                  ? undefined 
-                  : (isDaily ? 'gray.900' : 'white')
+              _hover={category === 'daily' ? undefined : {
+                bg: isDaily ? 'gray.200' : 'whiteAlpha.200',
+                color: isDaily ? 'gray.900' : 'white'
               }}
             >
               日常
