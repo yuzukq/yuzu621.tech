@@ -125,7 +125,7 @@ export default function BlogIndexPage() {
           <HStack gap={2}>
             <Button
               variant={category === 'tech' ? 'solid' : 'outline'}
-              colorPalette={category === 'tech' ? (isDaily ? 'gray' : 'blue') : undefined}
+              colorPalette={category === 'tech' ? (isDaily ? 'gray' : 'cyan') : undefined}
               onClick={() => setCategory('tech')}
               size="sm"
               borderRadius="full"
@@ -148,7 +148,7 @@ export default function BlogIndexPage() {
             </Button>
             <Button
               variant={category === 'daily' ? 'solid' : 'outline'}
-              colorPalette={category === 'daily' ? (isDaily ? 'blue' : 'gray') : undefined}
+              colorPalette={category === 'daily' ? (isDaily ? 'cyan' : 'gray') : undefined}
               onClick={() => setCategory('daily')}
               size="sm"
               borderRadius="full"
