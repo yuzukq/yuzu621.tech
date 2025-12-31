@@ -62,7 +62,7 @@ function BlogCard({ post, index, category }: { post: PostMeta; index: number; ca
                     ))}
                   </HStack>
                 )}
-                <Text fontSize="sm" color={isDaily ? 'gray.500' : 'gray.500'}>
+                <Text fontSize="sm" color='gray.500'>
                   作成日時: {new Date(post.date).toLocaleDateString('ja-JP', { 
                     year: 'numeric', 
                     month: 'long', 
