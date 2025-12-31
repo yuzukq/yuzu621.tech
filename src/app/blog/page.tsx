@@ -55,7 +55,7 @@ function BlogCard({ post, index, category }: { post: PostMeta; index: number; ca
                       <Tag.Root 
                         key={tag} 
                         variant="subtle" 
-                        colorPalette={isDaily ? 'blue' : 'gray'}
+                        colorPalette= "gray"
                       >
                         <Tag.Label>{tag}</Tag.Label>
                       </Tag.Root>
@@ -125,7 +125,7 @@ export default function BlogIndexPage() {
           <HStack gap={2}>
             <Button
               variant={category === 'tech' ? 'solid' : 'outline'}
-              colorPalette={isDaily ? 'gray' : 'blue'}
+              colorPalette={category === 'tech' ? (isDaily ? 'gray' : 'blue') : undefined}
               onClick={() => setCategory('tech')}
               size="sm"
               borderRadius="full"
@@ -134,12 +134,21 @@ export default function BlogIndexPage() {
                 : (isDaily ? 'gray.700' : 'gray.300')
               }
               borderColor={isDaily ? 'gray.400' : 'gray.600'}
+              bg={category === 'tech' ? undefined : 'transparent'}
+              _hover={{
+                bg: category === 'tech' 
+                  ? undefined 
+                  : (isDaily ? 'gray.200' : 'whiteAlpha.200'),
+                color: category === 'tech' 
+                  ? undefined 
+                  : (isDaily ? 'gray.900' : 'white')
+              }}
             >
               技術関連
             </Button>
             <Button
               variant={category === 'daily' ? 'solid' : 'outline'}
-              colorPalette={isDaily ? 'blue' : 'gray'}
+              colorPalette={category === 'daily' ? (isDaily ? 'blue' : 'gray') : undefined}
               onClick={() => setCategory('daily')}
               size="sm"
               borderRadius="full"
@@ -148,6 +157,15 @@ export default function BlogIndexPage() {
                 : (isDaily ? 'gray.700' : 'gray.300')
               }
               borderColor={isDaily ? 'gray.400' : 'gray.600'}
+              bg={category === 'daily' ? undefined : 'transparent'}
+              _hover={{
+                bg: category === 'daily' 
+                  ? undefined 
+                  : (isDaily ? 'gray.200' : 'whiteAlpha.200'),
+                color: category === 'daily' 
+                  ? undefined 
+                  : (isDaily ? 'gray.900' : 'white')
+              }}
             >
               日常
             </Button>
