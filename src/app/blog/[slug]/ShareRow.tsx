@@ -42,7 +42,7 @@ export default function ShareRow({ title, isDaily = false }: ShareRowProps) {
     }
   }
 
-  const colorPalette = isDaily ? "blue" : "gray"
+  const colorPalette = "gray"
 
   return (
     <HStack justify="space-between" w="100%" mt={10}>

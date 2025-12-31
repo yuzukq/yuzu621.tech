@@ -38,7 +38,7 @@ const getThemeStyles = (isDaily: boolean) => ({
   bg: isDaily ? 'gray.50' : 'black',
   headingColor: isDaily ? 'gray.800' : 'white',
   textColor: isDaily ? 'gray.600' : 'gray.400',
-  tagColorPalette: isDaily ? 'blue' : 'gray',
+  tagColorPalette: 'gray',
   separatorColor: isDaily ? 'gray.200' : 'gray.700',
 })
 
