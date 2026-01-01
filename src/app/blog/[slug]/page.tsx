@@ -126,7 +126,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         </Box>
 
         {/* 一覧へ戻る + 共有ボタン行 */}
-        <ShareRow title={post.title} isDaily={isDaily} />
+        <ShareRow title={post.title} />
       </Box>
     </Box>
   )
