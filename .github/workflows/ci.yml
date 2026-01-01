@@ -7,7 +7,7 @@ on:
       - develop
       - ci/**
       - feature/**
-      # - new-article
+      - new-article
   pull_request:
 
 permissions:
@@ -49,7 +49,9 @@ jobs:
         run: npm run build
 
       # Markdown のリンクチェック（_posts 等の外部/内部リンク）
+      # new-article ブランチへのpush時のみ実行（外部サイトからのbot制限に引っかかるため）
       - name: Link check (Markdown)
+        if: github.ref == 'refs/heads/new-article'
         uses: lycheeverse/lychee-action@v1
         with:
           args: >-
