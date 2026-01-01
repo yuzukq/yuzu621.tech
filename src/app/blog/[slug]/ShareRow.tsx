@@ -5,7 +5,11 @@ import { FaTwitter, FaLink } from "react-icons/fa"
 import { usePathname } from "next/navigation"
 import { toaster } from "../../../components/ui/toaster"
 
-export default function ShareRow({ title }: { title: string }) {
+interface ShareRowProps {
+  title: string
+}
+
+export default function ShareRow({ title }: ShareRowProps) {
   const pathname = usePathname()
 
   const getShareUrl = () => {
@@ -36,6 +40,7 @@ export default function ShareRow({ title }: { title: string }) {
       })
     }
   }
+
 
   return (
     <HStack justify="space-between" w="100%" mt={10}>

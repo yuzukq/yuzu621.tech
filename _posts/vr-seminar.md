@@ -7,6 +7,7 @@ tags:
   - VR技術者認定試験
   - XR関連
 thumbnail: /images/blog/20251108/vr-seminar_icatch.png
+category: tech
 ---
 
 # はじめに

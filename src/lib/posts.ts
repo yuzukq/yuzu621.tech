@@ -2,6 +2,8 @@ import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
 
+export type BlogCategory = 'tech' | 'daily'
+
 export type PostMeta = {
   slug: string
   title: string
@@ -9,6 +11,7 @@ export type PostMeta = {
   description?: string
   tags?: string[]
   thumbnail?: string
+  category: BlogCategory
 }
 
 export type Post = PostMeta & {
@@ -44,12 +47,13 @@ export function getPostBySlug(slug: string): Post | null {
     description: data.description || getExcerpt(content),
     tags: Array.isArray(data.tags) ? data.tags : undefined,
     thumbnail: data.thumbnail || extractFirstImageSrc(content),
+    category: data.category === 'daily' ? 'daily' : 'tech', // デフォルトはtech
   }
 
   return { ...meta, content }
 }
 
-export function getAllPostsMeta(): PostMeta[] {
+export function getAllPostsMeta(filterCategory?: BlogCategory): PostMeta[] {
   const slugs = getAllPostSlugs()
   const posts = slugs
     .map((slug) => getPostBySlug(slug))
@@ -61,7 +65,9 @@ export function getAllPostsMeta(): PostMeta[] {
       description: p.description,
       tags: p.tags,
       thumbnail: p.thumbnail,
+      category: p.category,
     }))
+    .filter((p) => !filterCategory || p.category === filterCategory)
 
   return posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 }

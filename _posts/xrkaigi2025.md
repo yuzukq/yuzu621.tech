@@ -8,6 +8,7 @@ tags:
   - XR-Kaigi
   - 趣味
 thumbnail: /images/blog/20251203/icatch.PNG
+category: tech
 ---
 # はじめに
 12/1～12/3の三日間，東京竹芝で開催されたXR Kaigi 2025に参加してきました．\\

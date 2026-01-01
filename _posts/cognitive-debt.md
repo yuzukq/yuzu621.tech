@@ -7,6 +7,7 @@ tags:
   - LLM
   - 認知的負債
 thumbnail: /images/blog/20251213/icatch.png
+category: tech
 ---
 
 # はじめに
