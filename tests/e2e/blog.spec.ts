@@ -89,7 +89,7 @@ test('category=techパラメータで技術記事がフィルタリングされ�
   expect(count).toBeGreaterThan(0);
   
   // 日常記事（Vket）が表示されていないことを確認
-  await expect(page.locator('a[href="/blog/vket2025"]')).not.toBeVisible();
+  await expect(page.locator('a[href="/blog/Vket2025"]')).not.toBeVisible();
 });
 
 test('category=dailyパラメータで日常記事がフィルタリングされる', async ({ page }) => {
@@ -99,7 +99,7 @@ test('category=dailyパラメータで日常記事がフィルタリングされ
   await expect(page.getByRole('heading', { name: 'Blog' })).toBeVisible();
   
   // 日常記事が表示されることを確認（Vket記事が存在する）
-  await expect(page.locator('a[href="/blog/vket2025"]')).toBeVisible();
+  await expect(page.locator('a[href="/blog/Vket2025"]')).toBeVisible();
   
   // 技術記事が表示されていないことを確認
   await expect(page.locator('a[href="/blog/cognitive-debt"]')).not.toBeVisible();
@@ -116,5 +116,5 @@ test('無効なカテゴリパラメータでデフォルト（tech）にフォ�
   await expect(techArticle).toBeVisible();
   
   // 日常記事が表示されていないことを確認
-  await expect(page.locator('a[href="/blog/vket2025"]')).not.toBeVisible();
+  await expect(page.locator('a[href="/blog/Vket2025"]')).not.toBeVisible();
 });
