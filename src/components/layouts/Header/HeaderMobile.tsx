@@ -45,7 +45,15 @@ export default function HeaderMobile({ items }: { items: { href: string; label: 
       <Drawer.Positioner>
         <Drawer.Content>
           <Drawer.CloseTrigger asChild>
-            <Button variant="ghost" size="lg" colorScheme="gray" borderRadius="full" px={4} py={8}>
+            <Button
+              variant="ghost"
+              size="lg"
+              colorScheme="gray"
+              borderRadius="full"
+              px={4}
+              py={8}
+              aria-label="メニューを閉じる"
+            >
               <FiX />
             </Button>
           </Drawer.CloseTrigger>
