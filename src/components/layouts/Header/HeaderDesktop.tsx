@@ -25,31 +25,18 @@ export default function HeaderDesktop({ items }: { items: { href: string; label:
           >
             {item.label}
           </Link>
-          {isActive(item.href) && (
-            <Box
-              position="absolute"
-              bottom={0}
-              left="50%"
-              transform="translateX(-50%)"
-              width="60%"
-              height="2px"
-              bg="blue.400"
-              borderRadius="full"
-              css={{
-                animation: "slideIn 0.3s ease",
-                "@keyframes slideIn": {
-                  from: {
-                    width: "0%",
-                    opacity: 0
-                  },
-                  to: {
-                    width: "60%",
-                    opacity: 1
-                  }
-                }
-              }}
-            />
-          )}
+          <Box
+            position="absolute"
+            bottom={0}
+            left="50%"
+            transform="translateX(-50%)"
+            width={isActive(item.href) ? "60%" : "0%"}
+            opacity={isActive(item.href) ? 1 : 0}
+            height="2px"
+            bg="blue.400"
+            borderRadius="full"
+            transition="width 0.3s ease, opacity 0.3s ease"
+          />
         </Box>
       ))}
     </HStack>
