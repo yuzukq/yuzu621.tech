@@ -1,37 +1,10 @@
 "use client"
 
 import { HStack, Link, Box } from "@chakra-ui/react"
-import { useScrollTheme } from "@/context/ScrollThemeContext"
+import { useAnchorNavigation } from "@/hooks/useAnchorNavigation"
 
 export default function HeaderDesktop({ items }: { items: { href: string; label: string; }[] }) {
-  const { currentSection } = useScrollTheme()
-
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    // Blogリンクは通常のナビゲーションを使用
-    if (href === "/blog") {
-      return
-    }
-
-    e.preventDefault()
-    const targetId = href.replace("#", "")
-    const targetElement = document.getElementById(targetId)
-    
-    if (targetElement) {
-      targetElement.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      })
-    }
-  }
-
-  const isActive = (href: string) => {
-    // Blogリンクの場合は特別な処理
-    if (href === "/blog") {
-      return false
-    }
-    const sectionId = href.replace("#", "")
-    return currentSection === sectionId
-  }
+  const { handleClick, isActive } = useAnchorNavigation()
 
   return (
     <HStack gap={10} display={{ base: "none", md: "flex" }} justifyContent="center" py={2}>

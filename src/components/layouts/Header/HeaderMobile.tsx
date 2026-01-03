@@ -2,37 +2,10 @@
 
 import { VStack, Link, Drawer, Button, Box } from "@chakra-ui/react"
 import { FiMenu, FiX } from "react-icons/fi"
-import { useScrollTheme } from "@/context/ScrollThemeContext"
+import { useAnchorNavigation } from "@/hooks/useAnchorNavigation"
 
 export default function HeaderMobile({ items }: { items: { href: string; label: string; }[] }) {
-  const { currentSection } = useScrollTheme()
-
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    // Blogリンクは通常のナビゲーションを使用
-    if (href === "/blog") {
-      return
-    }
-
-    e.preventDefault()
-    const targetId = href.replace("#", "")
-    const targetElement = document.getElementById(targetId)
-    
-    if (targetElement) {
-      targetElement.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      })
-    }
-  }
-
-  const isActive = (href: string) => {
-    // Blogリンクの場合は特別な処理
-    if (href === "/blog") {
-      return false
-    }
-    const sectionId = href.replace("#", "")
-    return currentSection === sectionId
-  }
+  const { handleClick, isActive } = useAnchorNavigation()
 
   return (
     <Drawer.Root placement="start">
