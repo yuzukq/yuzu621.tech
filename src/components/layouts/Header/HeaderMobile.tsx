@@ -54,31 +54,18 @@ export default function HeaderMobile({ items }: { items: { href: string; label: 
                   >
                     {item.label}
                   </Link>
-                  {isActive(item.href) && (
-                    <Box
-                      position="absolute"
-                      left={0}
-                      top="50%"
-                      transform="translateY(-50%)"
-                      width="3px"
-                      height="80%"
-                      bg="blue.400"
-                      borderRadius="full"
-                      css={{
-                        animation: "slideIn 0.3s ease",
-                        "@keyframes slideIn": {
-                          from: {
-                            height: "0%",
-                            opacity: 0
-                          },
-                          to: {
-                            height: "80%",
-                            opacity: 1
-                          }
-                        }
-                      }}
-                    />
-                  )}
+                  <Box
+                    position="absolute"
+                    left={0}
+                    top="50%"
+                    transform="translateY(-50%)"
+                    width="3px"
+                    height={isActive(item.href) ? "80%" : "0%"}
+                    opacity={isActive(item.href) ? 1 : 0}
+                    bg="blue.400"
+                    borderRadius="full"
+                    transition="height 0.3s ease, opacity 0.3s ease"
+                  />
                 </Box>
               ))}
             </VStack>
