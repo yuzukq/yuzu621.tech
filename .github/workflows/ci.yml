@@ -92,7 +92,12 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Run E2E tests
+      - name: Run E2E tests (blog only for new-article branch)
+        if: github.ref == 'refs/heads/new-article'
+        run: npx playwright test tests/e2e/blog.spec.ts
+
+      - name: Run E2E tests (all)
+        if: github.ref != 'refs/heads/new-article'
         run: npx playwright test
 
       - name: Upload Playwright report (failure only)
