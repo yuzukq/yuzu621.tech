@@ -131,7 +131,93 @@ test.describe('アンカーリンク機能', () => {
     await page.waitForTimeout(500);
     const topScrollY = await page.evaluate(() => window.scrollY);
     
-    // TopはProductsより上にあるはず
+    // TopはProductsより上にある
     expect(topScrollY).toBeLessThan(productsScrollY);
+  });
+});
+
+test.describe('モバイルビュー - アンカーリンク機能', () => {
+  test.beforeEach(async ({ page }) => {
+    // モバイルビューでテスト (iPhone 14サイズ)
+    await page.setViewportSize({ width: 390, height: 844 });
+  });
+
+  test('モバイルでハンバーガーメニューが表示される', async ({ page }) => {
+    await page.goto('/');
+    
+    // ハンバーガーメニューボタンが表示されていることを確認
+    const menuButton = page.getByRole('banner').getByRole('button');
+    await expect(menuButton).toBeVisible();
+  });
+
+  test('ハンバーガーメニューをクリックするとドロワーが開く', async ({ page }) => {
+    await page.goto('/');
+    
+    // ハンバーガーメニューをクリック
+    await page.getByRole('banner').getByRole('button').click();
+    
+    // ドロワーダイアログが表示されることを確認
+    const drawer = page.getByRole('dialog', { name: 'Page index' });
+    await expect(drawer).toBeVisible();
+    
+    // ナビゲーションリンクが表示されることを確認
+    await expect(drawer.getByRole('link', { name: 'Top' })).toBeVisible();
+    await expect(drawer.getByRole('link', { name: 'About' })).toBeVisible();
+    await expect(drawer.getByRole('link', { name: 'Products' })).toBeVisible();
+    await expect(drawer.getByRole('link', { name: 'Skills' })).toBeVisible();
+    await expect(drawer.getByRole('link', { name: 'Story' })).toBeVisible();
+    await expect(drawer.getByRole('link', { name: 'Blog' })).toBeVisible();
+  });
+
+  test('モバイルドロワーのリンクをクリックすると対象セクションにスクロールする', async ({ page }) => {
+    await page.goto('/');
+    
+    // 初期位置を記録
+    const initialScrollY = await page.evaluate(() => window.scrollY);
+    
+    // ハンバーガーメニューを開く
+    await page.getByRole('banner').getByRole('button').click();
+    const drawer = page.getByRole('dialog', { name: 'Page index' });
+    await expect(drawer).toBeVisible();
+    
+    // Productsリンクをクリック（Aboutより下のセクションでテスト）
+    await drawer.getByRole('link', { name: 'Products' }).click();
+    
+    // スクロール完了を待機（ドロワーが閉じるまで少し長めに待機）
+    await page.waitForTimeout(800);
+    
+    // スクロール位置が変化していることを確認
+    const afterScrollY = await page.evaluate(() => window.scrollY);
+    expect(afterScrollY).toBeGreaterThan(initialScrollY);
+  });
+
+  test('モバイルドロワーの閉じるボタンでメニューを閉じられる', async ({ page }) => {
+    await page.goto('/');
+    
+    // ハンバーガーメニューを開く
+    await page.getByRole('banner').getByRole('button').click();
+    const drawer = page.getByRole('dialog', { name: 'Page index' });
+    await expect(drawer).toBeVisible();
+    
+    // 閉じるボタンをクリック
+    await page.getByRole('button', { name: 'メニューを閉じる' }).click();
+    
+    // ドロワーが閉じることを確認
+    await expect(drawer).not.toBeVisible();
+  });
+
+  test('モバイルでBlogリンクはブログページへ遷移する', async ({ page }) => {
+    await page.goto('/');
+    
+    // ハンバーガーメニューを開く
+    await page.getByRole('banner').getByRole('button').click();
+    const drawer = page.getByRole('dialog', { name: 'Page index' });
+    await expect(drawer).toBeVisible();
+    
+    // Blogリンクをクリック
+    await drawer.getByRole('link', { name: 'Blog' }).click();
+    
+    // ブログページに遷移したことを確認
+    await expect(page).toHaveURL('/blog');
   });
 });
