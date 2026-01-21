@@ -66,5 +66,5 @@ export const skillLevels = [
 
 export const certifications: Certification[] = [
   { name: "基本情報技術者", year: "2025年2月" },
-  { name: "VR技術者認定試験", year: "受験予定" },
+  { name: "VR技術者認定試験(app)", year: "2025年12月" },
 ];
