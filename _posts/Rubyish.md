@@ -5,7 +5,7 @@ date: 2026-01-15
 description: Rubyを学び直しました．この記事ではRubyの文法Rubyらしい書き方の好きなところを書き残しておこうと思います．
 tags:
   - Ruby
-thumbnail: /images/blog/20251203/icatch.PNG
+thumbnail: /images/blog/20260115/icatch.png
 category: tech
 ---
 
