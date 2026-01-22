@@ -286,11 +286,12 @@ user = { status: :active }  # :pending, :banned など
 array.sort_by { |item| item[:name] }
 ```
 
-[公式リファレンス]([https://docs.ruby-lang.org/ja/latest/class/Symbol.html](https://docs.ruby-lang.org/ja/latest/class/Symbol.html))
+参考:
+[公式リファレンス: Symbolクラス](https://docs.ruby-lang.org/ja/latest/class/Symbol.html)
 
-[ハッシュの基本]([https://qiita.com/yyykms123/items/2ceaec214f1f8a514011](https://qiita.com/yyykms123/items/2ceaec214f1f8a514011))
+[ハッシュの基本【Ruby超入門】](https://qiita.com/yyykms123/items/2ceaec214f1f8a514011)
 
-参考：[https://qiita.com/yyykms123/items/6a6ae7fe8cd9263a3d1c](https://qiita.com/yyykms123/items/6a6ae7fe8cd9263a3d1c)
+[シンボルとは！？【Ruby超入門】Ruby入門](https://qiita.com/yyykms123/items/6a6ae7fe8cd9263a3d1c)
 
 ---
 
