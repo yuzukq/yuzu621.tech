@@ -11,7 +11,7 @@ category: daily
 ---
 
 # ローソン"さん"ありがとう
-マジカルミライ2025Tokyoからはや5か月．横浜アリーナにて開催された「[初音ミク LAWSON 50th Anniversary Special LIVE](https://l-tike.com/concert/lawson50th_260117_0118/)」に大学の同期とともに参戦してきました．
+マジカルミライ2025Tokyoからはや5か月．横浜アリーナにて開催された「[初音ミク LAWSON 50th Anniversary Special LIVE](https://blog.piapro.net/2026/01/b2601231.html)」に大学の同期とともに参戦してきました．
 
 ![会場到着](/images/blog/20260118/image2.JPG)
 > 会場到着午前9:00物販開場1時間前でもかなりの待機列
