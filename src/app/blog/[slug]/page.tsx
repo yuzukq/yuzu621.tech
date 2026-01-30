@@ -1,15 +1,8 @@
 // ブログ記事本文ページ
-import { getAllPostSlugs, getPostBySlug } from '@/lib/posts'
+import { getAllPostSlugs, getPostBySlug, getPostHtml } from '@/lib/posts'
 import { Box, Heading, HStack, Tag, Text, Separator } from '@chakra-ui/react'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import rehypeRaw from 'rehype-raw'
-import rehypeSlug from 'rehype-slug'
-import rehypeAutolinkHeadings from 'rehype-autolink-headings'
-import rehypePrismPlus from 'rehype-prism-plus'
 import Image from 'next/image'
 import ShareRow from './ShareRow'
-import remarkLatexBreaks from '@/lib/remark-latex-breaks'
 
 export const dynamic = 'error' // SSG
 
@@ -65,7 +58,7 @@ const getMarkdownStyles = (isDaily: boolean) => ({
   '& :not(pre) > code': { backgroundColor: isDaily ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.3)', padding: '0.15rem 0.35rem', borderRadius: '4px', color: isDaily ? '#d63384' : 'inherit' },
   '& pre code': { backgroundColor: 'transparent', padding: 0, borderRadius: 0, color: isDaily ? '#1a202c' : 'inherit' },
   // Images
-  '& img': { borderRadius: 8, margin: '1rem 0' },
+  '& img': { borderRadius: 8, margin: '1rem 0', maxWidth: '100%', height: 'auto' },
   // Blockquotes
   '& blockquote': { borderLeft: isDaily ? '4px solid #3182ce' : '4px solid #4a5568', paddingLeft: '1rem', margin: '1rem 0', color: isDaily ? '#4a5568' : '#a0aec0' },
   // Tables
@@ -81,12 +74,18 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     return <Box maxW="900px" mx="auto" px={{ base: 4, md: 8 }} py={{ base: 10, md: 16 }}><Heading>Not Found</Heading></Box>
   }
 
+  // マークダウンを事前にHTMLに変換
+  const contentHtml = await getPostHtml(slug)
+  if (!contentHtml) {
+    return <Box maxW="900px" mx="auto" px={{ base: 4, md: 8 }} py={{ base: 10, md: 16 }}><Heading>Content Error</Heading></Box>
+  }
+
   const isDaily = post.category === 'daily'
   const theme = getThemeStyles(isDaily)
   const markdownStyles = getMarkdownStyles(isDaily)
 
   return (
-    <Box 
+    <Box
       minH="100vh"
       bg={theme.bg}
       transition="background-color 0.3s ease"
@@ -105,25 +104,11 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </Box>
         )}
         <Separator my={8} borderColor={theme.separatorColor} />
-        <Box className="markdown-body" css={markdownStyles}>
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkLatexBreaks]}
-            rehypePlugins={[
-              rehypeRaw,
-              rehypeSlug,
-              [rehypeAutolinkHeadings, { behavior: 'wrap' }],
-              rehypePrismPlus,
-            ]}
-            components={{
-              img: ({ src, alt }) => {
-                if (!src || typeof src !== 'string') return null
-                return <Image src={src} alt={alt || ''} width={1200} height={630} style={{ height: 'auto', width: '100%' }} />
-              },
-            }}
-          >
-            {post.content}
-          </ReactMarkdown>
-        </Box>
+        <Box
+          className="markdown-body"
+          css={markdownStyles}
+          dangerouslySetInnerHTML={{ __html: contentHtml }}
+        />
 
         {/* 一覧へ戻る + 共有ボタン行 */}
         <ShareRow title={post.title} />

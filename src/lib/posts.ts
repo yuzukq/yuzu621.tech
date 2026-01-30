@@ -1,6 +1,18 @@
 import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
+import { unified, type Plugin } from 'unified'
+import remarkParse from 'remark-parse'
+import remarkGfm from 'remark-gfm'
+import remarkRehype from 'remark-rehype'
+import rehypeSlug from 'rehype-slug'
+import rehypeAutolinkHeadings from 'rehype-autolink-headings'
+import rehypePrettyCode from 'rehype-pretty-code'
+import rehypeStringify from 'rehype-stringify'
+import remarkLatexBreaksPlugin from '@/lib/remark-latex-breaks'
+
+// 型互換性のためにキャスト
+const remarkLatexBreaks = remarkLatexBreaksPlugin as unknown as Plugin
 
 export type BlogCategory = 'tech' | 'daily'
 
@@ -87,4 +99,23 @@ export function getExcerpt(markdown: string, maxLen = 140): string {
 export function extractFirstImageSrc(markdown: string): string | undefined {
   const m = markdown.match(/!\[[^\]]*\]\(([^)]+)\)/)
   return m?.[1]
+}
+
+// マークダウンをHTMLに変換（rehype-pretty-code）
+export async function getPostHtml(slug: string): Promise<string | null> {
+  const post = getPostBySlug(slug)
+  if (!post) return null
+
+  const result = await unified()
+    .use(remarkParse)
+    .use(remarkGfm)
+    .use(remarkLatexBreaks)
+    .use(remarkRehype, { allowDangerousHtml: true })
+    .use(rehypeSlug)
+    .use(rehypeAutolinkHeadings, { behavior: 'wrap' })
+    .use(rehypePrettyCode, { theme: 'dark-plus', keepBackground: true })
+    .use(rehypeStringify, { allowDangerousHtml: true })
+    .process(post.content)
+
+  return String(result)
 }
