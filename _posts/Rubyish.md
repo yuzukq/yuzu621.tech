@@ -787,3 +787,38 @@ puts person.city  # => "Tokyo"
 \\
 
 プログラマの幸福を追求するRubyの思想は、コードの書きやすさや楽しさに直結していると感じます。これらの特徴をしっかり身につけ、次のステップであるRuby on Railsの学習をさらに楽しんでいきたいと思います。
+
+
+
+
+
+
+
+
+
+
+## 実戦で出会ったRubyらしさ
+使っていく中で出会ったRubyらしさを感じた部分を随時残していきます。
+
+#### メソッドの()省略
+関数呼び出し時に可読性の観点から省略することがある。
+```ruby
+redirect_to user
+# ↕︎同義
+redirect_to(user)
+```
+
+#### 「||=」or equals: メモ化の省略
+変数の値がnilなら変数に代入するが、nil出なければ代入しないという場面が多々あるが、Rubyでは短絡評価という特性を利用して省略できる。
+
+```ruby
+# こうも書けるが、
+@current_user = @current_user || User.find_by(id: session[:user_id])
+
+# 意図が明確
+# → "current_userがまだなければ、DBから取得して設定"
+@current_user ||= User.find_by(id: session[:user_id])
+```
+
+> 短絡評価とは
+> Rubyの || は左辺がtrueなら右辺を評価しないという特性。
