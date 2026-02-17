@@ -822,3 +822,16 @@ redirect_to(user)
 
 > 短絡評価とは
 > Rubyの || は左辺がtrueなら右辺を評価しないという特性。
+
+#### ぼっち演算子
+存在確認と認証結果の判定など、論理積を含む処理の省略で&.を用いる。
+```ruby
+# 従来の書き方
+if user && user.authenticate(params[:session][:password])
+  # ログイン処理
+end
+
+# ぼっち演算子を使った書き方
+if user&.authenticate(params[:session][:password])
+  # ログイン処理
+userが存在すれば右側の処理を実行するという処理を簡潔にかけるだけでなく、nilに対してメソッドを呼んでもNoMethodErrorが発生しない(nil安全)という利点がある。
