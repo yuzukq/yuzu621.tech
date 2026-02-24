@@ -834,4 +834,45 @@ end
 # ぼっち演算子を使った書き方
 if user&.authenticate(params[:session][:password])
   # ログイン処理
+end
+```
 userが存在すれば右側の処理を実行するという処理を簡潔にかけるだけでなく、nilに対してメソッドを呼んでもNoMethodErrorが発生しない(nil安全)という利点がある。
+
+#### メタプログラミング: **Rubyの黒魔術**
+メタプログラミングとは
+> コードがコードを操作する プログラミング手法
+
+Rubyではsendメソッドを使用することで実行時にメソッド名を動的に決定するという書き方ができる。
+
+```ruby
+# これが
+def authenticated?(attribute, token)
+  digest = send("#{attribute}_digest")
+end
+
+# これを可能にする
+authenticated?(:remember, token)
+authenticated?(:activation, token)
+```
+可読性や拡張性の高さという点においてcaseやifを使った分岐よりも優れていると感じる。
+```ruby
+# caseを使った場合、
+def authenticated?(attribute, token)
+  digest = case attribute
+           when :remember   then remember_digest
+           when :activation then activation_digest
+           end
+  return false if digest.nil?
+  BCrypt::Password.new(digest).is_password?(token)
+end
+```
+Railsの機能を実現するのにもこのメタプログラミングで実現されているものが多い。
+```ruby
+# これらも全部メタプログラミングで動いている
+validates :name, presence: true   # バリデーションメソッドの動的生成
+has_many :posts                    # アソシエーションメソッドの動的生成
+attr_accessor :remember_token      # getter/setterの動的生成
+```
+参考
+[メタプログラミングRuby 第2版](https://www.oreilly.co.jp/books/9784873117430/)
+
