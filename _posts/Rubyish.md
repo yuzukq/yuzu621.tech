@@ -876,3 +876,19 @@ attr_accessor :remember_token      # getter/setterの動的生成
 参考
 [メタプログラミングRuby 第2版](https://www.oreilly.co.jp/books/9784873117430/)
 
+
+
+#### 配列の%w記法
+テストコードやホワイトリストなど、リスト形式で文字列を複数定義したい場合にしばしば利用される。
+```ruby
+# これと
+arry = %w[text text2]
+# これは同義。
+arry =  ["text1", "text2"]
+```
+半角スペースで区切るため、スペースや特殊文字を含む文字列を定義する場合には、バックスラッシュを使ってエスケープする。
+```ruby
+# 例
+%w[image/jpeg image\ gif image/png]
+```
+
