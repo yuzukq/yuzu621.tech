@@ -19,13 +19,13 @@ export default function BlogHeader() {
     >
       <Flex align="center" gap={4}>
         {/* Left: Title linking to blog home */}
-        <Link href="/blog" _hover={{ textDecoration: "none", opacity: 0.9 }}>
+        <Link href="/" _hover={{ textDecoration: "none", opacity: 0.9 }}>
           <Heading as="span" size="lg">Yuzuのブログ</Heading>
         </Link>
 
         {/* Right: Menu (for now only Profile) */}
         <HStack gap={3} ml="auto">
-          <Link href="/#about">
+          <Link href="/portfolio#about">
             <Button variant="ghost" colorPalette="gray" size="md">Profile</Button>
           </Link>
         </HStack>

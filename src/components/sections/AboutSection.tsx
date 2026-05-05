@@ -46,7 +46,7 @@ export default function AboutSection() {
         </Flex>
 
         <Box mt={8}>
-          <Link href="/blog">
+          <Link href="/">
             <Button colorPalette="gray" variant="subtle" size="lg">
               ブログを読む
             </Button>

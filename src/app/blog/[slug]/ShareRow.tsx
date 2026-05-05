@@ -32,7 +32,7 @@ export default function ShareRow({ title }: ShareRowProps) {
         title: "リンクをコピーしました",
         type: "success",
       })
-    } catch (e) {
+    } catch {
       toaster.create({
         title: "コピーに失敗しました",
         description: "お手数ですが手動でコピーしてください",
@@ -44,7 +44,7 @@ export default function ShareRow({ title }: ShareRowProps) {
 
   return (
     <HStack justify="space-between" w="100%" mt={10}>
-      <Link href="/blog">
+      <Link href="/">
         <Button variant="subtle" colorPalette="gray" size="lg">一覧に戻る</Button>
       </Link>
 

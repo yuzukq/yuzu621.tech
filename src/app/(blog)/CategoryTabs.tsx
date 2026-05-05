@@ -1,4 +1,3 @@
-// カテゴリ切り替えタブ（クライアントコンポーネント）
 "use client"
 
 import { HStack, Button } from '@chakra-ui/react'
@@ -14,7 +13,7 @@ export default function CategoryTabs({ currentCategory }: CategoryTabsProps) {
 
   return (
     <HStack gap={2}>
-      <NextLink href="/blog?category=tech" scroll={false}>
+      <NextLink href="/?category=tech" scroll={false}>
         <Button
           variant={currentCategory === 'tech' ? 'solid' : 'outline'}
           colorPalette={currentCategory === 'tech' ? (isDaily ? 'gray' : 'cyan') : undefined}
@@ -31,7 +30,7 @@ export default function CategoryTabs({ currentCategory }: CategoryTabsProps) {
           技術関連
         </Button>
       </NextLink>
-      <NextLink href="/blog?category=daily" scroll={false}>
+      <NextLink href="/?category=daily" scroll={false}>
         <Button
           variant={currentCategory === 'daily' ? 'solid' : 'outline'}
           colorPalette={currentCategory === 'daily' ? (isDaily ? 'cyan' : 'gray') : undefined}
