@@ -1,4 +1,3 @@
-// ブログカード（クライアントコンポーネント - アニメーション用）
 "use client"
 
 import { Box, Heading, Image as ChakraImage, Text, HStack, VStack, Card, Tag } from '@chakra-ui/react'
@@ -23,9 +22,9 @@ export default function BlogCard({ post, index, category }: BlogCardProps) {
       opacity={0}
       animation={isInView ? `fade-in 0.6s ease-in-out ${index * 0.1}s forwards` : undefined}
     >
-      <Card.Root 
-        overflow="hidden" 
-        _hover={{ transform: 'translateY(-4px)', boxShadow: 'xl' }} 
+      <Card.Root
+        overflow="hidden"
+        _hover={{ transform: 'translateY(-4px)', boxShadow: 'xl' }}
         transition="all 0.2s ease"
         bg={isDaily ? 'white' : 'gray.900'}
         borderColor={isDaily ? 'gray.200' : 'gray.800'}
@@ -56,9 +55,9 @@ export default function BlogCard({ post, index, category }: BlogCardProps) {
                 {post.tags && post.tags.length > 0 && (
                   <HStack wrap="wrap">
                     {post.tags.map((tag) => (
-                      <Tag.Root 
-                        key={tag} 
-                        variant="subtle" 
+                      <Tag.Root
+                        key={tag}
+                        variant="subtle"
                         colorPalette="gray"
                       >
                         <Tag.Label>{tag}</Tag.Label>
@@ -67,10 +66,10 @@ export default function BlogCard({ post, index, category }: BlogCardProps) {
                   </HStack>
                 )}
                 <Text fontSize="sm" color="gray.500">
-                  作成日時: {new Date(post.date).toLocaleDateString('ja-JP', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
+                  作成日時: {new Date(post.date).toLocaleDateString('ja-JP', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
                   })}
                 </Text>
               </VStack>
