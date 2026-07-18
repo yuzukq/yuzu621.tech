@@ -1,5 +1,4 @@
 import { FaDiscord, FaGithub } from "react-icons/fa"
-import { HiOutlineMail } from "react-icons/hi"
 import VrmHeroSlot from "@/components/vrm/VrmHeroSlot"
 import FadeIn from "./FadeIn"
 
@@ -7,7 +6,6 @@ import FadeIn from "./FadeIn"
 // 定義されておらず(文言変更禁止のため新規フィールドは追加しない)、
 // フッター(Footer.tsx)で使っている連絡先と同じURLをここでも直接使う。
 const SOCIAL_LINKS = [
-  { href: "mailto:c1.101@gmail.com", label: "Mail", Icon: HiOutlineMail },
   { href: "https://github.com/yuzukq", label: "GitHub", Icon: FaGithub },
   { href: "https://discord.gg/8HPdqbZF", label: "Discord", Icon: FaDiscord },
 ]

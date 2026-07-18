@@ -44,15 +44,14 @@ export const skillCategories: SkillCategory[] = [
   {
     id: "devops",
     label: "DevOps / Infra",
-    note: "開発機がArch Linuxなので、サーバー系のコマンド操作もある程度心得があります。",
+    note: "Linuxマシン(Arch)を開発機としてssh元にして運用しているのでサーバー系のコマンド操作も最低限心得があります。",
     items: [
       "Git",
       "GitHub",
       "GitHub Actions",
       "Docker",
       "Cloudflare (Tunnel / R2)",
-      "AWS S3",
-      "Arch Linux",
+      "UNIX",
     ],
   },
   {
