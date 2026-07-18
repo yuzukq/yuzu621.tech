@@ -1,13 +1,13 @@
 import Footer from "@/components/layouts/Footer"
 import BlogHeader from "@/components/blog/BlogHeader"
-import { Box } from "@chakra-ui/react"
 
 export default function BlogLayout({ children }: { children: React.ReactNode }) {
+  // dvh: UIを引いた分の実際の表示領域を指定する
   return (
-    <Box minH="100dvh" display="flex" flexDirection="column">
+    <div className="flex min-h-dvh flex-col">
       <BlogHeader />
-      <Box as="main" flex="1">{children}</Box>
+      <main className="flex flex-1 flex-col">{children}</main>
       <Footer />
-    </Box>
+    </div>
   )
 }

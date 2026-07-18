@@ -1,7 +1,8 @@
 // ブログ記事本文ページ
 import { getAllPostSlugs, getPostBySlug, getPostHtml } from '@/lib/posts'
-import { Box, Heading, HStack, Tag, Text, Separator } from '@chakra-ui/react'
 import Image from 'next/image'
+import Tag from '@/components/blog/Tag'
+import WorldSync from '@/components/blog/WorldSync'
 import ShareRow from './ShareRow'
 
 export const dynamic = 'error' // SSG
@@ -26,168 +27,65 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 }
 
-// カテゴリに応じたスタイル設定
-const getThemeStyles = (isDaily: boolean) => ({
-  bg: isDaily ? 'gray.50' : 'black',
-  headingColor: isDaily ? 'gray.800' : 'white',
-  textColor: isDaily ? 'gray.600' : 'gray.400',
-  tagColorPalette: 'gray',
-  separatorColor: isDaily ? 'gray.200' : 'gray.700',
-})
-
-// Markdownのテーマスタイル
-const getMarkdownStyles = (isDaily: boolean) => ({
-  // Headings
-  '& h1': { fontSize: '2rem', fontWeight: 800, marginTop: '2.5rem', marginBottom: '1rem', color: isDaily ? '#1a202c' : 'inherit' },
-  '& h2': { fontSize: '1.75rem', fontWeight: 700, marginTop: '2rem', marginBottom: '0.75rem', color: isDaily ? '#1a202c' : 'inherit' },
-  '& h3': { fontSize: '1.5rem', fontWeight: 700, marginTop: '1.5rem', marginBottom: '0.5rem', color: isDaily ? '#2d3748' : 'inherit' },
-  '& h4': { fontSize: '1.25rem', fontWeight: 600, marginTop: '1.25rem', marginBottom: '0.5rem', color: isDaily ? '#2d3748' : 'inherit' },
-  // Paragraphs
-  '& p': { marginBottom: '1rem', lineHeight: 1.8, color: isDaily ? '#4a5568' : 'inherit' },
-  // Lists
-  '& ul': { listStyleType: 'disc', paddingInlineStart: '1.5rem', marginBottom: '1rem', color: isDaily ? '#4a5568' : 'inherit' },
-  '& ol': { listStyleType: 'decimal', paddingInlineStart: '1.5rem', marginBottom: '1rem', color: isDaily ? '#4a5568' : 'inherit' },
-  '& li': { marginBottom: '0.25rem' },
-  // Links
-  '& a': { color: '#3b82f6', textDecoration: 'underline', transition: 'color 0.2s ease' },
-  '& a:hover': { color: '#2563eb' },
-  '& h1 > a, & h2 > a, & h3 > a, & h4 > a': { color: 'inherit', textDecoration: 'none' },
-  '& h1 > a:hover, & h2 > a:hover, & h3 > a:hover, & h4 > a:hover': { color: 'inherit' },
-  // Code blocks
-  '& pre': { marginBottom: '1.5rem', backgroundColor: isDaily ? '#f7fafc' : '#1a202c', padding: '1rem', borderRadius: '8px', overflowX: 'auto', border: isDaily ? '1px solid #e2e8f0' : 'none' },
-  '& :not(pre) > code': { backgroundColor: isDaily ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.3)', padding: '0.15rem 0.35rem', borderRadius: '4px', color: isDaily ? '#d63384' : 'inherit' },
-  '& pre code': { backgroundColor: 'transparent', padding: 0, borderRadius: 0, color: isDaily ? '#1a202c' : 'inherit' },
-  // Images
-  '& img': { borderRadius: 8, margin: '1rem 0', maxWidth: '100%', height: 'auto' },
-  // Blockquotes
-  '& blockquote': { borderLeft: isDaily ? '4px solid #3182ce' : '4px solid #4a5568', paddingLeft: '1rem', margin: '1rem 0', color: isDaily ? '#4a5568' : '#a0aec0' },
-  // Tables
-  '& table': { borderCollapse: 'collapse', width: '100%', marginBottom: '1rem' },
-  '& th, & td': { border: isDaily ? '1px solid #e2e8f0' : '1px solid #4a5568', padding: '0.5rem', color: isDaily ? '#4a5568' : 'inherit' },
-  '& th': { backgroundColor: isDaily ? '#f7fafc' : '#2d3748' },
-  // コードブロックのファイル名ヘッダ（```js:app.js` → title）。P2で再デザイン予定の暫定スタイル。
-  '& [data-rehype-pretty-code-title]': {
-    fontFamily: 'var(--font-mono, ui-monospace, monospace)',
-    fontSize: '0.8rem',
-    padding: '0.4rem 1rem',
-    borderRadius: '8px 8px 0 0',
-    backgroundColor: isDaily ? '#e2e8f0' : '#0d1117',
-    color: isDaily ? '#4a5568' : '#8b949e',
-    border: isDaily ? '1px solid #e2e8f0' : 'none',
-    borderBottom: 'none',
-  },
-  '& [data-rehype-pretty-code-title] + pre': { marginTop: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0 },
-  // noteブロック（:::note info|warn|alert）。DESIGN.md §5準拠の暫定配色（P2でトークン化）。
-  '& .note': {
-    borderRadius: '8px',
-    padding: '1rem 1.25rem',
-    margin: '1.5rem 0',
-    borderLeft: '4px solid',
-    lineHeight: 1.8,
-  },
-  '& .note p:last-child, & .note ul:last-child, & .note ol:last-child': { marginBottom: 0 },
-  '& .note-info': {
-    backgroundColor: 'rgba(59, 130, 246, 0.08)',
-    borderLeftColor: '#3b82f6',
-  },
-  '& .note-warn': {
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
-    borderLeftColor: '#f59e0b',
-  },
-  '& .note-alert': {
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    borderLeftColor: '#ef4444',
-  },
-  // リンクカード（裸URL段落 → OGPカード）。DESIGN.md §5準拠の暫定スタイル（P2でトークン化）。
-  '& .link-card': {
-    display: 'flex',
-    alignItems: 'stretch',
-    gap: '1rem',
-    border: isDaily ? '1px solid #e2e8f0' : '1px solid #2d3748',
-    borderRadius: '12px',
-    padding: '1rem',
-    margin: '1.5rem 0',
-    textDecoration: 'none',
-    color: 'inherit',
-    transition: 'border-color 0.2s ease',
-  },
-  '& .link-card:hover': { borderColor: isDaily ? '#94a3b8' : '#4a5568' },
-  '& .link-card-text': { display: 'flex', flexDirection: 'column', gap: '0.35rem', flex: '1 1 auto', minWidth: 0 },
-  '& .link-card-title': {
-    fontWeight: 700,
-    color: isDaily ? '#1a202c' : 'inherit',
-    display: '-webkit-box',
-    WebkitLineClamp: 2,
-    WebkitBoxOrient: 'vertical',
-    overflow: 'hidden',
-  },
-  '& .link-card-description': {
-    fontSize: '0.875rem',
-    color: isDaily ? '#718096' : '#a0aec0',
-    display: '-webkit-box',
-    WebkitLineClamp: 2,
-    WebkitBoxOrient: 'vertical',
-    overflow: 'hidden',
-  },
-  '& .link-card-meta': {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.35rem',
-    fontSize: '0.75rem',
-    color: isDaily ? '#a0aec0' : '#718096',
-    marginTop: 'auto',
-  },
-  '& .link-card-favicon': { width: '16px', height: '16px', margin: 0, borderRadius: '3px' },
-  '& .link-card-image': { flex: '0 0 33%', maxWidth: '160px', borderRadius: '8px', overflow: 'hidden' },
-  '& .link-card-image img': { width: '100%', height: '100%', margin: 0, borderRadius: 0, objectFit: 'cover' },
-})
-
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const post = getPostBySlug(slug)
   if (!post) {
-    return <Box maxW="900px" mx="auto" px={{ base: 4, md: 8 }} py={{ base: 10, md: 16 }}><Heading>Not Found</Heading></Box>
+    return (
+      <div data-world="tech" className="flex-1 bg-bg">
+        <div className="mx-auto max-w-3xl px-4 py-16 md:px-8">
+          <h1 className="text-2xl font-bold text-ink">Not Found</h1>
+        </div>
+      </div>
+    )
   }
 
   // マークダウンを事前にHTMLに変換
   const contentHtml = await getPostHtml(slug)
   if (!contentHtml) {
-    return <Box maxW="900px" mx="auto" px={{ base: 4, md: 8 }} py={{ base: 10, md: 16 }}><Heading>Content Error</Heading></Box>
+    return (
+      <div data-world="tech" className="flex-1 bg-bg">
+        <div className="mx-auto max-w-3xl px-4 py-16 md:px-8">
+          <h1 className="text-2xl font-bold text-ink">Content Error</h1>
+        </div>
+      </div>
+    )
   }
 
-  const isDaily = post.category === 'daily'
-  const theme = getThemeStyles(isDaily)
-  const markdownStyles = getMarkdownStyles(isDaily)
+  const world = post.category
 
   return (
-    <Box
-      minH="100vh"
-      bg={theme.bg}
-      transition="background-color 0.3s ease"
-    >
-      <Box maxW="900px" mx="auto" px={{ base: 4, md: 8 }} py={{ base: 10, md: 16 }}>
-        <Heading size="2xl" mb={4} color={theme.headingColor}>{post.title}</Heading>
-        <HStack gap={3} color={theme.textColor} mb={6} flexWrap="wrap">
-          <Text>作成日時: {new Date(post.date).toLocaleDateString('ja-JP')}</Text>
-          {post.tags?.map((tag) => (
-            <Tag.Root key={tag} variant="solid" colorPalette={theme.tagColorPalette}><Tag.Label>#{tag}</Tag.Label></Tag.Root>
-          ))}
-        </HStack>
+    <div data-world={world} className="flex-1 bg-bg">
+      <WorldSync world={world} />
+      <div className="mx-auto max-w-3xl px-4 py-16 md:px-8 md:py-24">
+        <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold leading-tight text-ink">
+          {post.title}
+        </h1>
+
+        <div className="mt-4 flex flex-wrap items-center gap-3 font-mono text-sm text-ink-faint">
+          <time dateTime={post.date}>{new Date(post.date).toLocaleDateString('ja-JP')}</time>
+          {post.tags?.map((tag) => <Tag key={tag}>{tag}</Tag>)}
+        </div>
+
         {post.thumbnail && (
-          <Box position="relative" w="100%" h={{ base: '220px', md: '360px' }} mb={8}>
-            <Image src={post.thumbnail} alt={post.title} fill sizes="100vw" style={{ objectFit: 'cover', borderRadius: 12 }} />
-          </Box>
+          <div className="relative mt-8 h-[220px] w-full overflow-hidden rounded-2xl md:h-[360px]">
+            <Image
+              src={post.thumbnail}
+              alt={post.title}
+              fill
+              sizes="100vw"
+              className="object-cover"
+            />
+          </div>
         )}
-        <Separator my={8} borderColor={theme.separatorColor} />
-        <Box
-          className="markdown-body"
-          css={markdownStyles}
-          dangerouslySetInnerHTML={{ __html: contentHtml }}
-        />
+
+        <hr className="my-10 border-border" />
+
+        <div className="markdown-body" dangerouslySetInnerHTML={{ __html: contentHtml }} />
 
         {/* 一覧へ戻る + 共有ボタン行 */}
         <ShareRow title={post.title} />
-      </Box>
-    </Box>
+      </div>
+    </div>
   )
 }

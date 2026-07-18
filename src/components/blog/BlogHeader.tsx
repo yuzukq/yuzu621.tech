@@ -1,35 +1,31 @@
-"use client"
-
-import { Box, Flex, Heading, HStack, Link, Button } from "@chakra-ui/react"
+import NextLink from "next/link"
 
 export default function BlogHeader() {
   return (
-    <Box
-      as="header"
-      w="100%"
-      py={4}
-      px={{ base: 4, md: 8 }}
-      bg="rgba(0, 0, 0, 0.5)"
-      backdropFilter="blur(10px)"
-      position="sticky"
-      top={0}
-      zIndex={1000}
-      borderBottomWidth="1px"
-      borderColor="gray.700"
-    >
-      <Flex align="center" gap={4}>
-        {/* Left: Title linking to blog home */}
-        <Link href="/" _hover={{ textDecoration: "none", opacity: 0.9 }}>
-          <Heading as="span" size="lg">Yuzuのブログ</Heading>
-        </Link>
+    <header className="sticky top-0 z-50 border-b border-border bg-bg/70 backdrop-blur-md">
+      <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-4 md:px-8">
+        <NextLink
+          href="/"
+          className="font-display text-lg font-bold tracking-tight text-ink transition-opacity duration-200 hover:opacity-80"
+        >
+          Yuzuのブログ
+        </NextLink>
 
-        {/* Right: Menu (for now only Profile) */}
-        <HStack gap={3} ml="auto">
-          <Link href="/portfolio#about">
-            <Button variant="ghost" colorPalette="gray" size="md">Profile</Button>
-          </Link>
-        </HStack>
-      </Flex>
-    </Box>
+        <nav className="ml-auto flex items-center gap-1">
+          <NextLink
+            href="/"
+            className="rounded-lg px-3 py-2 text-sm text-ink-muted transition-colors duration-200 hover:text-ink"
+          >
+            Blog
+          </NextLink>
+          <NextLink
+            href="/portfolio#about"
+            className="rounded-lg px-3 py-2 text-sm text-ink-muted transition-colors duration-200 hover:text-ink"
+          >
+            Portfolio
+          </NextLink>
+        </nav>
+      </div>
+    </header>
   )
 }

@@ -29,8 +29,8 @@ test('ブログ一覧から詳細ページへ遷移できる', async ({ page }) 
   // 詳細ページに遷移したことを確認
   await expect(page).toHaveURL(href!);
 
-  // 記事のタイトル（h2）が表示されることを確認
-  await expect(page.locator('h2').first()).toBeVisible();
+  // 記事のタイトル（h1）が表示されることを確認
+  await expect(page.locator('h1').first()).toBeVisible();
 });
 
 test('ブログ詳細ページから一覧に戻れる', async ({ page }) => {

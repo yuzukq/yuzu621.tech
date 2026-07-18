@@ -1,9 +1,9 @@
 "use client"
 
-import { HStack, Button, Link, IconButton } from "@chakra-ui/react"
-import { FaTwitter, FaLink } from "react-icons/fa"
+import { useEffect, useRef, useState } from "react"
+import NextLink from "next/link"
 import { usePathname } from "next/navigation"
-import { toaster } from "../../../components/ui/toaster"
+import { FaTwitter, FaLink } from "react-icons/fa"
 
 interface ShareRowProps {
   title: string
@@ -11,10 +11,24 @@ interface ShareRowProps {
 
 export default function ShareRow({ title }: ShareRowProps) {
   const pathname = usePathname()
+  const [message, setMessage] = useState<string | null>(null)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    }
+  }, [])
 
   const getShareUrl = () => {
     if (typeof window === "undefined") return pathname || "/"
     return `${window.location.origin}${pathname || "/"}`
+  }
+
+  const showMessage = (text: string) => {
+    setMessage(text)
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    timeoutRef.current = setTimeout(() => setMessage(null), 2500)
   }
 
   const handleShareTwitter = () => {
@@ -28,34 +42,45 @@ export default function ShareRow({ title }: ShareRowProps) {
     try {
       if (!navigator?.clipboard?.writeText) throw new Error("Clipboard API unsupported")
       await navigator.clipboard.writeText(text)
-      toaster.create({
-        title: "リンクをコピーしました",
-        type: "success",
-      })
+      showMessage("リンクをコピーしました")
     } catch {
-      toaster.create({
-        title: "コピーに失敗しました",
-        description: "お手数ですが手動でコピーしてください",
-        type: "error",
-      })
+      showMessage("コピーに失敗しました。お手数ですが手動でコピーしてください")
     }
   }
 
-
   return (
-    <HStack justify="space-between" w="100%" mt={10}>
-      <Link href="/">
-        <Button variant="subtle" colorPalette="gray" size="lg">一覧に戻る</Button>
-      </Link>
+    <div className="mt-12 flex flex-wrap items-center justify-between gap-4">
+      <NextLink
+        href="/"
+        role="button"
+        className="rounded-lg border border-border bg-surface px-5 py-2.5 text-sm font-medium text-ink transition-colors duration-200 hover:border-border-strong hover:text-accent"
+      >
+        一覧に戻る
+      </NextLink>
 
-      <HStack gap={2}>
-        <IconButton aria-label="Share on Twitter" onClick={handleShareTwitter} variant="subtle" colorPalette="gray" size="lg">
+      <div className="flex items-center gap-3">
+        {message && (
+          <span role="status" className="text-xs text-ink-muted">
+            {message}
+          </span>
+        )}
+        <button
+          type="button"
+          aria-label="Share on Twitter"
+          onClick={handleShareTwitter}
+          className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-surface text-ink-muted transition-colors duration-200 hover:border-border-strong hover:text-accent"
+        >
           <FaTwitter />
-        </IconButton>
-        <IconButton aria-label="Copy link" onClick={handleCopyLink} variant="subtle" colorPalette="gray" size="lg">
+        </button>
+        <button
+          type="button"
+          aria-label="Copy link"
+          onClick={handleCopyLink}
+          className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-surface text-ink-muted transition-colors duration-200 hover:border-border-strong hover:text-accent"
+        >
           <FaLink />
-        </IconButton>
-      </HStack>
-    </HStack>
+        </button>
+      </div>
+    </div>
   )
 }

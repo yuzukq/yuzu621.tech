@@ -1,24 +1,419 @@
-/* Global styles for the app */
+@import "tailwindcss";
 
-/* Code block styles for rehype-pretty-code */
-pre[data-theme] {
-  border-radius: 8px;
+/* ============================================================
+ * デザイントークン (DESIGN.md §2)
+ *
+ * tech  = 深い夜空のダークトーン(ポートフォリオ・技術ブログ)
+ * daily = 温かい紙のようなライトトーン(日常ブログ)
+ *
+ * コンポーネントからは必ずセマンティック名(bg-surface, text-ink 等)で
+ * 参照し、生HEXを書かない。世界の切替は data-world 属性 + これらの
+ * CSS変数で解決し、コンポーネント側で tech/daily の三項分岐はしない。
+ * ============================================================ */
+[data-world="tech"] {
+  --bg: #0b0e14; /* ベース背景(近黒ネイビー) */
+  --surface: #131826; /* カード・浮遷面 */
+  --surface-hover: #1a2132;
+  --ink: #e6e9f0; /* 本文 */
+  --ink-muted: #9aa3b2; /* 補助テキスト */
+  --ink-faint: #5c6572; /* さらに弱い(日付等) */
+  --accent: #ffc838; /* 柚子イエロー(主役) */
+  --accent-hover: #ffd75e;
+  --accent-2: #7c86ff; /* ペリウィンクル(宇宙の差し色) */
+  --border: rgba(230, 233, 240, 0.08);
+  --border-strong: rgba(230, 233, 240, 0.16);
+  --glow: 0 0 24px rgba(255, 200, 56, 0.15); /* アクセントの発光 */
+
+  /* note ブロック(§5)専用の拡張トークン。§2の基本パレットにない
+     warn/alert の色相のみ、ここに限定して追加する。 */
+  --note-info: var(--accent-2);
+  --note-warn: #f5a524;
+  --note-alert: #f0554a;
+
+  color-scheme: dark;
+}
+
+[data-world="daily"] {
+  --bg: #faf6ef; /* 温かい紙色 */
+  --surface: #ffffff;
+  --surface-hover: #fff9ee;
+  --ink: #2a2722;
+  --ink-muted: #6b675f;
+  --ink-faint: #9c968a;
+  --accent: #d97706; /* 柚子オレンジ(ライトで読める濃度) */
+  --accent-hover: #b45f04;
+  --accent-2: #7ba05b; /* 葉っぱのグリーン */
+  --border: rgba(42, 39, 34, 0.1);
+  --border-strong: rgba(42, 39, 34, 0.2);
+  --glow: none;
+
+  --note-info: var(--accent-2);
+  --note-warn: #b45309;
+  --note-alert: #c0362c;
+
+  color-scheme: light;
+}
+
+/* Tailwind v4 の @theme inline で、上記の実行時CSS変数を
+ * --color-, --font-, --shadow- 名前空間にマップし、
+ * bg-bg / text-ink / border-border / font-display 等の
+ * ユーティリティとして参照できるようにする。 */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-2: var(--accent-2);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+
+  --shadow-glow: var(--glow);
+
+  --animate-fade-in-up: fade-in-up 0.5s ease-out forwards;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================
+ * ベース
+ * ============================================================ */
+html,
+body {
+  background-color: var(--bg);
+  /* 世界(tech/daily)切替のトランジション (DESIGN.md §2末尾) */
+  transition:
+    background-color 0.4s ease,
+    color 0.4s ease;
+}
+
+body {
+  color: var(--ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================================
+ * Markdown本文 (.markdown-body) — DESIGN.md §5
+ * ============================================================ */
+.markdown-body {
+  font-size: 1rem;
+  line-height: 1.9;
+  color: var(--ink);
+}
+
+.markdown-body > :first-child {
+  margin-top: 0;
+}
+
+.markdown-body p {
+  margin: 1.25rem 0;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  margin: 1.25rem 0;
+  padding-inline-start: 1.5rem;
+}
+.markdown-body ul {
+  list-style-type: disc;
+}
+.markdown-body ol {
+  list-style-type: decimal;
+}
+.markdown-body li + li {
+  margin-top: 0.35rem;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4 {
+  font-weight: 700;
+  color: var(--ink);
+  scroll-margin-top: 5rem;
+}
+.markdown-body h1 {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 800;
+  margin: 3rem 0 1.25rem;
+}
+.markdown-body h2 {
+  font-size: 1.5rem;
+  margin: 2.5rem 0 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.markdown-body h3 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.75rem;
+}
+.markdown-body h4 {
+  font-size: 1.125rem;
+  margin: 1.5rem 0 0.5rem;
+}
+
+/* rehype-autolink-headings (behavior: 'wrap') が見出しテキスト全体を
+ * <a> で包むため、リンク色を継承させ下線は付けない。 */
+.markdown-body h1 > a,
+.markdown-body h2 > a,
+.markdown-body h3 > a,
+.markdown-body h4 > a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.markdown-body a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 0.2em;
+  transition: color 0.2s ease;
+}
+.markdown-body a:hover {
+  color: var(--accent-hover);
+}
+
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  margin: 1.5rem 0;
+  border-radius: 1rem;
+}
+
+/* 引用 */
+.markdown-body blockquote {
+  margin: 1.5rem 0;
+  padding: 0.25rem 0 0.25rem 1rem;
+  border-left: 3px solid var(--accent-2);
+  color: var(--ink-muted);
+}
+.markdown-body blockquote > :first-child {
+  margin-top: 0;
+}
+.markdown-body blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+/* テーブル */
+.markdown-body table {
+  width: 100%;
+  margin: 1.5rem 0;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+.markdown-body th {
+  background: var(--surface);
+  font-weight: 700;
+}
+
+/* インラインコード */
+.markdown-body :not(pre) > code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background: var(--surface);
+  color: var(--accent);
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.375rem;
+}
+
+/* コードブロック(rehype-pretty-code + shiki デュアルテーマ) */
+.markdown-body figure[data-rehype-pretty-code-figure] {
+  margin: 1.75rem 0;
+}
+.markdown-body pre[data-theme] {
+  margin: 0;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+.markdown-body pre[data-theme] code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+}
+
+/* shiki は各トークンに --shiki-light / --shiki-dark を仕込み、既定では
+ * light側を color として採用する。tech世界では dark側に切り替える。 */
+[data-world="tech"] .markdown-body code[data-theme] span {
+  color: var(--shiki-dark);
+}
+[data-world="daily"] .markdown-body code[data-theme] span {
+  color: var(--shiki-light);
+}
+
+/* ```js:app.js のファイル名ヘッダ(rehype-pretty-code title) */
+.markdown-body [data-rehype-pretty-code-title] {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  padding: 0.5rem 1.25rem;
+  border-radius: 1rem 1rem 0 0;
+}
+.markdown-body [data-rehype-pretty-code-title] + pre[data-theme] {
+  margin-top: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+/* note ブロック(:::note info|warn|alert) */
+.markdown-body .note {
+  position: relative;
+  margin: 1.75rem 0;
+  padding: 1rem 1.25rem 1rem 3rem;
+  border: 1px solid;
+  border-radius: 1rem;
+  line-height: 1.9;
+}
+.markdown-body .note::before {
+  position: absolute;
+  left: 1.1rem;
+  top: 1.05rem;
+  line-height: 1;
+  font-size: 1rem;
+}
+.markdown-body .note > :first-child {
+  margin-top: 0;
+}
+.markdown-body .note > :last-child {
+  margin-bottom: 0;
+}
+.markdown-body .note-info {
+  background: color-mix(in srgb, var(--note-info) 10%, transparent);
+  border-color: var(--note-info);
+}
+.markdown-body .note-info::before {
+  content: "i";
+  color: var(--note-info);
+  font-weight: 700;
+}
+.markdown-body .note-warn {
+  background: color-mix(in srgb, var(--note-warn) 10%, transparent);
+  border-color: var(--note-warn);
+}
+.markdown-body .note-warn::before {
+  content: "!";
+  color: var(--note-warn);
+  font-weight: 700;
+}
+.markdown-body .note-alert {
+  background: color-mix(in srgb, var(--note-alert) 10%, transparent);
+  border-color: var(--note-alert);
+}
+.markdown-body .note-alert::before {
+  content: "!!";
+  color: var(--note-alert);
+  font-weight: 700;
+}
+
+/* リンクカード(裸URL段落 → OGPカード) */
+.markdown-body .link-card {
+  display: flex;
+  align-items: stretch;
+  gap: 1rem;
+  margin: 1.75rem 0;
   padding: 1rem;
-  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.2s ease;
 }
-
-code[data-theme] {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+.markdown-body .link-card:hover {
+  border-color: var(--border-strong);
 }
-
-/*
- * rehype-pretty-code はデュアルテーマ(github-dark-default / github-light)で
- * ビルドしており、各トークンに `--shiki-dark` / `--shiki-light` の
- * CSSカスタムプロパティを持たせている（shikiのデフォルト挙動では未指定時は
- * light側の値がそのままインラインcolorとして採用される）。
- * P1時点では data-world によるテーマ切替をまだ配線していないため、
- * ここでは暫定的にダーク固定表示にしておく（P2でtech/daily世界に追従させる）。
- */
-code[data-theme] span {
-  color: var(--shiki-dark) !important;
+.markdown-body .link-card-text {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.4rem;
+}
+.markdown-body .link-card-title {
+  display: -webkit-box;
+  overflow: hidden;
+  font-weight: 700;
+  color: var(--ink);
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.markdown-body .link-card-description {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 0.875rem;
+  color: var(--ink-muted);
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.markdown-body .link-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: auto;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+}
+.markdown-body .link-card-favicon {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  border-radius: 4px;
+}
+.markdown-body .link-card-image {
+  flex: 0 0 auto;
+  width: auto;
+  height: 100px;
+  aspect-ratio: 1.91 / 1;
+  overflow: hidden;
+  border-radius: 0.5rem;
+}
+.markdown-body .link-card-image img {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border-radius: 0;
+  object-fit: cover;
 }

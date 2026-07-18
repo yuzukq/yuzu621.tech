@@ -14,13 +14,13 @@ test.describe('ナビゲーション機能', () => {
     await expect(page.getByRole('heading', { name: 'Blog' })).toBeVisible();
   });
 
-  test('ブログページのヘッダーからProfileリンクでポートフォリオページに戻れる', async ({ page }) => {
+  test('ブログページのヘッダーからPortfolioリンクでポートフォリオページに戻れる', async ({ page }) => {
     await page.goto('/');
 
-    // Profileボタンをクリック
-    const profileButton = page.getByRole('button', { name: 'Profile' });
-    await expect(profileButton).toBeVisible();
-    await profileButton.click();
+    // Portfolioリンクをクリック
+    const portfolioLink = page.getByRole('link', { name: 'Portfolio' });
+    await expect(portfolioLink).toBeVisible();
+    await portfolioLink.click();
 
     // ポートフォリオページのAboutセクションに遷移することを確認
     await expect(page).toHaveURL('/portfolio#about');

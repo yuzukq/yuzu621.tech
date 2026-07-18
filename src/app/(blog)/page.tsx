@@ -1,7 +1,7 @@
 import { getAllPostsMeta, type BlogCategory } from '@/lib/posts'
-import { Box, Heading, SimpleGrid, Text, Flex } from '@chakra-ui/react'
-import CategoryTabs from './CategoryTabs'
-import BlogCard from './BlogCard'
+import CategoryTabs from '@/components/blog/CategoryTabs'
+import BlogCard from '@/components/blog/BlogCard'
+import WorldSync from '@/components/blog/WorldSync'
 
 const VALID_CATEGORIES: BlogCategory[] = ['tech', 'daily']
 function isValidCategory(value: string | null | undefined): value is BlogCategory {
@@ -17,39 +17,34 @@ export default async function BlogIndexPage({ searchParams }: BlogIndexPageProps
   const category: BlogCategory = isValidCategory(params.category) ? params.category : 'tech'
   const posts = getAllPostsMeta(category)
 
-  const isDaily = category === 'daily'
-
   return (
-    <Box
-      minH="100vh"
-      bg={isDaily ? 'gray.50' : 'black'}
-    >
-      <Box maxW="1200px" mx="auto" px={{ base: 4, md: 8 }} py={{ base: 10, md: 16 }}>
-        <Flex
-          direction={{ base: 'column', md: 'row' }}
-          justify="space-between"
-          align={{ base: 'start', md: 'center' }}
-          mb={8}
-          gap={4}
-        >
-          <Heading size="2xl" color={isDaily ? 'gray.800' : 'white'}>
-            Blog
-          </Heading>
+    <div data-world={category} className="flex-1 bg-bg">
+      <WorldSync world={category} />
+      <div className="mx-auto max-w-6xl px-4 py-16 md:px-8 md:py-24">
+        <div className="mb-10 flex flex-col gap-6 md:mb-14 md:flex-row md:items-end md:justify-between">
+          <h1 className="leading-tight">
+            <span className="block font-display text-xs font-medium uppercase tracking-[0.25em] text-accent">
+              Blog
+            </span>
+            <span className="mt-3 block font-body text-3xl font-extrabold text-ink md:text-4xl">
+              {category === 'daily' ? '日常のこと' : '技術記事'}
+            </span>
+          </h1>
           <CategoryTabs currentCategory={category} />
-        </Flex>
+        </div>
 
         {posts.length === 0 ? (
-          <Text color={isDaily ? 'gray.600' : 'gray.400'}>
+          <p className="text-ink-muted">
             {category === 'tech' ? '技術記事' : '日常記事'}はまだありません。
-          </Text>
+          </p>
         ) : (
-          <SimpleGrid columns={{ base: 1, sm: 2, lg: 3 }} gap={8}>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:gap-8 lg:grid-cols-3">
             {posts.map((post, index) => (
               <BlogCard key={post.slug} post={post} index={index} category={category} />
             ))}
-          </SimpleGrid>
+          </div>
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   )
 }
