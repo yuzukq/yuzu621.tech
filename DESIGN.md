@@ -103,6 +103,18 @@ rem値に 16/18 を掛けた補正値で従来の実寸(h1: 28〜40px / h2: 24px
 ### タグ
 `rounded-lg` / `--surface` 上に `--border` / テキスト `--ink-muted`、`#` 接頭辞。ホバーで `--accent` 文字色。
 
+### 目次(TableOfContents)
+記事ページ右サイドに置くvimライクな目次(参考: blakecrosley.comのターミナル風サイドバー)。
+- レイアウト: xl以上のみ表示。記事コンテナを `max-w-6xl` に広げ、`grid-cols-[minmax(0,1fr)_17rem]` で
+  本文(max-w-3xl)をやや左へ、右カラムに `sticky top-24` で追従させる。xl未満は従来の中央1カラム。
+- 外観: カード様式(§5共通)。ヘッダーは mono で `$ index`(`$` は `--accent`)、フッターに
+  `j` `k` のキーバッジ(`--surface-hover` 地 + `--border` 枠)。
+- 項目: 最浅見出しレベルを親として2階層に正規化。親には mono の連番 `01`〜、子はインデントのみ。
+  アクティブ項目は左2pxの `--accent` バー + `--accent` 10%背景 + `--accent` 文字。それ以外は
+  `--ink-muted`、ホバーで `--surface-hover`。
+- 挙動: スクロール連動ハイライト、`j`/`k` で次/前の見出しへジャンプ(入力欄フォーカス中・修飾キー
+  押下時は無効)。クリックは素のアンカー遷移。reduced-motion では即時ジャンプ。
+
 ### Markdown本文 (`.markdown-body`)
 - 見出し・段落は §3 のスケールに従う。h2 は下辺に `--border` の細線。
 - インラインコード: `--surface` 背景 + `--accent` 系文字。

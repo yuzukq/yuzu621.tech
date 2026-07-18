@@ -145,3 +145,37 @@ test('記事ページで Markdown 本文(.markdown-body)が描画される', asy
   // Markdownがプレーンテキストのまま出力されず、HTMLとして解釈されていることの確認
   await expect(body.locator('p, h2, h3').first()).toBeVisible();
 });
+
+// 目次(TOC)のテスト。xl(root 18pxでは実質1440px)以上でのみ表示されるため
+// ビューポートを広めに固定する。
+test.describe('目次(TOC)', () => {
+  test.use({ viewport: { width: 1600, height: 900 } });
+
+  test('記事ページの右側に目次が表示され、見出しへのアンカーリンクを含む', async ({ page }) => {
+    await page.goto('/blog/devenv2026');
+
+    const toc = page.getByRole('navigation', { name: '目次' });
+    await expect(toc).toBeVisible();
+
+    const links = toc.getByRole('link');
+    expect(await links.count()).toBeGreaterThan(0);
+    await expect(links.first()).toHaveAttribute('href', /^#/);
+  });
+
+  test('jキーで次の見出しへスクロールし、アクティブ項目が1つ表示される', async ({ page }) => {
+    await page.goto('/blog/devenv2026');
+
+    const before = await page.evaluate(() => window.scrollY);
+    await page.keyboard.press('j');
+    await page.waitForFunction((y) => window.scrollY > y, before);
+
+    await expect(page.getByRole('navigation', { name: '目次' }).locator('[aria-current="true"]')).toHaveCount(1);
+  });
+
+  test('狭いビューポートでは目次が表示されない', async ({ page }) => {
+    await page.setViewportSize({ width: 1000, height: 800 });
+    await page.goto('/blog/devenv2026');
+
+    await expect(page.getByRole('navigation', { name: '目次' })).toBeHidden();
+  });
+});

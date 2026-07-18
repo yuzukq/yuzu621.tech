@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
-import { renderMarkdown } from '@/lib/markdown'
+import { renderMarkdown, type RenderedMarkdown } from '@/lib/markdown'
 
 export type BlogCategory = 'tech' | 'daily'
 
@@ -101,8 +101,8 @@ export function extractFirstImageSrc(markdown: string): string | undefined {
   return m?.[1]
 }
 
-// マークダウンをHTMLに変換（src/lib/markdown のunifiedパイプライン）
-export async function getPostHtml(slug: string): Promise<string | null> {
+// マークダウンをHTML+目次に変換（src/lib/markdown のunifiedパイプライン）
+export async function renderPost(slug: string): Promise<RenderedMarkdown | null> {
   const post = getPostBySlug(slug)
   if (!post) return null
 

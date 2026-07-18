@@ -1,6 +1,7 @@
 // ブログ記事本文ページ
 import type { Metadata } from 'next'
-import { getAllPostSlugs, getPostBySlug, getPostHtml } from '@/lib/posts'
+import { getAllPostSlugs, getPostBySlug, renderPost } from '@/lib/posts'
+import TableOfContents from '@/components/blog/TableOfContents'
 import { formatDateJa } from '@/lib/format-date'
 import Image from 'next/image'
 import Tag from '@/components/blog/Tag'
@@ -70,9 +71,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     )
   }
 
-  // マークダウンを事前にHTMLに変換
-  const contentHtml = await getPostHtml(slug)
-  if (!contentHtml) {
+  // マークダウンを事前にHTML+目次に変換
+  const rendered = await renderPost(slug)
+  if (!rendered) {
     return (
       <div data-world="tech" className="flex-1 bg-bg">
         <div className="mx-auto max-w-3xl px-4 py-16 md:px-8">
@@ -96,34 +97,44 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     <div data-world={world} className="flex-1 bg-bg">
       <WorldSync world={world} />
       <script {...jsonLdScriptProps(postJsonLd)} />
-      <div className="mx-auto max-w-3xl px-4 py-16 md:px-8 md:py-24">
-        <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold leading-tight text-ink">
-          {post.title}
-        </h1>
+      {/* Zenn風2カラム: xl以上で本文をやや左に寄せ、右に目次(sticky)を置く。
+          xl未満は従来どおり中央1カラムで目次は出さない。 */}
+      <div className="mx-auto max-w-6xl px-4 py-16 md:px-8 md:py-24 xl:grid xl:grid-cols-[minmax(0,1fr)_17rem] xl:gap-10">
+        <article className="mx-auto w-full max-w-3xl xl:mx-0">
+          <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold leading-tight text-ink">
+            {post.title}
+          </h1>
 
-        <div className="mt-4 flex flex-wrap items-center gap-3 font-mono text-sm text-ink-faint">
-          <time dateTime={post.date}>{formatDateJa(post.date)}</time>
-          {post.tags?.map((tag) => <Tag key={tag}>{tag}</Tag>)}
-        </div>
-
-        {post.thumbnail && (
-          <div className="relative mt-8 h-[220px] w-full overflow-hidden rounded-2xl md:h-[360px]">
-            <Image
-              src={post.thumbnail}
-              alt={post.title}
-              fill
-              sizes="100vw"
-              className="object-cover"
-            />
+          <div className="mt-4 flex flex-wrap items-center gap-3 font-mono text-sm text-ink-faint">
+            <time dateTime={post.date}>{formatDateJa(post.date)}</time>
+            {post.tags?.map((tag) => <Tag key={tag}>{tag}</Tag>)}
           </div>
-        )}
 
-        <hr className="my-10 border-border" />
+          {post.thumbnail && (
+            <div className="relative mt-8 h-[220px] w-full overflow-hidden rounded-2xl md:h-[360px]">
+              <Image
+                src={post.thumbnail}
+                alt={post.title}
+                fill
+                sizes="100vw"
+                className="object-cover"
+              />
+            </div>
+          )}
 
-        <div className="markdown-body" dangerouslySetInnerHTML={{ __html: contentHtml }} />
+          <hr className="my-10 border-border" />
 
-        {/* 一覧へ戻る + 共有ボタン行 */}
-        <ShareRow title={post.title} />
+          <div className="markdown-body" dangerouslySetInnerHTML={{ __html: rendered.html }} />
+
+          {/* 一覧へ戻る + 共有ボタン行 */}
+          <ShareRow title={post.title} />
+        </article>
+
+        <aside className="hidden xl:block">
+          <div className="sticky top-24">
+            <TableOfContents items={rendered.toc} />
+          </div>
+        </aside>
       </div>
     </div>
   )
