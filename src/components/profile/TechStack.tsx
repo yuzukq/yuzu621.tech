@@ -13,7 +13,7 @@ export default function TechStack() {
 
         <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2">
           {skillCategories.map((category, index) => (
-            <FadeIn key={category.id} delay={index * 60} className="h-full">
+            <FadeIn key={category.id} delay={index * 100} className="h-full">
               <div className="flex h-full flex-col rounded-2xl border border-border bg-surface p-6">
                 <h3 className="font-mono text-xs font-medium uppercase tracking-[0.2em] text-accent">
                   <span aria-hidden="true">#</span> {category.label}

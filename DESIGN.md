@@ -131,7 +131,7 @@ rem値に 16/18 を掛けた補正値で従来の実寸(h1: 28〜40px / h2: 24px
 
 ## 6. モーション
 
-- 入場: IntersectionObserver で `opacity 0→1` + `translateY(12px→0)`、`0.5s ease-out`。連続要素は 60ms ずつ stagger。
+- 入場: IntersectionObserver で `opacity 0→1` + `translateY(24px→0)`、`0.9s cubic-bezier(0.16, 1, 0.3, 1)`(ゆったり減速)。連続要素は 100ms ずつ stagger。速すぎるとチラつきに見えるため、これ以上短くしない。
 - `prefers-reduced-motion: reduce` では全アニメーション無効化。
 - ページ遷移やホバーで過剰な動きをつけない。「上品に、少しだけ」。
 

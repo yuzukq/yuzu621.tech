@@ -13,7 +13,7 @@ export default function ProductsGrid() {
     <>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {products.map((product, index) => (
-          <FadeIn key={product.id} delay={index * 60}>
+          <FadeIn key={product.id} delay={index * 100}>
             <ProductCard product={product} onSelect={() => setSelected(product)} />
           </FadeIn>
         ))}

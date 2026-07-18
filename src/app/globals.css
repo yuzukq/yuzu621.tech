@@ -76,14 +76,14 @@
 
   --shadow-glow: var(--glow);
 
-  --animate-fade-in-up: fade-in-up 0.5s ease-out forwards;
+  --animate-fade-in-up: fade-in-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   --animate-vrm-float: vrm-float 6s ease-in-out infinite;
 }
 
 @keyframes fade-in-up {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(24px);
   }
   to {
     opacity: 1;

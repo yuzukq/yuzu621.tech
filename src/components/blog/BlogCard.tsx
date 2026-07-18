@@ -111,7 +111,7 @@ export default function BlogCard({ item, index }: BlogCardProps) {
     <div
       ref={ref}
       className={isInView ? "animate-fade-in-up" : "opacity-0"}
-      style={{ animationDelay: `${index * 60}ms` }}
+      style={{ animationDelay: `${index * 100}ms` }}
     >
       {external ? (
         <a href={item.href} target="_blank" rel="noopener noreferrer" className={cardClassName}>
