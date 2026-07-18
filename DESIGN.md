@@ -63,15 +63,20 @@ CSS変数で定義し、Tailwind v4 の `@theme inline` で `--color-*` にマ�
 | 役割 | フォント | 変数 |
 |---|---|---|
 | 欧文ディスプレイ(見出し・ラベル) | Space Grotesk | `--font-display` |
-| 和文本文・見出し | Zen Kaku Gothic New (400/500/700/900) | `--font-body` |
+| 和文本文・見出し | Zen Maru Gothic (400/500/700/900) — 丸ゴシック。かわいさと可読性の両立 | `--font-body` |
 | コード | JetBrains Mono | `--font-mono` |
 
-スケール:
+**ベースサイズ**: `html { font-size: 112.5% }`(= 18px)。サイト全体の文字を一段大きく
+読みやすくするための基準で、rem由来のサイズは全てこれに追従する。
+**例外はMarkdown見出し(.markdown-body h1〜h4)**のみ: 元々十分大きいため、
+rem値に 16/18 を掛けた補正値で従来の実寸(h1: 28〜40px / h2: 24px / h3: 20px / h4: 18px)を維持する。
+
+スケール(rem表記はルート18px基準):
 
 - **Display** (ヒーローの名前等): `clamp(2.75rem, 7vw, 5rem)` / weight 700 / letter-spacing -0.02em
 - **Section label** (参考サイトの "TOPICS" 相当): `0.75rem` / uppercase / tracking `0.25em` / `--accent` 色。英語ラベル(`PRODUCTS`, `SKILLS`, `ABOUT`, `BLOG`)+ 和文タイトルの2段構成。
 - **h1** 記事タイトル: `clamp(1.75rem, 4vw, 2.5rem)` / 800
-- **h2**: 1.5rem / 700、**h3**: 1.25rem / 700
+- **h2**: 1.5rem / 700、**h3**: 1.25rem / 700(ページ見出し用。Markdown内見出しは上記の補正値)
 - 本文: 1rem / line-height 1.9(和文なので広め)。ブログ本文は `max-width: 42rem` 前後。
 
 ## 4. レイアウト・余白

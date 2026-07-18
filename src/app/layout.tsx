@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Zen_Kaku_Gothic_New, JetBrains_Mono } from "next/font/google";
+import { Space_Grotesk, Zen_Maru_Gothic, JetBrains_Mono } from "next/font/google";
 import {
   SITE_URL,
   SITE_NAME,
@@ -20,7 +20,8 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 // 和文本文・見出し — DESIGN.md §3
-const zenKakuGothicNew = Zen_Kaku_Gothic_New({
+// 丸ゴシック。かわいさと本文可読性の両立でZen Kaku Gothic Newから変更。
+const zenMaruGothic = Zen_Maru_Gothic({
   subsets: ["latin"],
   weight: ["400", "500", "700", "900"],
   variable: "--font-body",
@@ -71,7 +72,7 @@ export default function RootLayout({
       lang="ja"
       data-world="tech"
       suppressHydrationWarning
-      className={`${spaceGrotesk.variable} ${zenKakuGothicNew.variable} ${jetBrainsMono.variable}`}
+      className={`${spaceGrotesk.variable} ${zenMaruGothic.variable} ${jetBrainsMono.variable}`}
     >
       <body className="bg-bg font-body text-ink antialiased">
         <script {...jsonLdScriptProps(buildWebsiteJsonLd())} />

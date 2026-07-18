@@ -108,6 +108,10 @@
  * ベース
  * ============================================================ */
 html {
+  /* ベースフォントを 16px → 18px に引き上げ、サイト全体の文字を一段大きくする
+     (DESIGN.md §3)。rem基準のユーティリティが全てこれに追従する。
+     Markdown見出しだけは従来の実寸を維持するよう個別に補正している。 */
+  font-size: 112.5%;
   /* ページ内アンカーナビ(ポートフォリオヘッダー等)用。reduced-motion 時は
      下の全体ルールで scroll-behavior: auto に上書きされる。 */
   scroll-behavior: smooth;
@@ -178,23 +182,26 @@ body {
   color: var(--ink);
   scroll-margin-top: 5rem;
 }
+/* 見出しサイズ: ルート18px化(html { font-size: 112.5% })の影響を打ち消し、
+ * 従来の実寸を維持する(rem値 = 従来値 × 16/18)。
+ * h1: 28〜40px / h2: 24px / h3: 20px / h4: 18px */
 .markdown-body h1 {
-  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-size: clamp(1.5556rem, 4vw, 2.2222rem);
   font-weight: 800;
   margin: 3rem 0 1.25rem;
 }
 .markdown-body h2 {
-  font-size: 1.5rem;
+  font-size: 1.3333rem;
   margin: 2.5rem 0 1rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--border);
 }
 .markdown-body h3 {
-  font-size: 1.25rem;
+  font-size: 1.1111rem;
   margin: 2rem 0 0.75rem;
 }
 .markdown-body h4 {
-  font-size: 1.125rem;
+  font-size: 1rem;
   margin: 1.5rem 0 0.5rem;
 }
 

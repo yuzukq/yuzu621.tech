@@ -26,7 +26,7 @@ SEO(sitemap/robots/JSON-LD/OGP)を整備、ポートフォリオに VRM ヒー�
 | フレームワーク | Next.js 15 (App Router) / React 19 / TypeScript |
 | スタイリング | Tailwind CSS v4(`@theme inline`) + CSS変数トークン(`data-world` 属性で tech/daily 世界を切替) |
 | Markdown | [unified](https://unifiedjs.com/) パイプライン(独自 remark/rehype プラグインで Qiita 互換記法を実装) |
-| フォント | `next/font/google`(Space Grotesk / Zen Kaku Gothic New / JetBrains Mono、全てセルフホスト) |
+| フォント | `next/font/google`(Space Grotesk / Zen Maru Gothic / JetBrains Mono、全てセルフホスト) |
 | 3D | three.js + [@pixiv/three-vrm](https://github.com/pixiv/three-vrm)(ポートフォリオのVRMヒーロー) |
 | チャート | Recharts(スキルのレーダーチャート) |
 | データ管理 | Markdown(`_posts/`)+ `src/data/*.ts` によるデータドリブン設計 |
