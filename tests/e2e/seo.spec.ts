@@ -24,7 +24,7 @@ test.describe('SEO', () => {
 
     // トップ(ブログ一覧)とポートフォリオも含まれること
     expect(body).toContain('https://yuzu621.tech');
-    expect(body).toContain('/portfolio');
+    expect(body).toContain('/profile');
 
     const slugs = getPostSlugs();
     expect(slugs.length).toBeGreaterThan(0);

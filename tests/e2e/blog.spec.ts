@@ -4,7 +4,7 @@ test('ブログ一覧ページが正しく表示される', async ({ page }) => 
   await page.goto('/');
 
   // ページタイトルの確認
-  await expect(page).toHaveTitle('Yuzu portfolio');
+  await expect(page).toHaveTitle('yuzu621.tech');
 
   // ブログ一覧の見出しを確認
   await expect(page.getByRole('heading', { name: 'Blog' })).toBeVisible();

@@ -22,7 +22,7 @@ export default function About() {
           </div>
 
           <div className="flex-1">
-            <p className="whitespace-pre-line text-lg leading-loose text-ink-muted">
+            <p className="wrap-phrase whitespace-pre-line text-lg leading-loose text-ink-muted">
               {aboutMe.description}
             </p>
 

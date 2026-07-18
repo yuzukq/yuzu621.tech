@@ -2,12 +2,12 @@ import { certifications, skillCategories } from "@/data/skills"
 import SectionHeading from "./SectionHeading"
 import FadeIn from "./FadeIn"
 
-export default function Skills() {
+export default function TechStack() {
   return (
-    <section id="skills" className="scroll-mt-20 border-t border-border py-20 md:py-28">
+    <section id="tech-stack" className="scroll-mt-20 border-t border-border py-20 md:py-28">
       <div className="mx-auto max-w-6xl px-4 md:px-8">
-        <SectionHeading eyebrow="Skills" title="スキル" />
-        <p className="mt-6 max-w-2xl text-ink-muted">
+        <SectionHeading eyebrow="Tech Stack" title="技術スタック" />
+        <p className="wrap-phrase mt-6 max-w-2xl text-ink-muted">
           これまでに勉強したり開発で触れてきた技術スタック・ツールを、カテゴリ別にまとめています。
         </p>
 
@@ -31,7 +31,7 @@ export default function Skills() {
                 </ul>
 
                 {category.note && (
-                  <p className="mt-5 border-t border-border pt-4 text-sm leading-relaxed text-ink-muted">
+                  <p className="wrap-phrase mt-5 border-t border-border pt-4 text-sm leading-relaxed text-ink-muted">
                     {category.note}
                   </p>
                 )}

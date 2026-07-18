@@ -8,6 +8,12 @@ const nextConfig: NextConfig = {
         destination: "/",
         permanent: true,
       },
+      {
+        // ポートフォリオ→プロフィールへの位置づけ変更に伴う旧URLの301
+        source: "/portfolio",
+        destination: "/profile",
+        permanent: true,
+      },
     ];
   },
 };

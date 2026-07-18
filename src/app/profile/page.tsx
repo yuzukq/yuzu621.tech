@@ -1,13 +1,12 @@
 import type { Metadata } from "next"
 import Footer from "@/components/layouts/Footer"
 import WorldSync from "@/components/blog/WorldSync"
-import PortfolioHeader from "@/components/portfolio/PortfolioHeader"
-import Hero from "@/components/portfolio/Hero"
-import About from "@/components/portfolio/About"
-import Products from "@/components/portfolio/Products"
-import Skills from "@/components/portfolio/Skills"
+import ProfileHeader from "@/components/profile/ProfileHeader"
+import Hero from "@/components/profile/Hero"
+import About from "@/components/profile/About"
+import Products from "@/components/profile/Products"
+import TechStack from "@/components/profile/TechStack"
 import {
-  SITE_TITLE,
   SITE_NAME,
   DEFAULT_DESCRIPTION,
   DEFAULT_OG_IMAGE_PATH,
@@ -20,42 +19,41 @@ import {
 const SAME_AS = ["https://github.com/yuzukq", "https://discord.gg/8HPdqbZF"]
 
 export const metadata: Metadata = {
-  // トップ相当のページなので絶対タイトルを明示する(ルートlayoutのtemplateを適用しない)。
-  title: { absolute: SITE_TITLE },
+  title: "Profile",
   description: DEFAULT_DESCRIPTION,
-  alternates: { canonical: "/portfolio" },
+  alternates: { canonical: "/profile" },
   openGraph: {
     type: "website",
     locale: "ja_JP",
     siteName: SITE_NAME,
-    title: SITE_TITLE,
+    title: `Profile | ${SITE_NAME}`,
     description: DEFAULT_DESCRIPTION,
-    url: "/portfolio",
+    url: "/profile",
     images: [{ url: DEFAULT_OG_IMAGE_PATH }],
   },
   twitter: {
     card: "summary_large_image",
-    title: SITE_TITLE,
+    title: `Profile | ${SITE_NAME}`,
     description: DEFAULT_DESCRIPTION,
     images: [DEFAULT_OG_IMAGE_PATH],
   },
 }
 
-// ポートフォリオは常に tech 世界(DESIGN.md §1)固定。ブログの WorldSync を
+// プロフィールは常に tech 世界(DESIGN.md §1)固定。ブログの WorldSync を
 // 流用し、<html data-world> をこのページの世界観に明示的に同期させる。
-export default function PortfolioPage() {
+export default function ProfilePage() {
   const personJsonLd = buildPersonJsonLd({ sameAs: SAME_AS })
 
   return (
     <div data-world="tech" className="flex min-h-dvh flex-col bg-bg">
       <WorldSync world="tech" />
       <script {...jsonLdScriptProps(personJsonLd)} />
-      <PortfolioHeader />
+      <ProfileHeader />
       <main className="flex-1">
         <Hero />
         <About />
         <Products />
-        <Skills />
+        <TechStack />
       </main>
       <Footer />
     </div>

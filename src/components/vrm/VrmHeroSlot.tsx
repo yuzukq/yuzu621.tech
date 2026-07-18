@@ -3,8 +3,8 @@
 // VRMヒーロースロット(DESIGN.md §7)。
 //
 // three + @pixiv/three-vrm 一式(VrmCanvas)は next/dynamic(ssr: false)で
-// 遅延読み込みし、ポートフォリオページの初回ロードJSに含めない。
-// ページ自体(Hero.tsx / portfolio/page.tsx)はサーバーコンポーネントのままで、
+// 遅延読み込みし、プロフィールページの初回ロードJSに含めない。
+// ページ自体(Hero.tsx / profile/page.tsx)はサーバーコンポーネントのままで、
 // このコンポーネントだけがクライアント境界になる。
 //
 // チャンクの読み込み中は VrmFallback(ミクティールのグラデーション球)を表示する。

@@ -1,6 +1,6 @@
 # public/models/
 
-ここに `avatar.vrm` を置くと、ポートフォリオ(`/portfolio`)のヒーローセクションに
+ここに `avatar.vrm` を置くと、プロフィール(`/profile`)のヒーローセクションに
 VRMモデルが表示されます。
 
 - ファイル名は必ず `avatar.vrm` にしてください(`src/components/vrm/VrmCanvas.tsx` が

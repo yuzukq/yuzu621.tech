@@ -38,8 +38,8 @@ const jetBrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  // トップ相当のページ(ブログ一覧・ポートフォリオ)は絶対タイトルの SITE_TITLE を明示指定する。
-  // それ以外(記事・日常カテゴリ等)がタイトルを指定した場合のみ template が適用される。
+  // ブログ一覧(tech)は絶対タイトルの SITE_TITLE を明示指定する。
+  // それ以外(記事・日常カテゴリ・プロフィール等)がタイトルを指定した場合は template が適用される。
   title: {
     default: SITE_TITLE,
     template: `%s | ${SITE_NAME}`,

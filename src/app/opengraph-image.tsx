@@ -42,7 +42,7 @@ export default function OpengraphImage() {
             color: '#96A8A7',
           }}
         >
-          Portfolio & Blog
+          Profile & Blog
         </div>
       </div>
     ),

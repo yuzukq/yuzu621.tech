@@ -19,10 +19,10 @@ export default function BlogHeader() {
             Blog
           </NextLink>
           <NextLink
-            href="/portfolio"
+            href="/profile"
             className="rounded-lg px-3 py-2 text-sm text-ink-muted transition-colors duration-200 hover:text-ink"
           >
-            Portfolio
+            Profile
           </NextLink>
         </nav>
       </div>

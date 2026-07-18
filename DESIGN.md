@@ -7,7 +7,7 @@
 
 **「二つの世界を持つ、ゆずのサイト」**
 
-- **TECH世界** (`data-world="tech"`): 深い夜のダークトーン + ミクティール(#39C5BB)の発光。ポートフォリオと技術ブログはこちら。
+- **TECH世界** (`data-world="tech"`): 深い夜のダークトーン + ミクティール(#39C5BB)の発光。プロフィールと技術ブログはこちら。
 - **DAILY世界** (`data-world="daily"`): ミントがかった淡いライトトーン。日常ブログはこちら。
 - カラーパレットは**初音ミク**由来: シグネチャーのティール(#39C5BB)を主役に、マゼンタ(#E12885)を差し色として少量だけ使う。
 - 参考サイト(hoshimachi-suisei.jp)の要素を取り込む: 大判タイポグラフィ、英大文字のセクションラベル、余白を贅沢に使ったカードグリッド、上品なホバーモーション。
@@ -74,7 +74,7 @@ rem値に 16/18 を掛けた補正値で従来の実寸(h1: 28〜40px / h2: 24px
 スケール(rem表記はルート18px基準):
 
 - **Display** (ヒーローの名前等): `clamp(2.75rem, 7vw, 5rem)` / weight 700 / letter-spacing -0.02em
-- **Section label** (参考サイトの "TOPICS" 相当): `0.75rem` / uppercase / tracking `0.25em` / `--accent` 色。英語ラベル(`PRODUCTS`, `SKILLS`, `ABOUT`, `BLOG`)+ 和文タイトルの2段構成。
+- **Section label** (参考サイトの "TOPICS" 相当): `0.75rem` / uppercase / tracking `0.25em` / `--accent` 色。英語ラベル(`PRODUCTS`, `TECH STACK`, `ABOUT`, `BLOG`)+ 和文タイトルの2段構成。
 - **h1** 記事タイトル: `clamp(1.75rem, 4vw, 2.5rem)` / 800
 - **h2**: 1.5rem / 700、**h3**: 1.25rem / 700(ページ見出し用。Markdown内見出しは上記の補正値)
 - 本文: 1rem / line-height 1.9(和文なので広め)。ブログ本文は `max-width: 42rem` 前後。
@@ -135,7 +135,7 @@ rem値に 16/18 を掛けた補正値で従来の実寸(h1: 28〜40px / h2: 24px
 - `prefers-reduced-motion: reduce` では全アニメーション無効化。
 - ページ遷移やホバーで過剰な動きをつけない。「上品に、少しだけ」。
 
-## 7. VRMヒーロー(ポートフォリオ)
+## 7. VRMヒーロー(プロフィール)
 
 - 配置: トップのヒーローセクション右側(モバイルでは名前の背後に薄く/または下)。
 - 実装: `three` + `@pixiv/three-vrm`。`next/dynamic` + `ssr: false` でCSR分離。ページ自体はSSGを維持。

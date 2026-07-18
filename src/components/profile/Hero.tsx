@@ -21,7 +21,7 @@ export default function Hero() {
       <div className="mx-auto grid w-full max-w-6xl items-center gap-16 px-4 py-16 md:grid-cols-2 md:px-8">
         <FadeIn>
           <span className="block font-display text-xs font-medium uppercase tracking-[0.25em] text-accent">
-            Portfolio
+            Profile
           </span>
           <h1 className="mt-4 text-balance font-display text-[clamp(2.75rem,7vw,5rem)] font-bold leading-[1.05] tracking-[-0.02em] text-ink">
             Yuzu

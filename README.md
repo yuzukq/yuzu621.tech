@@ -10,12 +10,12 @@
 [![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI%2FCD-2088FF?style=for-the-badge&logo=github-actions)](https://github.com/features/actions)
 [![Vercel](https://img.shields.io/badge/Vercel-Deployed-000000?style=for-the-badge&logo=vercel)](https://vercel.com/)
 
-Next.js App Router を採用した、ポートフォリオ兼ブログサイトです。
+Next.js App Router を採用した、プロフィール兼ブログサイトです。
 [https://yuzu621.tech](https://yuzu621.tech)
 
 2026年に大規模なリアーキテクチャを実施し、Chakra UI/Emotion を全廃して Tailwind v4 +
 CSS変数トークンベースのデザインシステムへ移行、Markdown エンジンを Qiita 互換仕様へ刷新、
-SEO(sitemap/robots/JSON-LD/OGP)を整備、ポートフォリオに VRM ヒーローを追加しました。
+SEO(sitemap/robots/JSON-LD/OGP)を整備、プロフィールページに VRM ヒーローを追加しました。
 設計の詳細な経緯は [`docs/rearchitecture.md`](./docs/rearchitecture.md)、デザイン規範は
 [`DESIGN.md`](./DESIGN.md) を参照してください。
 
@@ -27,7 +27,7 @@ SEO(sitemap/robots/JSON-LD/OGP)を整備、ポートフォリオに VRM ヒー�
 | スタイリング | Tailwind CSS v4(`@theme inline`) + CSS変数トークン(`data-world` 属性で tech/daily 世界を切替) |
 | Markdown | [unified](https://unifiedjs.com/) パイプライン(独自 remark/rehype プラグインで Qiita 互換記法を実装) |
 | フォント | `next/font/google`(Space Grotesk / Zen Maru Gothic / JetBrains Mono、全てセルフホスト) |
-| 3D | three.js + [@pixiv/three-vrm](https://github.com/pixiv/three-vrm) + three-vrm-animation(ポートフォリオのVRMヒーロー) |
+| 3D | three.js + [@pixiv/three-vrm](https://github.com/pixiv/three-vrm) + three-vrm-animation(プロフィールのVRMヒーロー) |
 | データ管理 | Markdown(`_posts/`)+ `src/data/*.ts` によるデータドリブン設計 |
 | テスト | Playwright(E2E) |
 | CI/CD | GitHub Actions(Lint / Typecheck / Build / npm audit / E2E) + Vercel(自動デプロイ) |
@@ -55,11 +55,11 @@ yuzu621.tech/
 │   │   │   └── [slug]/
 │   │   │       ├── page.tsx       # 記事本文(SSG, canonical + BlogPosting JSON-LD)
 │   │   │       └── ShareRow.tsx   # 一覧に戻る / Twitter共有 / リンクコピー
-│   │   └── portfolio/
-│   │       └── page.tsx           # ポートフォリオ "/portfolio" (Person JSON-LD)
+│   │   └── profile/
+│   │       └── page.tsx           # プロフィール "/profile" (Person JSON-LD)
 │   ├── components/
 │   │   ├── blog/                  # BlogCard, BlogHeader, CategoryTabs, Tag, WorldSync
-│   │   ├── portfolio/              # Hero, About, Products(Grid/Card/Overlay), Skills, Header, MobileNav, FadeIn 等
+│   │   ├── profile/                # Hero, About, Products(Grid/Card/Overlay), TechStack, Header, MobileNav, FadeIn 等
 │   │   ├── layouts/                # Footer
 │   │   └── vrm/                    # VrmHeroSlot(CSR分離), VrmCanvas, VrmFallback, createVrmScene(three.js本体)
 │   ├── data/                      # aboutme.ts / products.ts / skills.ts(データドリブン、文言はここを編集)
@@ -81,7 +81,7 @@ yuzu621.tech/
 │   └── migrate-posts.mjs          # 旧remark-latex-breaks記法の一括移行に使った歴史的スクリプト(通常運用では実行不要)
 ├── tests/
 │   └── e2e/                       # Playwright E2E
-│       ├── home.spec.ts           # ポートフォリオの主要セクション表示
+│       ├── home.spec.ts           # プロフィールの主要セクション表示
 │       ├── blog.spec.ts           # ブログ一覧・記事詳細・カテゴリ切替・世界観(data-world)
 │       ├── seo.spec.ts            # sitemap.xml / robots.txt / canonical / BlogPosting JSON-LD
 │       ├── navigation.spec.ts     # ヘッダー・アンカーリンク・モバイルドロワー
@@ -96,8 +96,8 @@ yuzu621.tech/
 
 - `/` — ブログ一覧(`?category=tech|daily` でtech/daily世界を切替、デフォルトtech)
 - `/blog/[slug]` — 記事本文(SSG)
-- `/portfolio` — ポートフォリオ(常にtech世界固定)
-- `/blog` — 旧URL。`/` へ301リダイレクト(`next.config.ts`)
+- `/profile` — プロフィール(常にtech世界固定)
+- `/blog`, `/portfolio` — 旧URL。それぞれ `/`, `/profile` へ301リダイレクト(`next.config.ts`)
 
 ## ブログ記事の書き方(Qiita互換Markdown)
 
@@ -135,19 +135,19 @@ category: "tech"  # "tech" | "daily"。省略時は "tech"
 
 ## VRMヒーロー
 
-`public/models/avatar.vrm` にVRMモデルを配置すると、ポートフォリオ(`/portfolio`)のヒーローセクションに
+`public/models/avatar.vrm` にVRMモデルを配置すると、プロフィール(`/profile`)のヒーローセクションに
 表示されます。ファイルが無い場合や読み込みに失敗した場合は、ミクティールのグラデーション球
 (プレースホルダ)が静かに表示され、エラーにはなりません。詳細は `public/models/README.md` を参照してください。
 
 three.js + `@pixiv/three-vrm` 一式は `next/dynamic`(`ssr: false`)でCSR分離されており、
-ページ自体(`/portfolio`)はSSGのままです。`public/models/happy-sway.vrma` のVRMAアニメーション(ニコニコ左右揺れ)をループ再生し、
+ページ自体(`/profile`)はSSGのままです。`public/models/happy-sway.vrma` のVRMAアニメーション(ニコニコ左右揺れ)をループ再生し、
 マウス追従の視線制御を上乗せしています。VRMAが読めない場合はプロシージャル待機モーションに
 フォールバックし、`prefers-reduced-motion` 環境や画面外スクロール時はループが止まります。
 
 ## デザイン
 
 見た目のルールは [`DESIGN.md`](./DESIGN.md) に集約しています。「二つの世界を持つ、ゆずのサイト」という
-コンセプトのもと、`data-world="tech"`(深い夜空のダークトーン。ポートフォリオ・技術ブログ)と
+コンセプトのもと、`data-world="tech"`(深い夜空のダークトーン。プロフィール・技術ブログ)と
 `data-world="daily"`(温かい紙のようなライトトーン。日常ブログ)をCSS変数トークンで切り替えています。
 生HEXやアドホックな値は使わず、必ずセマンティックトークン(`bg-surface` / `text-ink` 等)経由で参照します。
 

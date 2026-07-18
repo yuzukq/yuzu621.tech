@@ -3,11 +3,10 @@
 
 export const SITE_URL = 'https://yuzu621.tech'
 export const SITE_NAME = 'yuzu621.tech'
-// ルートレイアウトの絶対タイトル(トップ相当のページ = ブログ一覧(tech)・ポートフォリオ)。
-// 現行の挙動を踏襲し、変更しない。
-export const SITE_TITLE = 'Yuzu portfolio'
+// ルートレイアウトの絶対タイトル(トップ相当のページ = ブログ一覧(tech)・プロフィール)。
+export const SITE_TITLE = 'yuzu621.tech'
 export const DEFAULT_DESCRIPTION =
-  'Yuzu のポートフォリオサイト。制作物、技術ブログ、スキル・経歴を公開しています。'
+  'Yuzu のプロフィール兼ブログサイト。制作物、技術スタック、技術と日常のブログを公開しています。'
 export const AUTHOR_NAME = 'Yuzu'
 // サイト共通のデフォルトOG画像 (src/app/opengraph-image.tsx が生成する)。
 // Next.js のファイル規約による自動継承は、各ページが独自に openGraph オブジェクトを
@@ -62,7 +61,7 @@ export function buildPersonJsonLd(options: { sameAs: string[] }) {
     '@context': 'https://schema.org',
     '@type': 'Person',
     name: AUTHOR_NAME,
-    url: absoluteUrl('/portfolio'),
+    url: absoluteUrl('/profile'),
     sameAs: options.sameAs,
   }
 }
@@ -90,7 +89,7 @@ export function buildBlogPostingJsonLd(post: {
     author: {
       '@type': 'Person',
       name: AUTHOR_NAME,
-      url: absoluteUrl('/portfolio'),
+      url: absoluteUrl('/profile'),
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
