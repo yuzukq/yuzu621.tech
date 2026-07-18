@@ -1,14 +1,14 @@
 // スキルのデータを記述するファイル
-
-export interface SkillData {
-  [key: string]: number;
-}
+// カテゴリごとの箇条書き(チップ)で表示される。項目の追加・削除はここを編集するだけ。
 
 export interface SkillCategory {
   id: string;
-  title: string;
-  color: string;
-  data: SkillData;
+  /** カードの見出し(英語ラベル) */
+  label: string;
+  /** カテゴリの補足(任意) */
+  note?: string;
+  /** 触れたことのある技術・ツール */
+  items: string[];
 }
 
 export interface Certification {
@@ -18,50 +18,48 @@ export interface Certification {
 
 export const skillCategories: SkillCategory[] = [
   {
-    id: "backend",
-    title: "BackEnd",
-    color: "blue.solid",
-    data: {
-      "Ruby on Rails": 2,
-      "PostgreSQL": 1,
-      "GraphQL": 2,
-      "Nginx": 1,
-      "CloudFlare": 1,
-    },
+    id: "frontend",
+    label: "FrontEnd",
+    items: [
+      "JavaScript",
+      "TypeScript",
+      "React",
+      "Next.js",
+      "Tailwind CSS",
+      "three.js",
+    ],
   },
   {
-    id: "frontend",
-    title: "FrontEnd",
-    color: "green.solid",
-    data: {
-      "JS/TS": 3,
-      "React": 2,
-      "Next.js": 2,
-      "HTML/CSS": 3,
-      "Tailwind CSS": 1,
-    },
+    id: "backend",
+    label: "BackEnd",
+    items: [
+      "Ruby",
+      "Ruby on Rails",
+      "Node.js",
+      "GraphQL",
+      "Discord.py",
+      "GAS (Google Apps Script)",
+    ],
   },
   {
     id: "devops",
-    title: "DevOps",
-    color: "purple.solid",
-    data: {
-      "Docker": 3,
-      "UNIX": 3,
-      "Git/Github": 4,
-      "Unity": 3,
-      "Arduino": 3,
-      "PlayWright": 1,
-    },
+    label: "DevOps / Infra",
+    note: "開発機がArch Linuxなので、サーバー系のコマンド操作もある程度心得があります。",
+    items: [
+      "Git",
+      "GitHub",
+      "GitHub Actions",
+      "Docker",
+      "Cloudflare (Tunnel / R2)",
+      "AWS S3",
+      "Arch Linux",
+    ],
   },
-];
-
-export const skillLevels = [
-  { level: 1, description: "授業や個人で軽く使用した程度" },
-  { level: 2, description: "インターン等で使用したことがあるがもう少し習熟が必要" },
-  { level: 3, description: "個人でも長期的に使用している" },
-  { level: 4, description: "実務レベルで利用できる" },
-  { level: 5, description: "チョットデキル" },
+  {
+    id: "xr-hardware",
+    label: "XR / Hardware",
+    items: ["Unity", "C#", "Arduino / ESP32"],
+  },
 ];
 
 export const certifications: Certification[] = [

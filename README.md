@@ -27,8 +27,7 @@ SEO(sitemap/robots/JSON-LD/OGP)を整備、ポートフォリオに VRM ヒー�
 | スタイリング | Tailwind CSS v4(`@theme inline`) + CSS変数トークン(`data-world` 属性で tech/daily 世界を切替) |
 | Markdown | [unified](https://unifiedjs.com/) パイプライン(独自 remark/rehype プラグインで Qiita 互換記法を実装) |
 | フォント | `next/font/google`(Space Grotesk / Zen Maru Gothic / JetBrains Mono、全てセルフホスト) |
-| 3D | three.js + [@pixiv/three-vrm](https://github.com/pixiv/three-vrm)(ポートフォリオのVRMヒーロー) |
-| チャート | Recharts(スキルのレーダーチャート) |
+| 3D | three.js + [@pixiv/three-vrm](https://github.com/pixiv/three-vrm) + three-vrm-animation(ポートフォリオのVRMヒーロー) |
 | データ管理 | Markdown(`_posts/`)+ `src/data/*.ts` によるデータドリブン設計 |
 | テスト | Playwright(E2E) |
 | CI/CD | GitHub Actions(Lint / Typecheck / Build / npm audit / E2E) + Vercel(自動デプロイ) |
@@ -60,7 +59,7 @@ yuzu621.tech/
 │   │       └── page.tsx           # ポートフォリオ "/portfolio" (Person JSON-LD)
 │   ├── components/
 │   │   ├── blog/                  # BlogCard, BlogHeader, CategoryTabs, Tag, WorldSync
-│   │   ├── portfolio/              # Hero, About, Products(Grid/Card/Overlay), Skills(Charts), Header, MobileNav, FadeIn 等
+│   │   ├── portfolio/              # Hero, About, Products(Grid/Card/Overlay), Skills, Header, MobileNav, FadeIn 等
 │   │   ├── layouts/                # Footer
 │   │   └── vrm/                    # VrmHeroSlot(CSR分離), VrmCanvas, VrmFallback, createVrmScene(three.js本体)
 │   ├── data/                      # aboutme.ts / products.ts / skills.ts(データドリブン、文言はここを編集)
@@ -137,12 +136,13 @@ category: "tech"  # "tech" | "daily"。省略時は "tech"
 ## VRMヒーロー
 
 `public/models/avatar.vrm` にVRMモデルを配置すると、ポートフォリオ(`/portfolio`)のヒーローセクションに
-表示されます。ファイルが無い場合や読み込みに失敗した場合は、柚子イエローのグラデーション球
+表示されます。ファイルが無い場合や読み込みに失敗した場合は、ミクティールのグラデーション球
 (プレースホルダ)が静かに表示され、エラーにはなりません。詳細は `public/models/README.md` を参照してください。
 
 three.js + `@pixiv/three-vrm` 一式は `next/dynamic`(`ssr: false`)でCSR分離されており、
-ページ自体(`/portfolio`)はSSGのままです。待機モーション(呼吸・揺れ・まばたき)とマウス追従の
-視線制御が実装されていますが、`prefers-reduced-motion` 環境や画面外スクロール時はループが止まります。
+ページ自体(`/portfolio`)はSSGのままです。`public/models/happy-sway.vrma` のVRMAアニメーション(ニコニコ左右揺れ)をループ再生し、
+マウス追従の視線制御を上乗せしています。VRMAが読めない場合はプロシージャル待機モーションに
+フォールバックし、`prefers-reduced-motion` 環境や画面外スクロール時はループが止まります。
 
 ## デザイン
 
@@ -156,7 +156,7 @@ three.js + `@pixiv/three-vrm` 一式は `next/dynamic`(`ssr: false`)でCSR分離
 `src/data/` 内のデータファイルを編集するだけで、フロントエンドに自動反映されます。
 
 - `src/data/products.ts` — プロダクトカード(制作物)
-- `src/data/skills.ts` — スキルのレーダーチャート・保有資格
+- `src/data/skills.ts` — カテゴリ別の技術スタック・保有資格
 - `src/data/aboutme.ts` — 自己紹介文
 - `src/data/external-articles.ts` — 外部プラットフォームに書いた記事(Zenn・会社Techブログ等)の手動リスト
 

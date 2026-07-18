@@ -22,8 +22,10 @@ test.describe('ナビゲーション機能', () => {
     await expect(portfolioLink).toBeVisible();
     await portfolioLink.click();
 
-    // ポートフォリオページのAboutセクションに遷移することを確認
-    await expect(page).toHaveURL('/portfolio#about');
+    // ポートフォリオページ(先頭)に遷移することを確認
+    // (be31c01 でヘッダーリンクが /portfolio#about → /portfolio に変更された)
+    await expect(page).toHaveURL('/portfolio');
+    await expect(page.locator('#hero')).toBeVisible();
   });
 });
 
