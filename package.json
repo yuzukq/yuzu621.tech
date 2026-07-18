@@ -12,6 +12,7 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
+    "@pixiv/three-vrm": "^3.5.5",
     "gray-matter": "^4.0.3",
     "next": "^15.4.8",
     "react": "^19.1.2",
@@ -27,6 +28,7 @@
     "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.2",
     "shiki": "^3.21.0",
+    "three": "^0.185.1",
     "unified": "^11.0.5"
   },
   "devDependencies": {
@@ -36,6 +38,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/three": "^0.185.1",
     "difit": "^2.2.3",
     "eslint": "^9",
     "eslint-config-next": "^15",
