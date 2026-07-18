@@ -118,3 +118,30 @@ test('無効なカテゴリパラメータでデフォルト（tech）にフォ�
   // 日常記事が表示されていないことを確認
   await expect(page.locator('a[href="/blog/Vket2025"]')).not.toBeVisible();
 });
+
+// 世界観(data-world)切り替えのテスト
+test('daily カテゴリ表示時に <html data-world="daily"> になる', async ({ page }) => {
+  await page.goto('/?category=daily');
+
+  // 日常記事(Vket2025)が表示されていることを前提に、世界観トークンが
+  // daily(温かい紙色の世界)に切り替わっていることを確認する
+  await expect(page.locator('a[href="/blog/Vket2025"]')).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('data-world', 'daily');
+});
+
+test('tech カテゴリ表示時は <html data-world="tech"> のままになる', async ({ page }) => {
+  await page.goto('/?category=tech');
+
+  await expect(page.locator('a[href="/blog/cognitive-debt"]')).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('data-world', 'tech');
+});
+
+// 記事本文の描画テスト
+test('記事ページで Markdown 本文(.markdown-body)が描画される', async ({ page }) => {
+  await page.goto('/blog/vr-seminar');
+
+  const body = page.locator('.markdown-body');
+  await expect(body).toBeVisible();
+  // Markdownがプレーンテキストのまま出力されず、HTMLとして解釈されていることの確認
+  await expect(body.locator('p, h2, h3').first()).toBeVisible();
+});

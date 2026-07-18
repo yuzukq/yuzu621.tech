@@ -79,7 +79,7 @@ export default async function BlogIndexPage({ searchParams }: BlogIndexPageProps
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:gap-8 lg:grid-cols-3">
             {posts.map((post, index) => (
-              <BlogCard key={post.slug} post={post} index={index} category={category} />
+              <BlogCard key={post.slug} post={post} index={index} />
             ))}
           </div>
         )}

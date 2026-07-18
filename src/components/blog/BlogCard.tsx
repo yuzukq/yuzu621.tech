@@ -2,14 +2,13 @@
 
 import NextImage from "next/image"
 import NextLink from "next/link"
-import type { PostMeta, BlogCategory } from "@/lib/posts"
+import type { PostMeta } from "@/lib/posts"
 import { useInView } from "@/hooks/useInView"
 import Tag from "./Tag"
 
 interface BlogCardProps {
   post: PostMeta
   index: number
-  category: BlogCategory
 }
 
 export default function BlogCard({ post, index }: BlogCardProps) {
