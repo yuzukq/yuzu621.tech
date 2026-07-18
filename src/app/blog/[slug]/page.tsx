@@ -1,4 +1,3 @@
-// ブログ記事本文ページ
 import type { Metadata } from 'next'
 import { getAllPostSlugs, getPostBySlug, renderPost } from '@/lib/posts'
 import TableOfContents from '@/components/blog/TableOfContents'
@@ -46,7 +45,6 @@ export async function generateMetadata({
       url,
       publishedTime,
       tags: post.tags,
-      // thumbnail があればそれを、無ければサイト共通のデフォルトOG画像を使う。
       images: [{ url: post.thumbnail ?? DEFAULT_OG_IMAGE_PATH }],
     },
     twitter: {
@@ -71,7 +69,6 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     )
   }
 
-  // マークダウンを事前にHTML+目次に変換
   const rendered = await renderPost(slug)
   if (!rendered) {
     return (
@@ -97,8 +94,6 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     <div data-world={world} className="flex-1 bg-bg">
       <WorldSync world={world} />
       <script {...jsonLdScriptProps(postJsonLd)} />
-      {/* Zenn風2カラム: xl以上で本文をやや左に寄せ、右に目次(sticky)を置く。
-          xl未満は従来どおり中央1カラムで目次は出さない。 */}
       <div className="mx-auto max-w-6xl px-4 py-16 md:px-8 md:py-24 xl:grid xl:grid-cols-[minmax(0,1fr)_17rem] xl:gap-10">
         <article className="mx-auto w-full max-w-3xl xl:mx-0">
           <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold leading-tight text-ink">
@@ -126,7 +121,6 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
           <div className="markdown-body" dangerouslySetInnerHTML={{ __html: rendered.html }} />
 
-          {/* 一覧へ戻る + 共有ボタン行 */}
           <ShareRow title={post.title} />
         </article>
 

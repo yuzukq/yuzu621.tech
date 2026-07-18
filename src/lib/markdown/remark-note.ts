@@ -1,21 +1,8 @@
-// Qiita 互換の note ブロック記法。
+// Qiita 互換の note ブロック(:::note info|warn|alert 〜 :::)。
 //
-//   :::note info
-//   補足テキスト
-//   :::
-//
-// `info`(省略時デフォルト) / `warn` / `alert` に対応し、
-// `<div class="note note-info">...</div>` 等へ変換する。
-//
-// 実装は2段構成:
-//   1. ensureNoteBlankLines: unified に渡す前の生 Markdown 前処理。
-//      コードフェンス外の `:::note...` / `:::` 行の前後に空行を保証し、
-//      remark-parse がそれらを独立した段落として解釈できるようにする。
-//   2. remarkNote: mdast トランスフォーマー。トップレベルの子ノードを走査し、
-//      `:::note` 段落 〜 `:::` 段落までを 1 つの div ノードにまとめる。
-//      内部のノードはそのまま子として保持されるため、Markdown として通常どおり解釈される。
-//
-// unist-util-visit 等の追加依存は使わず、素の配列走査で完結させている。
+// mdast だけでは処理できない: remark-parse は ::: を専用ブロックとして解釈せず、
+// 空行がないと前後のテキストと同じ段落に混ざるため、パース前に生 Markdown へ
+// 空行を挿入して(ensureNoteBlankLines)マーカーを独立段落に固定してから畳む。
 
 type MdastNode = {
   type: string
@@ -30,8 +17,6 @@ type NoteType = 'info' | 'warn' | 'alert'
 const OPEN_RE = /^:::note(?:\s+(info|warn|alert))?\s*$/
 const CLOSE_RE = /^:::\s*$/
 const FENCE_RE = /^(```|~~~)/
-
-// --- 1. 生Markdown前処理 -----------------------------------------------
 
 function isMarkerLine(trimmed: string): boolean {
   return OPEN_RE.test(trimmed) || CLOSE_RE.test(trimmed)
@@ -52,7 +37,7 @@ export function ensureNoteBlankLines(markdown: string): string {
       continue
     }
 
-    // インデントが深い（4スペース以上）行はコードブロック相当なのでマーカー扱いしない
+    // 4スペース以上のインデントはコードブロック相当のため、マーカーとして扱わない
     const indent = line.length - line.trimStart().length
     if (!inFence && indent < 4 && isMarkerLine(trimmed)) {
       if (output.length > 0 && output[output.length - 1].trim() !== '') {
@@ -71,8 +56,6 @@ export function ensureNoteBlankLines(markdown: string): string {
 
   return output.join('\n')
 }
-
-// --- 2. mdast トランスフォーマー ----------------------------------------
 
 function getTopLevelMarkerText(node: MdastNode): string | null {
   if (node.type !== 'paragraph') return null
@@ -106,7 +89,7 @@ function transformTopLevel(nodes: MdastNode[]): MdastNode[] {
     if (openMatch) {
       const noteType = (openMatch[1] as NoteType | undefined) ?? 'info'
 
-      // 対応する閉じ `:::` を探す（ネストはサポートしない）
+      // 最も近い閉じ ::: を採用する(ネストは非対応)
       let closeIndex = -1
       for (let j = i + 1; j < nodes.length; j++) {
         const innerText = getTopLevelMarkerText(nodes[j])
@@ -117,7 +100,7 @@ function transformTopLevel(nodes: MdastNode[]): MdastNode[] {
       }
 
       if (closeIndex === -1) {
-        // 閉じタグが見つからない場合は変換せずそのまま出力（ビルドを壊さない）
+        // 閉じ忘れは変換せず原文のまま出す(記事のtypoでビルドを落とさない)
         result.push(node)
         i++
         continue

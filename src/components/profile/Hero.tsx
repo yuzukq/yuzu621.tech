@@ -2,9 +2,7 @@ import { FaDiscord, FaGithub } from "react-icons/fa"
 import VrmHeroSlot from "@/components/vrm/VrmHeroSlot"
 import FadeIn from "./FadeIn"
 
-// ヒーローの肩書き・SNSリンク。aboutme.ts にはアイコンと自己紹介文しか
-// 定義されておらず(文言変更禁止のため新規フィールドは追加しない)、
-// フッター(Footer.tsx)で使っている連絡先と同じURLをここでも直接使う。
+// Footer.tsx と同じ実在の連絡先URLを使う(プロフィールのリンク切れ防止のため勝手に増やさない)
 const SOCIAL_LINKS = [
   { href: "https://github.com/yuzukq", label: "GitHub", Icon: FaGithub },
   { href: "https://discord.gg/8HPdqbZF", label: "Discord", Icon: FaDiscord },

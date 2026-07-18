@@ -1,16 +1,12 @@
 "use client"
 
-// 記事ページ右側のvimライクな目次(DESIGN.md §5)。
-//
-// - スクロールに連動して現在のセクションをハイライト
-// - j / k キーで次/前の見出しへジャンプ (入力欄フォーカス中・修飾キー押下時は無視)
-// - クリックは素の <a href="#id"> (html { scroll-behavior: smooth } が効く)
-// - 参考: blakecrosley.com のターミナル風サイドバー。配色は当サイトのトークンに従う。
+// 記事目次。クリックにJSスクロールを実装しない: 素のアンカー遷移に
+// html { scroll-behavior: smooth } が効くため。
 import { useEffect, useMemo, useRef, useState } from "react"
 import type { TocItem } from "@/lib/markdown"
 
-// 見出しの深さは記事によって h1 始まりにも h2 始まりにもなるため、
-// 最浅レベルを基準に2階層へ正規化する(基準レベル=親、+1=子。それより深い見出しは省く)。
+// 記事は h1 始まりにも h2 始まりにもなるため、絶対深度ではなく
+// 最浅レベル基準の相対2階層に正規化する
 export function normalizeToc(items: TocItem[]): Array<TocItem & { isSub: boolean }> {
   if (items.length === 0) return []
   const minDepth = Math.min(...items.map((i) => i.depth))
@@ -19,7 +15,7 @@ export function normalizeToc(items: TocItem[]): Array<TocItem & { isSub: boolean
     .map((i) => ({ ...i, isSub: i.depth !== minDepth }))
 }
 
-// sticky header (h-16 ≒ 72px) + 余白のぶん、見出しの「現在判定」を下げる
+// sticky ヘッダーの高さぶん下げないと、ヘッダー裏の見出しが「現在」扱いにならない
 const SPY_OFFSET_PX = 96
 
 export default function TableOfContents({ items }: { items: TocItem[] }) {
@@ -49,7 +45,7 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
       if (current !== activeIndexRef.current) {
         activeIndexRef.current = current
         setActiveIndex(current)
-        // 目次自身が長い場合、アクティブ項目を可視範囲に保つ
+        // 目次自体が overflow スクロールするため、アクティブ項目を可視範囲に保つ
         navRef.current
           ?.querySelector(`[data-toc-index="${current}"]`)
           ?.scrollIntoView({ block: "nearest" })

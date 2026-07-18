@@ -2,7 +2,7 @@ import Footer from "@/components/layouts/Footer"
 import BlogHeader from "@/components/blog/BlogHeader"
 
 export default function BlogLayout({ children }: { children: React.ReactNode }) {
-  // dvh: UIを引いた分の実際の表示領域を指定する
+  // dvh: モバイルのブラウザUIを除いた実表示領域に合わせる
   return (
     <div className="flex min-h-dvh flex-col">
       <BlogHeader />

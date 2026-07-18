@@ -5,9 +5,6 @@ export const alt = SITE_NAME
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
-// サイト共通のデフォルトOG画像。記事に thumbnail が無い場合や、個別に
-// images を指定していないページ全般でこれが使われる(next/og の
-// file convention により、より詳細なセグメントが上書きしない限り継承される)。
 export default function OpengraphImage() {
   return new ImageResponse(
     (

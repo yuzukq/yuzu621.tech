@@ -11,7 +11,6 @@ import {
 } from "@/lib/seo";
 import "./globals.css";
 
-// 欧文ディスプレイ(見出し・ラベル) — DESIGN.md §3
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   weight: "variable",
@@ -19,8 +18,6 @@ const spaceGrotesk = Space_Grotesk({
   display: "swap",
 });
 
-// 和文本文・見出し — DESIGN.md §3
-// 丸ゴシック。かわいさと本文可読性の両立でZen Kaku Gothic Newから変更。
 const zenMaruGothic = Zen_Maru_Gothic({
   subsets: ["latin"],
   weight: ["400", "500", "700", "900"],
@@ -28,7 +25,6 @@ const zenMaruGothic = Zen_Maru_Gothic({
   display: "swap",
 });
 
-// コード — DESIGN.md §3
 const jetBrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   weight: "variable",
@@ -38,8 +34,7 @@ const jetBrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  // ブログ一覧(tech)は絶対タイトルの SITE_TITLE を明示指定する。
-  // それ以外(記事・日常カテゴリ・プロフィール等)がタイトルを指定した場合は template が適用される。
+  // default はブログ一覧(tech)がそのまま使う。他ページは title 指定時に template が適用される
   title: {
     default: SITE_TITLE,
     template: `%s | ${SITE_NAME}`,

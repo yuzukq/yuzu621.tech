@@ -5,9 +5,8 @@ export const metadata: Metadata = {
   title: "Not Found",
 }
 
-// 存在しないパスへのアクセス時に表示される404ページ。
-// Next.js 標準の404(見出し "404" / "This page could not be found.") と同じ
-// アクセシブルネームを保ちつつ、トークン(DESIGN.md §2)に沿ったスタイルにする。
+// 見出し文言は Next.js 標準404と同一に保つ(notfound.spec.ts がこの
+// アクセシブルネームで検証しているため、変える場合はテストも更新する)。
 export default function NotFound() {
   return (
     <div

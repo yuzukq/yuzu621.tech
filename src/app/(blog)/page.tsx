@@ -18,9 +18,8 @@ interface BlogIndexPageProps {
   searchParams: Promise<{ category?: string }>
 }
 
-// カテゴリはクエリパラメータ(`?category=`)による同一URL上のフィルタで、
-// 検索エンジンには重複コンテンツと見なされうるため、canonical は常に
-// クエリなしの `/` を指す(日常・技術どちらの表示でも同じ)。
+// canonical は常にクエリなしの `/`: ?category= 別のURLを正規化しないと
+// 検索エンジンに重複コンテンツと見なされうるため
 export async function generateMetadata({ searchParams }: BlogIndexPageProps): Promise<Metadata> {
   const params = await searchParams
   const category: BlogCategory = isValidCategory(params.category) ? params.category : 'tech'
@@ -56,7 +55,6 @@ export default async function BlogIndexPage({ searchParams }: BlogIndexPageProps
   const params = await searchParams
   const category: BlogCategory = isValidCategory(params.category) ? params.category : 'tech'
 
-  // ローカル記事 + 外部記事(Qiita自動取得・手動データ)を日付順で1つの一覧に混ぜる
   const [posts, externalArticles] = await Promise.all([
     Promise.resolve(getAllPostsMeta(category)),
     getExternalArticles(category),

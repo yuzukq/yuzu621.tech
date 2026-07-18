@@ -1,11 +1,7 @@
-// 外部プラットフォーム(Qiita等)に投稿した記事をブログ一覧へ混ぜるためのモジュール。
-//
-// - Qiita: 公開API(認証不要)から自動取得。Next.js の Data Cache(revalidate)で
-//   キャッシュされるため、`/` が動的レンダリングでもリクエスト毎には叩かない。
-//   新しい投稿はデプロイ不要で最長1時間後に反映される。
-// - Zenn・会社Techブログ等: src/data/external-articles.ts に手動で追加する。
-// - サムネイル未指定の記事は、記事URLのOGP画像(og:image)を自動取得して使う。
-// - 取得failure時は必ず空配列/undefinedへフォールバックし、一覧表示を壊さない。
+// 外部プラットフォームの記事をブログ一覧へ混ぜる。取得失敗時は必ず空配列/
+// undefined へフォールバックし、外部要因で一覧を壊さない。
+// fetch は Next.js の Data Cache(revalidate)に載せる: `/` が動的レンダリング
+// のため、素の fetch だとリクエスト毎に外部APIを叩いてしまう。
 
 import type { BlogCategory } from '@/lib/posts'
 import { manualExternalArticles } from '@/data/external-articles'
@@ -58,7 +54,6 @@ async function fetchQiitaArticles(): Promise<ExternalArticle[]> {
       category: 'tech' as const,
     }))
   } catch {
-    // オフラインビルドやAPI障害時はローカル記事のみで表示を続ける
     return []
   }
 }
@@ -87,7 +82,6 @@ function toIsoDate(date: string): string {
   return Number.isNaN(parsed.getTime()) ? date : parsed.toISOString()
 }
 
-// 指定カテゴリの外部記事(Qiita自動 + 手動データ)をサムネイル解決済みで返す。
 export async function getExternalArticles(category: BlogCategory): Promise<ExternalArticle[]> {
   const qiita = await fetchQiitaArticles()
   const all = [...qiita, ...manualExternalArticles]

@@ -7,8 +7,7 @@ import { formatDateJa } from "@/lib/format-date"
 import { useInView } from "@/hooks/useInView"
 import Tag from "./Tag"
 
-// ローカル記事・外部記事(Qiita/Zenn等)を同じカードで描画するための正規化済みデータ。
-// externalSource が設定されている場合は外部記事: 新規タブで開き、出典バッジを表示する。
+/** externalSource があれば外部記事: 新規タブで開き、カテゴリの代わりに出典バッジを出す */
 export type BlogCardData = {
   href: string
   externalSource?: string
@@ -20,7 +19,7 @@ export type BlogCardData = {
   category: BlogCategory
 }
 
-// 出典バッジのドット色。ブランドカラーは globals.css の :root トークンで定義。
+// 未知の出典は accent-2 に落ちる(ブランドトークンは globals.css の :root)
 const BRAND_DOT_COLOR: Record<string, string> = {
   qiita: "var(--brand-qiita)",
   zenn: "var(--brand-zenn)",

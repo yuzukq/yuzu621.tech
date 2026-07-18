@@ -1,9 +1,5 @@
-// ```js:app.js のようなフェンス言語表記を、rehype-pretty-code の
-// title メタ（ファイル名ヘッダ表示）に変換する remark プラグイン。
-//
-// 例: ```js:app.js  → lang: 'js', meta: 'title="app.js"'
-//
-// unist-util-visit 等の追加依存を避けるため、手書きの再帰走査で mdast を辿る。
+// ```js:app.js の `:ファイル名` を rehype-pretty-code の title メタに変換する
+// (lang: 'js', meta: 'title="app.js"')。
 
 type MdastNode = {
   type?: string
@@ -13,7 +9,7 @@ type MdastNode = {
   [key: string]: unknown
 }
 
-// 言語部分は英数字・ハイフン・アンダースコア・プラスのみ許容（ts, js, c++ 等）
+// 言語部分を限定しないと、URLを含む行など「:」入りの通常メタを誤変換する
 const FILENAME_LANG_RE = /^([A-Za-z0-9_+-]+):(.+)$/
 
 function escapeDoubleQuotes(value: string): string {

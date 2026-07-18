@@ -1,8 +1,6 @@
 import NextLink from "next/link"
 import MobileNav from "./MobileNav"
 
-// ブログの BlogHeader と世界観を揃えたプロフィール用ヘッダー
-// (sticky + backdrop-blur + 下辺ボーダー、DESIGN.md §4)。
 const NAV_ITEMS = [
   { href: "#about", label: "About" },
   { href: "#products", label: "Products" },

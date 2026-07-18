@@ -41,9 +41,8 @@ export function getPostBySlug(slug: string): Post | null {
   const fileContents = fs.readFileSync(fullPath, 'utf8')
   const { data, content } = matter(fileContents)
 
-  // gray-matter はfrontmatterの日付をDateオブジェクトで返す。Dateのまま
-  // クライアントコンポーネントへ渡すとSSRとhydrationでシリアライズ結果が
-  // 食い違うため、ここで必ずISO文字列に正規化する。
+  // 日付を Date オブジェクトのまま持ち回らない: gray-matter は Date で返すが、
+  // クライアントコンポーネントに渡すと SSR とhydrationでシリアライズ結果が食い違う
   const rawDate = data.date
   const date =
     rawDate instanceof Date
@@ -101,7 +100,6 @@ export function extractFirstImageSrc(markdown: string): string | undefined {
   return m?.[1]
 }
 
-// マークダウンをHTML+目次に変換（src/lib/markdown のunifiedパイプライン）
 export async function renderPost(slug: string): Promise<RenderedMarkdown | null> {
   const post = getPostBySlug(slug)
   if (!post) return null

@@ -1,12 +1,5 @@
-// 段落の内容が裸URL1つだけの場合、ビルド時にOGPを取得してリンクカードHTMLに変換する remark プラグイン。
-//
-// 対象になるのは以下の2パターン（どちらも「段落の唯一の子」であること）:
-//   - remark-gfm のオートリンクで `link` ノード化されたもの（子テキストがURLそのもの）
-//   - 素の `text` ノードとしてURLがそのまま書かれているもの
-//
-// OGP取得に失敗した場合はノードを変更しない（＝プレーンな外部リンクのまま）。
-// 取得は非同期のため、このプラグインの transformer は async 関数（unified/trough は
-// Promise を返す transformer をサポートしている）。
+// 裸URLだけの段落をビルド時OGP取得でリンクカードHTMLに変換する。
+// 取得失敗時はノードを変更しない(プレーンな外部リンクのまま)。
 
 import { getOgp } from './ogp'
 
@@ -26,7 +19,7 @@ function extractBareUrl(node: MdastNode): string | null {
   if (children.length !== 1) return null
   const child = children[0]
 
-  // gfm autolink literal: { type: 'link', url, children: [{ type: 'text', value: url }] }
+  // remark-gfm の autolink はURLを link ノード化するため、text だけ見ても検出できない
   if (child.type === 'link' && typeof child.url === 'string') {
     const linkChildren = child.children ?? []
     if (linkChildren.length !== 1) return null
@@ -37,7 +30,6 @@ function extractBareUrl(node: MdastNode): string | null {
     return BARE_URL_RE.test(url) ? url : null
   }
 
-  // 素のテキストとしてURLが書かれている場合
   if (child.type === 'text' && typeof child.value === 'string') {
     const trimmed = child.value.trim()
     return BARE_URL_RE.test(trimmed) ? trimmed : null
@@ -111,7 +103,7 @@ export default function remarkLinkCard() {
         }
 
         const ogp = await getOgp(url).catch(() => null)
-        if (!ogp) return // 取得失敗: 変換せずプレーンリンクのまま維持
+        if (!ogp) return
 
         const children = parent.children
         if (!children) return

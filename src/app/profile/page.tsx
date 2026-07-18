@@ -14,8 +14,7 @@ import {
   jsonLdScriptProps,
 } from "@/lib/seo"
 
-// GitHub / Discord は Hero.tsx・Footer.tsx で実際に使われている連絡先URLをそのまま転用する
-// (架空のURLを sameAs に追加しない)。mailto はプロフィールURLではないため sameAs には含めない。
+// sameAs は実在の連絡先(Hero/Footerと同一URL)のみ。mailto はプロフィールURLではないため含めない
 const SAME_AS = ["https://github.com/yuzukq", "https://discord.gg/8HPdqbZF"]
 
 export const metadata: Metadata = {
@@ -39,8 +38,6 @@ export const metadata: Metadata = {
   },
 }
 
-// プロフィールは常に tech 世界(DESIGN.md §1)固定。ブログの WorldSync を
-// 流用し、<html data-world> をこのページの世界観に明示的に同期させる。
 export default function ProfilePage() {
   const personJsonLd = buildPersonJsonLd({ sameAs: SAME_AS })
 

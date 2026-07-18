@@ -1,37 +1,32 @@
 @import "tailwindcss";
 
 /* ============================================================
- * デザイントークン (DESIGN.md §2)
- *
- * tech  = 深い夜空のダークトーン(プロフィール・技術ブログ)
- * daily = 温かい紙のようなライトトーン(日常ブログ)
- *
- * コンポーネントからは必ずセマンティック名(bg-surface, text-ink 等)で
- * 参照し、生HEXを書かない。世界の切替は data-world 属性 + これらの
- * CSS変数で解決し、コンポーネント側で tech/daily の三項分岐はしない。
+ * デザイントークン (仕様は DESIGN.md §2)
+ * コンポーネントは生HEXを書かずセマンティック名で参照する。
+ * 世界(tech/daily)の分岐はコンポーネント側の三項演算子ではなく
+ * data-world 属性 + この変数群で行う。
  * ============================================================ */
-/* 出典バッジ用ブランドカラー(世界(tech/daily)に依存しない固定値) */
+/* 出典バッジ用ブランドカラー。世界で切り替えないため data-world 外に置く */
 :root {
   --brand-qiita: #55c500;
   --brand-zenn: #3ea8ff;
 }
 
 [data-world="tech"] {
-  --bg: #0c1214; /* ベース背景(ティールがかった近黒) */
-  --surface: #121a1d; /* カード・浮遷面 */
+  --bg: #0c1214;
+  --surface: #121a1d;
   --surface-hover: #182428;
-  --ink: #e4eceb; /* 本文 */
-  --ink-muted: #96a8a7; /* 補助テキスト */
-  --ink-faint: #5d6d6d; /* さらに弱い(日付等) */
-  --accent: #39c5bb; /* ミクティール(主役) */
+  --ink: #e4eceb;
+  --ink-muted: #96a8a7;
+  --ink-faint: #5d6d6d;
+  --accent: #39c5bb;
   --accent-hover: #5bd5cc;
-  --accent-2: #e12885; /* ミクマゼンタ(差し色。多用しない) */
+  --accent-2: #e12885;
   --border: rgba(228, 236, 235, 0.08);
   --border-strong: rgba(228, 236, 235, 0.16);
-  --glow: 0 0 24px rgba(57, 197, 187, 0.18); /* ティールの発光 */
+  --glow: 0 0 24px rgba(57, 197, 187, 0.18);
 
-  /* note ブロック(§5)専用の拡張トークン。§2の基本パレットにない
-     warn/alert の色相のみ、ここに限定して追加する。 */
+  /* warn/alert の色相は基本パレットに無いため、noteブロック限定でここに追加する */
   --note-info: var(--accent);
   --note-warn: #f5a524;
   --note-alert: #f0554a;
@@ -40,15 +35,15 @@
 }
 
 [data-world="daily"] {
-  --bg: #f4f9f8; /* ミントがかった淡いグレー */
+  --bg: #f4f9f8;
   --surface: #ffffff;
   --surface-hover: #eaf4f3;
   --ink: #253335;
   --ink-muted: #5c6e6d;
   --ink-faint: #8fa1a0;
-  --accent: #0f8f86; /* ティール(ライト背景でAAを満たす濃度) */
+  --accent: #0f8f86; /* #39c5bb はライト背景でコントラストAAを満たさないため濃くする */
   --accent-hover: #0b6f68;
-  --accent-2: #c21e6f; /* マゼンタ(ライト用濃度) */
+  --accent-2: #c21e6f;
   --border: rgba(37, 51, 53, 0.1);
   --border-strong: rgba(37, 51, 53, 0.2);
   --glow: none;
@@ -60,10 +55,8 @@
   color-scheme: light;
 }
 
-/* Tailwind v4 の @theme inline で、上記の実行時CSS変数を
- * --color-, --font-, --shadow- 名前空間にマップし、
- * bg-bg / text-ink / border-border / font-display 等の
- * ユーティリティとして参照できるようにする。 */
+/* inline 必須: 通常の @theme だと値が静的に焼き込まれ、data-world での
+ * 実行時切替が効かなくなる */
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
@@ -98,8 +91,6 @@
   }
 }
 
-/* VRMヒーロースロット(DESIGN.md §7)のプレースホルダ用の控えめな浮遊モーション。
- * prefers-reduced-motion: reduce では下の全体ルールで自動的に無効化される。 */
 @keyframes vrm-float {
   0%,
   100% {
@@ -114,19 +105,16 @@
  * ベース
  * ============================================================ */
 html {
-  /* ベースフォントを 16px → 18px に引き上げ、サイト全体の文字を一段大きくする
-     (DESIGN.md §3)。rem基準のユーティリティが全てこれに追従する。
-     Markdown見出しだけは従来の実寸を維持するよう個別に補正している。 */
+  /* 16px → 18px。rem基準の全サイズが追従する。Markdown見出しのみ
+     大きくしすぎないよう .markdown-body 側で逆補正している */
   font-size: 112.5%;
-  /* ページ内アンカーナビ(プロフィールヘッダー等)用。reduced-motion 時は
-     下の全体ルールで scroll-behavior: auto に上書きされる。 */
+  /* reduced-motion 時は下の全体ルールが auto に上書きする */
   scroll-behavior: smooth;
 }
 
 html,
 body {
   background-color: var(--bg);
-  /* 世界(tech/daily)切替のトランジション (DESIGN.md §2末尾) */
   transition:
     background-color 0.4s ease,
     color 0.4s ease;
@@ -134,14 +122,12 @@ body {
 
 body {
   color: var(--ink);
-  /* 「〜していま / す。」のような1〜2文字だけの孤立行を避け、
-     和文の折り返し位置を自然にする(非対応ブラウザでは無視される)。 */
+  /* 「〜していま / す。」のような1〜2文字の孤立行を防ぐ(非対応ブラウザでは無視) */
   text-wrap: pretty;
 }
 
-/* リード文など短い和文向け: 対応ブラウザ(Chromium 119+)では文節単位で
- * 折り返す(BudouX)。長文の記事本文には適用しない(セグメンテーションのコスト
- * と、本文は通常の折り返しで十分なため)。 */
+/* 文節折り返し(Chromium 119+のみ)。記事本文には適用しない:
+ * 長文へのBudouXセグメンテーションはコストが乗るため、短いリード文限定 */
 @utility wrap-phrase {
   word-break: auto-phrase;
 }

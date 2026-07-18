@@ -1,12 +1,6 @@
-// Qiita 互換 Markdown パイプライン組立（unified）。
-//
-// 順序:
-//   remarkParse → remarkGfm → remarkBreaks → remarkCodeFilename → remarkNote
-//   → remarkLinkCard → remarkRehype(allowDangerousHtml) → rehypeSlug
-//   → rehypeAutolinkHeadings(behavior: 'wrap') → rehypePrettyCode → rehypeStringify(allowDangerousHtml)
-//
-// remarkLinkCard は OGP取得のため非同期。unified/trough は Promise を返す
-// transformer をサポートしているため、そのまま use() できる。
+// Qiita 互換 Markdown パイプライン(unified)。
+// 自作プラグインでは unist-util-visit を使わない: node_modules には存在するが
+// package.json 未宣言の phantom dependency になるため、手書きの再帰走査で辿る。
 
 import { unified, type Plugin } from 'unified'
 import remarkParse from 'remark-parse'
@@ -25,9 +19,8 @@ import rehypeExtractToc, { type TocItem } from './rehype-extract-toc'
 
 export type { TocItem }
 
-// 自作プラグインは軽量な独自mdast型で実装しているため、unifiedの厳密な
-// Node型とは構造的に一致しない。既存の remark-latex-breaks と同様、
-// use() に渡す際にのみ Plugin 型へキャストする。
+// 自作プラグインは軽量な独自mdast型で書いており unified の Node 型と構造一致
+// しないため、use() に渡す箇所でのみキャストする
 const remarkCodeFilename = remarkCodeFilenamePlugin as unknown as Plugin
 const remarkNote = remarkNotePlugin as unknown as Plugin
 const remarkLinkCard = remarkLinkCardPlugin as unknown as Plugin
@@ -41,7 +34,6 @@ export interface RenderedMarkdown {
 export async function renderMarkdown(markdown: string): Promise<RenderedMarkdown> {
   const preprocessed = ensureNoteBlankLines(markdown)
 
-  // 目次はパイプライン実行中に rehype-extract-toc がこの配列へ収集する。
   const toc: TocItem[] = []
 
   const file = await unified()

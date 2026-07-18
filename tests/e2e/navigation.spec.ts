@@ -4,12 +4,10 @@ test.describe('ナビゲーション機能', () => {
   test('About meセクションの「ブログを読む」ボタンでブログ一覧へ遷移できる', async ({ page }) => {
     await page.goto('/profile');
 
-    // 「ブログを読む」ボタンを探してクリック
     const blogButton = page.getByRole('button', { name: 'ブログを読む' });
     await expect(blogButton).toBeVisible();
     await blogButton.click();
 
-    // ブログページに遷移したことを確認
     await expect(page).toHaveURL('/');
     await expect(page.getByRole('heading', { name: 'Blog' })).toBeVisible();
   });
@@ -17,12 +15,10 @@ test.describe('ナビゲーション機能', () => {
   test('ブログページのヘッダーからProfileリンクでプロフィールページに戻れる', async ({ page }) => {
     await page.goto('/');
 
-    // Profileリンクをクリック
     const portfolioLink = page.getByRole('link', { name: 'Profile' });
     await expect(portfolioLink).toBeVisible();
     await portfolioLink.click();
 
-    // プロフィールページ(先頭)に遷移することを確認
     await expect(page).toHaveURL('/profile');
     await expect(page.locator('#hero')).toBeVisible();
   });
@@ -30,14 +26,12 @@ test.describe('ナビゲーション機能', () => {
 
 test.describe('アンカーリンク機能', () => {
   test.beforeEach(async ({ page }) => {
-    // デスクトップビューでテスト
     await page.setViewportSize({ width: 1280, height: 800 });
   });
 
   test('ヘッダーのナビゲーションリンクが表示される', async ({ page }) => {
     await page.goto('/profile');
 
-    // ヘッダーのナビゲーションリンクが表示されていることを確認
     await expect(page.getByRole('link', { name: 'Yuzu' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'About' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Products' })).toBeVisible();
@@ -48,20 +42,16 @@ test.describe('アンカーリンク機能', () => {
   test('アンカーリンクをクリックすると対象セクションまでスムーズスクロールする', async ({ page }) => {
     await page.goto('/profile');
 
-    // 初期位置を記録
     const initialScrollY = await page.evaluate(() => window.scrollY);
 
-    // Aboutリンクをクリック
     await page.getByRole('link', { name: 'About' }).click();
 
-    // スクロールが発生したことを確認（スムーズスクロールのため少し待機）
+    // smooth スクロールの完了を待つ(即時にアサートすると移動途中の座標を拾う)
     await page.waitForTimeout(500);
 
-    // スクロール位置が変化していることを確認
     const afterScrollY = await page.evaluate(() => window.scrollY);
     expect(afterScrollY).toBeGreaterThan(initialScrollY);
 
-    // Aboutセクションの見出しがビューポートに表示されていることを確認
     const aboutHeading = page.locator('#about').getByRole('heading').first();
     await expect(aboutHeading).toBeInViewport();
   });
@@ -69,13 +59,10 @@ test.describe('アンカーリンク機能', () => {
   test('Productsセクションへのスクロールナビゲーション', async ({ page }) => {
     await page.goto('/profile');
 
-    // Productsリンクをクリック
     await page.getByRole('link', { name: 'Products' }).click();
 
-    // スクロール完了を待機
     await page.waitForTimeout(500);
 
-    // Productsセクションの見出しがビューポートに表示されていることを確認
     const productsHeading = page.locator('#products').getByRole('heading').first();
     await expect(productsHeading).toBeInViewport();
   });
@@ -83,13 +70,10 @@ test.describe('アンカーリンク機能', () => {
   test('Tech Stackセクションへのスクロールナビゲーション', async ({ page }) => {
     await page.goto('/profile');
 
-    // Tech Stackリンクをクリック
     await page.getByRole('link', { name: 'Tech Stack' }).click();
 
-    // スクロール完了を待機
     await page.waitForTimeout(500);
 
-    // Tech Stackセクションの見出しがビューポートに表示されていることを確認
     const skillsHeading = page.locator('#tech-stack').getByRole('heading').first();
     await expect(skillsHeading).toBeInViewport();
   });
@@ -97,41 +81,35 @@ test.describe('アンカーリンク機能', () => {
   test('Blogリンクはブログページへ遷移する（スムーズスクロールではない）', async ({ page }) => {
     await page.goto('/profile');
 
-    // Blogリンクをクリック
     await page.getByRole('link', { name: 'Blog' }).click();
 
-    // ブログページに遷移したことを確認
     await expect(page).toHaveURL('/');
   });
 
   test('セクション間を移動するとスクロール位置が正しく変化する', async ({ page }) => {
     await page.goto('/profile');
 
-    // まずProductsセクションへ移動
     await page.getByRole('link', { name: 'Products' }).click();
     await page.waitForTimeout(500);
     const productsScrollY = await page.evaluate(() => window.scrollY);
 
-    // 次にロゴ(Yuzu)リンクでヒーロー(Top)へ戻る
     await page.getByRole('link', { name: 'Yuzu' }).click();
     await page.waitForTimeout(500);
     const heroScrollY = await page.evaluate(() => window.scrollY);
 
-    // ヒーローはProductsより上にある
     expect(heroScrollY).toBeLessThan(productsScrollY);
   });
 });
 
 test.describe('モバイルビュー - アンカーリンク機能', () => {
   test.beforeEach(async ({ page }) => {
-    // モバイルビューでテスト (iPhone 14サイズ)
+    // iPhone 14 サイズ
     await page.setViewportSize({ width: 390, height: 844 });
   });
 
   test('モバイルでハンバーガーメニューが表示される', async ({ page }) => {
     await page.goto('/profile');
 
-    // ハンバーガーメニューボタンが表示されていることを確認
     const menuButton = page.getByRole('banner').getByRole('button');
     await expect(menuButton).toBeVisible();
   });
@@ -139,14 +117,11 @@ test.describe('モバイルビュー - アンカーリンク機能', () => {
   test('ハンバーガーメニューをクリックするとドロワーが開く', async ({ page }) => {
     await page.goto('/profile');
 
-    // ハンバーガーメニューをクリック
     await page.getByRole('banner').getByRole('button').click();
 
-    // ドロワーダイアログが表示されることを確認
     const drawer = page.getByRole('dialog', { name: 'Page index' });
     await expect(drawer).toBeVisible();
 
-    // ナビゲーションリンクが表示されることを確認
     await expect(drawer.getByRole('link', { name: 'About' })).toBeVisible();
     await expect(drawer.getByRole('link', { name: 'Products' })).toBeVisible();
     await expect(drawer.getByRole('link', { name: 'Tech Stack' })).toBeVisible();
@@ -156,21 +131,17 @@ test.describe('モバイルビュー - アンカーリンク機能', () => {
   test('モバイルドロワーのリンクをクリックすると対象セクションにスクロールする', async ({ page }) => {
     await page.goto('/profile');
 
-    // 初期位置を記録
     const initialScrollY = await page.evaluate(() => window.scrollY);
 
-    // ハンバーガーメニューを開く
     await page.getByRole('banner').getByRole('button').click();
     const drawer = page.getByRole('dialog', { name: 'Page index' });
     await expect(drawer).toBeVisible();
 
-    // Productsリンクをクリック（Aboutより下のセクションでテスト）
     await drawer.getByRole('link', { name: 'Products' }).click();
 
-    // スクロール完了を待機（ドロワーが閉じるまで少し長めに待機）
+    // ドロワーが閉じてからスクロールが完了するまで待つ
     await page.waitForTimeout(800);
 
-    // スクロール位置が変化していることを確認
     const afterScrollY = await page.evaluate(() => window.scrollY);
     expect(afterScrollY).toBeGreaterThan(initialScrollY);
   });
@@ -178,30 +149,24 @@ test.describe('モバイルビュー - アンカーリンク機能', () => {
   test('モバイルドロワーの閉じるボタンでメニューを閉じられる', async ({ page }) => {
     await page.goto('/profile');
 
-    // ハンバーガーメニューを開く
     await page.getByRole('banner').getByRole('button').click();
     const drawer = page.getByRole('dialog', { name: 'Page index' });
     await expect(drawer).toBeVisible();
 
-    // 閉じるボタンをクリック
     await page.getByRole('button', { name: 'メニューを閉じる' }).click();
 
-    // ドロワーが閉じることを確認
     await expect(drawer).not.toBeVisible();
   });
 
   test('モバイルでBlogリンクはブログページへ遷移する', async ({ page }) => {
     await page.goto('/profile');
 
-    // ハンバーガーメニューを開く
     await page.getByRole('banner').getByRole('button').click();
     const drawer = page.getByRole('dialog', { name: 'Page index' });
     await expect(drawer).toBeVisible();
 
-    // Blogリンクをクリック
     await drawer.getByRole('link', { name: 'Blog' }).click();
 
-    // ブログページに遷移したことを確認
     await expect(page).toHaveURL('/');
   });
 });

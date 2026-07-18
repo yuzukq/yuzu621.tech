@@ -1,5 +1,5 @@
-// ビルド時 OGP 取得 + .cache/ogp.json キャッシュ。
-// 追加依存を避けるため、取得は Node 組み込み fetch、HTML メタ解析は正規表現で行う。
+// OGP 取得(組み込み fetch + 正規表現)。HTMLパーサー依存を増やすほどの
+// 精度は不要のため導入しない。結果は .cache/ogp.json に永続化する。
 
 import fs from 'node:fs'
 import path from 'node:path'
@@ -44,7 +44,7 @@ function saveCache() {
     fs.mkdirSync(CACHE_DIR, { recursive: true })
     fs.writeFileSync(CACHE_FILE, JSON.stringify(cache, null, 2))
   } catch {
-    // キャッシュの書き込み失敗はビルドを止めない
+    // 書込不可な環境(Vercelランタイム等)があるため、失敗してもビルドは続行する
   }
 }
 
@@ -118,7 +118,7 @@ async function fetchOgp(url: string): Promise<OgpData | null> {
   }
 }
 
-// URL の OGP 情報を取得する。失敗時は null を返し、呼び出し側でフォールバックする（ビルドは落とさない）。
+// 失敗時は throw せず null(呼び出し側がプレーンリンクへフォールバックする前提)
 export async function getOgp(url: string): Promise<OgpData | null> {
   const store = loadCache()
   const cached = store[url]

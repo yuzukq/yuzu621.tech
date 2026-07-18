@@ -1,19 +1,11 @@
 "use client"
 
-// VRMヒーロー本体(DESIGN.md §7)。next/dynamic(ssr: false)経由でのみ
-// 読み込まれるクライアントアイランド。three.js のセットアップ自体は
-// createVrmScene.ts に閉じ、ここではDOM(canvas)のマウント/アンマウントと
-// 状態(読み込み中・表示中・失敗)の切替だけを担当する。
-//
-// モデル未配置・読み込み失敗時は静かに VrmFallback へ切り替える
-// (console.error は出さない。info レベルのログのみ)。
 import { useEffect, useRef, useState } from "react"
 import VrmFallback from "./VrmFallback"
 import { createVrmScene, type VrmSceneHandle } from "./createVrmScene"
 
 const MODEL_URL = "/models/avatar.vrm"
-// vrma-create スキルで生成したループアニメーション(ニコニコ左右揺れ)。
-// ファイルが無い/読めない場合は createVrmScene 側でプロシージャル待機に切り替わる。
+// 無い/読めない場合は createVrmScene 側でプロシージャル待機に切り替わる
 const ANIMATION_URL = "/models/happy-sway.vrma"
 
 type Status = "loading" | "ready" | "failed"
@@ -41,8 +33,7 @@ export default function VrmCanvas() {
         setStatus("ready")
       })
       .catch((error: unknown) => {
-        // ユーザーが後日 public/models/avatar.vrm を置くまでは404が期待される
-        // 状態のため、console.error ではなく info レベルに留める。
+        // モデル未配置は正常系(ファイルを置けば表示される)のため error にしない
         console.info(
           "[vrm] avatar.vrm を読み込めなかったため、プレースホルダを表示します。",
           error,

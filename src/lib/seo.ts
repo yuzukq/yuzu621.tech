@@ -1,17 +1,11 @@
-// SEO関連の定数と構造化データ(JSON-LD)生成ヘルパーを集約するモジュール。
-// 各ページの generateMetadata / metadata や JSON-LD 出力はここを参照する。
-
 export const SITE_URL = 'https://yuzu621.tech'
 export const SITE_NAME = 'yuzu621.tech'
-// ルートレイアウトの絶対タイトル(トップ相当のページ = ブログ一覧(tech)・プロフィール)。
 export const SITE_TITLE = 'yuzu621.tech'
 export const DEFAULT_DESCRIPTION =
   'Yuzu のプロフィール兼ブログサイト。制作物、技術スタック、技術と日常のブログを公開しています。'
 export const AUTHOR_NAME = 'Yuzu'
-// サイト共通のデフォルトOG画像 (src/app/opengraph-image.tsx が生成する)。
-// Next.js のファイル規約による自動継承は、各ページが独自に openGraph オブジェクトを
-// 定義すると segment 単位で丸ごと上書きされてしまうため、各ページの
-// openGraph.images / twitter.images でこのパスを明示的にフォールバックとして指定する。
+// opengraph-image.tsx のファイル規約に任せず各ページで明示指定する:
+// ページが openGraph を独自定義すると規約による継承は segment 単位で失われるため。
 export const DEFAULT_OG_IMAGE_PATH = '/opengraph-image'
 
 /**
@@ -39,7 +33,7 @@ function toIsoDate(date: string | Date): string {
 export function jsonLdScriptProps(data: unknown) {
   return {
     type: 'application/ld+json' as const,
-    // JSON-LD の中に閉じタグ文字列が入り HTML パーサを混乱させないよう軽くエスケープする。
+    // 本文に </script> が含まれるとHTMLが途中で閉じるため < をエスケープする
     dangerouslySetInnerHTML: {
       __html: JSON.stringify(data).replace(/</g, '\\u003c'),
     },

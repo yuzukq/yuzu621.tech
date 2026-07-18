@@ -1,5 +1,3 @@
-// セクション見出し(DESIGN.md §3)。英大文字ラベル(eyebrow) + 和文タイトルの2段構成。
-// ブログ一覧ページ((blog)/page.tsx)の見出しと同じ様式に揃えている。
 interface SectionHeadingProps {
   eyebrow: string
   title: string

@@ -1,9 +1,6 @@
-// 記事HTMLから目次(TOC)用の見出し一覧を抽出する rehype プラグイン。
-//
-// rehype-slug の後・rehype-autolink-headings の前に配置し、id が付与済みで
-// まだ <a> に包まれていない h1〜h3 を対象にする。結果は options.onHeading
-// コールバックで呼び出し元(renderMarkdown)に渡す。
-// 他の自作プラグイン同様、unist-util-visit 等の追加依存は使わない。
+// 目次用の見出し(id/text/depth)を抽出する rehype プラグイン。
+// 配置は rehype-slug の後(id が必要)・rehype-autolink-headings の前
+// (wrap後は見出し直下が <a> になりテキスト抽出が変わる)に固定。
 
 export interface TocItem {
   /** rehype-slug が付与した見出しの id (アンカー先) */
@@ -37,7 +34,7 @@ function walk(node: HastNode, onHeading: (item: TocItem) => void) {
       const text = textOf(node).trim()
       if (text) onHeading({ id, text, depth })
     }
-    return // 見出しの内側にさらに見出しは無い
+    return
   }
   for (const child of node.children ?? []) {
     walk(child, onHeading)
