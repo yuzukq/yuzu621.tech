@@ -37,11 +37,10 @@ test.describe('アンカーリンク機能', () => {
     await page.goto('/portfolio');
 
     // ヘッダーのナビゲーションリンクが表示されていることを確認
-    await expect(page.getByRole('link', { name: 'Top' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Yuzu' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'About' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Products' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Skills' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Story' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Blog' })).toBeVisible();
   });
 
@@ -61,8 +60,8 @@ test.describe('アンカーリンク機能', () => {
     const afterScrollY = await page.evaluate(() => window.scrollY);
     expect(afterScrollY).toBeGreaterThan(initialScrollY);
 
-    // Aboutセクションがビューポートに表示されていることを確認
-    const aboutHeading = page.getByRole('heading', { name: 'About me' });
+    // Aboutセクションの見出しがビューポートに表示されていることを確認
+    const aboutHeading = page.locator('#about').getByRole('heading').first();
     await expect(aboutHeading).toBeInViewport();
   });
 
@@ -75,8 +74,8 @@ test.describe('アンカーリンク機能', () => {
     // スクロール完了を待機
     await page.waitForTimeout(500);
 
-    // Productsセクションがビューポートに表示されていることを確認
-    const productsHeading = page.getByRole('heading', { name: 'Products' });
+    // Productsセクションの見出しがビューポートに表示されていることを確認
+    const productsHeading = page.locator('#products').getByRole('heading').first();
     await expect(productsHeading).toBeInViewport();
   });
 
@@ -89,23 +88,9 @@ test.describe('アンカーリンク機能', () => {
     // スクロール完了を待機
     await page.waitForTimeout(500);
 
-    // Skillsセクションがビューポートに表示されていることを確認
-    const skillsHeading = page.getByRole('heading', { name: 'Skills' });
+    // Skillsセクションの見出しがビューポートに表示されていることを確認
+    const skillsHeading = page.locator('#skills').getByRole('heading').first();
     await expect(skillsHeading).toBeInViewport();
-  });
-
-  test('Storyセクションへのスクロールナビゲーション', async ({ page }) => {
-    await page.goto('/portfolio');
-
-    // Storyリンクをクリック
-    await page.getByRole('link', { name: 'Story' }).click();
-
-    // スクロール完了を待機
-    await page.waitForTimeout(500);
-
-    // Storyセクションがビューポートに表示されていることを確認
-    const storyHeading = page.getByRole('heading', { name: 'My Story' });
-    await expect(storyHeading).toBeInViewport();
   });
 
   test('Blogリンクはブログページへ遷移する（スムーズスクロールではない）', async ({ page }) => {
@@ -126,13 +111,13 @@ test.describe('アンカーリンク機能', () => {
     await page.waitForTimeout(500);
     const productsScrollY = await page.evaluate(() => window.scrollY);
 
-    // 次にTopセクションへ戻る
-    await page.getByRole('link', { name: 'Top' }).click();
+    // 次にロゴ(Yuzu)リンクでヒーロー(Top)へ戻る
+    await page.getByRole('link', { name: 'Yuzu' }).click();
     await page.waitForTimeout(500);
-    const topScrollY = await page.evaluate(() => window.scrollY);
+    const heroScrollY = await page.evaluate(() => window.scrollY);
 
-    // TopはProductsより上にある
-    expect(topScrollY).toBeLessThan(productsScrollY);
+    // ヒーローはProductsより上にある
+    expect(heroScrollY).toBeLessThan(productsScrollY);
   });
 });
 
@@ -161,11 +146,9 @@ test.describe('モバイルビュー - アンカーリンク機能', () => {
     await expect(drawer).toBeVisible();
 
     // ナビゲーションリンクが表示されることを確認
-    await expect(drawer.getByRole('link', { name: 'Top' })).toBeVisible();
     await expect(drawer.getByRole('link', { name: 'About' })).toBeVisible();
     await expect(drawer.getByRole('link', { name: 'Products' })).toBeVisible();
     await expect(drawer.getByRole('link', { name: 'Skills' })).toBeVisible();
-    await expect(drawer.getByRole('link', { name: 'Story' })).toBeVisible();
     await expect(drawer.getByRole('link', { name: 'Blog' })).toBeVisible();
   });
 

@@ -25,7 +25,7 @@ test('オーバーレイを閉じるボタンで閉じられる', async ({ page 
   await expect(page.getByText('スクリーンショット')).toBeVisible();
   
   // 閉じるボタンをクリック
-  await page.locator('button').filter({ has: page.locator('svg') }).first().click();
+  await page.getByRole('button', { name: '閉じる' }).click();
   
   // オーバーレイが閉じられたことを確認
   await expect(page.getByText('スクリーンショット')).not.toBeVisible();

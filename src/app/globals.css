@@ -78,6 +78,7 @@
   --shadow-glow: var(--glow);
 
   --animate-fade-in-up: fade-in-up 0.5s ease-out forwards;
+  --animate-vrm-float: vrm-float 6s ease-in-out infinite;
 }
 
 @keyframes fade-in-up {
@@ -91,9 +92,27 @@
   }
 }
 
+/* VRMヒーロースロット(DESIGN.md §7)のプレースホルダ用の控えめな浮遊モーション。
+ * prefers-reduced-motion: reduce では下の全体ルールで自動的に無効化される。 */
+@keyframes vrm-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
 /* ============================================================
  * ベース
  * ============================================================ */
+html {
+  /* ページ内アンカーナビ(ポートフォリオヘッダー等)用。reduced-motion 時は
+     下の全体ルールで scroll-behavior: auto に上書きされる。 */
+  scroll-behavior: smooth;
+}
+
 html,
 body {
   background-color: var(--bg);

@@ -6,12 +6,11 @@ test('ポートフォリオページが主要セクションを表示できる',
   // ページタイトルの確認
   await expect(page).toHaveTitle('Yuzu portfolio');
 
-  // メインビジュアルの見出しを確認
-  await expect(page.getByRole('heading', { name: 'Thank you for your visit !' })).toBeVisible();
+  // ヒーローセクションの名前(ディスプレイタイポ)を確認
+  await expect(page.getByRole('heading', { level: 1, name: 'Yuzu' })).toBeVisible();
 
-  // 主要セクションの見出しを確認
-  await expect(page.getByRole('heading', { name: 'About me' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Products' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Skills' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'My Story' })).toBeVisible();
+  // 主要セクション(英大文字ラベル + 和文タイトルの2段見出し)を確認
+  await expect(page.locator('#about').getByText('自己紹介')).toBeVisible();
+  await expect(page.locator('#products').getByText('制作物')).toBeVisible();
+  await expect(page.locator('#skills').getByText('スキル', { exact: true })).toBeVisible();
 });
