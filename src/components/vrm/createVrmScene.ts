@@ -17,6 +17,11 @@ import {
   VRMLoaderPlugin,
   VRMUtils,
 } from "@pixiv/three-vrm"
+import {
+  VRMAnimationLoaderPlugin,
+  createVRMAnimationClip,
+  type VRMAnimation,
+} from "@pixiv/three-vrm-animation"
 
 export interface VrmSceneOptions {
   /** 描画先。VrmCanvas がマウントする <canvas> 要素そのもの。 */
@@ -25,6 +30,12 @@ export interface VrmSceneOptions {
   container: HTMLElement
   /** 読み込むVRMファイルのURL(通常 /models/avatar.vrm)。 */
   modelUrl: string
+  /**
+   * ループ再生するVRMAアニメーションのURL(任意)。読み込みに失敗した場合や
+   * 未指定の場合は、従来のプロシージャル待機モーションにフォールバックする。
+   * prefers-reduced-motion 時は読み込み自体を行わない。
+   */
+  animationUrl?: string
 }
 
 export interface VrmSceneHandle {
@@ -63,6 +74,7 @@ export async function createVrmScene({
   canvas,
   container,
   modelUrl,
+  animationUrl,
 }: VrmSceneOptions): Promise<VrmSceneHandle> {
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
@@ -82,8 +94,11 @@ export async function createVrmScene({
   directional.position.set(0.6, 1.6, 1.2)
   scene.add(directional)
 
+  // モデル(.vrm)とアニメーション(.vrma)を同じローダーで読む。
+  // それぞれ相手側の拡張を持たないだけなので、両プラグイン共存で問題ない。
   const loader = new GLTFLoader()
   loader.register((parser) => new VRMLoaderPlugin(parser))
+  loader.register((parser) => new VRMAnimationLoaderPlugin(parser))
 
   // モデルが存在しない/壊れている場合はここで reject される。
   // 呼び出し側(VrmCanvas)が catch してフォールバック表示に切り替える。
@@ -168,6 +183,30 @@ export async function createVrmScene({
     vrm.lookAt.target = lookAtTarget
   }
 
+  // 表情はニコニコ基調(VRMA再生中はアニメーション側の happy トラックが毎フレーム上書きする)。
+  expressionManager?.setValue(VRMExpressionPresetName.Happy, 0.85)
+
+  // VRMAアニメーション(あれば)をループ再生する。読み込みに失敗しても
+  // モデル表示は継続し、従来のプロシージャル待機モーションに切り替える。
+  // reduced-motion 時は静止1フレームのため読み込み自体を行わない。
+  let mixer: THREE.AnimationMixer | undefined
+  if (!reducedMotion && animationUrl) {
+    try {
+      const animGltf = await loader.loadAsync(animationUrl)
+      const vrmAnimation = (animGltf.userData.vrmAnimations as VRMAnimation[] | undefined)?.[0]
+      if (vrmAnimation) {
+        const clip = createVRMAnimationClip(vrmAnimation, vrm)
+        mixer = new THREE.AnimationMixer(vrm.scene)
+        mixer.clipAction(clip).play() // AnimationAction のデフォルトは LoopRepeat = ループ再生
+      }
+    } catch (error) {
+      console.info(
+        "[vrm] アニメーションを読み込めなかったため、プロシージャル待機モーションで表示します。",
+        error,
+      )
+    }
+  }
+
   function applySize() {
     const width = container.clientWidth || 1
     const height = container.clientHeight || width
@@ -202,6 +241,31 @@ export async function createVrmScene({
   let blinkPhase = 0 // 0 = 待機中、>0 = まばたき経過時間
   let blinkCooldown = randomBlinkInterval()
 
+  // マウスへの視線・頭追従。VRMA再生中(composeOnAnimatedPose=true)は
+  // ミキサーがこのフレームで決めた頭の姿勢に追従分を上乗せし、
+  // プロシージャル時はレスト姿勢を基準に合成する。
+  function updatePointerFollow(delta: number, composeOnAnimatedPose: boolean) {
+    // ポインタの減衰追従(フレームレートに依存しない指数減衰)。
+    const smoothing = 1 - Math.exp(-POINTER_SMOOTHING * delta)
+    smoothedPointer.x += (pointer.x - smoothedPointer.x) * smoothing
+    smoothedPointer.y += (pointer.y - smoothedPointer.y) * smoothing
+
+    lookAtTarget.position.x = smoothedPointer.x * LOOK_AT_RANGE_X
+    lookAtTarget.position.y = focusHeight - smoothedPointer.y * LOOK_AT_RANGE_Y
+
+    if (headBone) {
+      const yaw = smoothedPointer.x * HEAD_POINTER_YAW
+      const pitch = -smoothedPointer.y * HEAD_POINTER_PITCH
+      tmpEuler.set(pitch, yaw, 0)
+      tmpQuat.setFromEuler(tmpEuler)
+      if (composeOnAnimatedPose) {
+        headBone.quaternion.multiply(tmpQuat)
+      } else {
+        headBone.quaternion.copy(restQuats.get(headBone)!).multiply(tmpQuat)
+      }
+    }
+  }
+
   function updateIdleMotion(delta: number) {
     if (chestBone) {
       const rest = restQuats.get(chestBone)!
@@ -224,21 +288,7 @@ export async function createVrmScene({
         hipsRestY + Math.sin((elapsed / BREATH_PERIOD_SEC) * Math.PI * 2) * HIPS_BOB_AMPLITUDE
     }
 
-    // ポインタの減衰追従(フレームレートに依存しない指数減衰)。
-    const smoothing = 1 - Math.exp(-POINTER_SMOOTHING * delta)
-    smoothedPointer.x += (pointer.x - smoothedPointer.x) * smoothing
-    smoothedPointer.y += (pointer.y - smoothedPointer.y) * smoothing
-
-    lookAtTarget.position.x = smoothedPointer.x * LOOK_AT_RANGE_X
-    lookAtTarget.position.y = focusHeight - smoothedPointer.y * LOOK_AT_RANGE_Y
-
-    if (headBone) {
-      const rest = restQuats.get(headBone)!
-      const yaw = smoothedPointer.x * HEAD_POINTER_YAW
-      const pitch = -smoothedPointer.y * HEAD_POINTER_PITCH
-      tmpEuler.set(pitch, yaw, 0)
-      headBone.quaternion.copy(rest).multiply(tmpQuat.setFromEuler(tmpEuler))
-    }
+    updatePointerFollow(delta, false)
 
     if (expressionManager) {
       if (blinkPhase > 0) {
@@ -266,7 +316,13 @@ export async function createVrmScene({
     lastTime = now
     elapsed += delta
 
-    updateIdleMotion(delta)
+    if (mixer) {
+      // VRMAが体・表情を駆動し、視線・頭のマウス追従だけ上乗せする
+      mixer.update(delta)
+      updatePointerFollow(delta, true)
+    } else {
+      updateIdleMotion(delta)
+    }
     vrm.update(delta)
     renderer.render(scene, camera)
   }
@@ -300,6 +356,8 @@ export async function createVrmScene({
   intersectionObserver.observe(container)
 
   // 初期フレームを描画しておく(reduced-motion 時はこれが最終表示になる)。
+  // vrm.update(0) で立ちポーズと表情(happy)を反映してから描画する。
+  vrm.update(0)
   renderer.render(scene, camera)
 
   if (!reducedMotion) {
@@ -316,6 +374,9 @@ export async function createVrmScene({
     window.removeEventListener("pointermove", handlePointerMove)
     resizeObserver.disconnect()
     intersectionObserver.disconnect()
+
+    mixer?.stopAllAction()
+    mixer?.uncacheRoot(vrm.scene)
 
     scene.remove(vrm.scene)
     VRMUtils.deepDispose(vrm.scene)

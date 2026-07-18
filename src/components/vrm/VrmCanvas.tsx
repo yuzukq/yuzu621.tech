@@ -12,6 +12,9 @@ import VrmFallback from "./VrmFallback"
 import { createVrmScene, type VrmSceneHandle } from "./createVrmScene"
 
 const MODEL_URL = "/models/avatar.vrm"
+// vrma-create スキルで生成したループアニメーション(ニコニコ左右揺れ)。
+// ファイルが無い/読めない場合は createVrmScene 側でプロシージャル待機に切り替わる。
+const ANIMATION_URL = "/models/happy-sway.vrma"
 
 type Status = "loading" | "ready" | "failed"
 
@@ -28,7 +31,7 @@ export default function VrmCanvas() {
     let cancelled = false
     let handle: VrmSceneHandle | undefined
 
-    createVrmScene({ canvas, container, modelUrl: MODEL_URL })
+    createVrmScene({ canvas, container, modelUrl: MODEL_URL, animationUrl: ANIMATION_URL })
       .then((sceneHandle) => {
         if (cancelled) {
           sceneHandle.dispose()
