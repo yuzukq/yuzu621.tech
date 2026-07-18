@@ -1,5 +1,14 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Zen_Kaku_Gothic_New, JetBrains_Mono } from "next/font/google";
+import {
+  SITE_URL,
+  SITE_NAME,
+  SITE_TITLE,
+  DEFAULT_DESCRIPTION,
+  DEFAULT_OG_IMAGE_PATH,
+  buildWebsiteJsonLd,
+  jsonLdScriptProps,
+} from "@/lib/seo";
 import "./globals.css";
 
 // 欧文ディスプレイ(見出し・ラベル) — DESIGN.md §3
@@ -27,8 +36,29 @@ const jetBrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Yuzu portfolio",
-  description: "Yuzu のポートフォリオサイト。制作物、技術ブログ、スキル・経歴を公開しています。",
+  metadataBase: new URL(SITE_URL),
+  // トップ相当のページ(ブログ一覧・ポートフォリオ)は絶対タイトルの SITE_TITLE を明示指定する。
+  // それ以外(記事・日常カテゴリ等)がタイトルを指定した場合のみ template が適用される。
+  title: {
+    default: SITE_TITLE,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: DEFAULT_DESCRIPTION,
+  openGraph: {
+    type: "website",
+    locale: "ja_JP",
+    siteName: SITE_NAME,
+    title: SITE_TITLE,
+    description: DEFAULT_DESCRIPTION,
+    url: SITE_URL,
+    images: [{ url: DEFAULT_OG_IMAGE_PATH }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: DEFAULT_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE_PATH],
+  },
 };
 
 export default function RootLayout({
@@ -43,7 +73,10 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${spaceGrotesk.variable} ${zenKakuGothicNew.variable} ${jetBrainsMono.variable}`}
     >
-      <body className="bg-bg font-body text-ink antialiased">{children}</body>
+      <body className="bg-bg font-body text-ink antialiased">
+        <script {...jsonLdScriptProps(buildWebsiteJsonLd())} />
+        {children}
+      </body>
     </html>
   );
 }

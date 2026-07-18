@@ -1,9 +1,16 @@
 // ブログ記事本文ページ
+import type { Metadata } from 'next'
 import { getAllPostSlugs, getPostBySlug, getPostHtml } from '@/lib/posts'
 import Image from 'next/image'
 import Tag from '@/components/blog/Tag'
 import WorldSync from '@/components/blog/WorldSync'
 import ShareRow from './ShareRow'
+import {
+  SITE_NAME,
+  DEFAULT_OG_IMAGE_PATH,
+  buildBlogPostingJsonLd,
+  jsonLdScriptProps,
+} from '@/lib/seo'
 
 export const dynamic = 'error' // SSG
 
@@ -12,17 +19,39 @@ export async function generateStaticParams() {
   return slugs.map((slug) => ({ slug }))
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
   const { slug } = await params
   const post = getPostBySlug(slug)
   if (!post) return { title: 'Not found' }
+
+  const url = `/blog/${slug}`
+  const publishedTime = new Date(post.date).toISOString()
+
   return {
     title: post.title,
     description: post.description,
+    alternates: { canonical: url },
     openGraph: {
+      type: 'article',
+      locale: 'ja_JP',
+      siteName: SITE_NAME,
       title: post.title,
       description: post.description,
-      images: post.thumbnail ? [{ url: post.thumbnail }] : undefined,
+      url,
+      publishedTime,
+      tags: post.tags,
+      // thumbnail があればそれを、無ければサイト共通のデフォルトOG画像を使う。
+      images: [{ url: post.thumbnail ?? DEFAULT_OG_IMAGE_PATH }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.description,
+      images: [post.thumbnail ?? DEFAULT_OG_IMAGE_PATH],
     },
   }
 }
@@ -53,17 +82,28 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   }
 
   const world = post.category
+  const postJsonLd = buildBlogPostingJsonLd({
+    slug: post.slug,
+    title: post.title,
+    description: post.description,
+    date: post.date,
+    image: post.thumbnail,
+    tags: post.tags,
+  })
 
   return (
     <div data-world={world} className="flex-1 bg-bg">
       <WorldSync world={world} />
+      <script {...jsonLdScriptProps(postJsonLd)} />
       <div className="mx-auto max-w-3xl px-4 py-16 md:px-8 md:py-24">
         <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold leading-tight text-ink">
           {post.title}
         </h1>
 
         <div className="mt-4 flex flex-wrap items-center gap-3 font-mono text-sm text-ink-faint">
-          <time dateTime={post.date}>{new Date(post.date).toLocaleDateString('ja-JP')}</time>
+          <time dateTime={new Date(post.date).toISOString()}>
+            {new Date(post.date).toLocaleDateString('ja-JP')}
+          </time>
           {post.tags?.map((tag) => <Tag key={tag}>{tag}</Tag>)}
         </div>
 
