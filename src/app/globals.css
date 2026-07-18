@@ -10,3 +10,15 @@ pre[data-theme] {
 code[data-theme] {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
+
+/*
+ * rehype-pretty-code はデュアルテーマ(github-dark-default / github-light)で
+ * ビルドしており、各トークンに `--shiki-dark` / `--shiki-light` の
+ * CSSカスタムプロパティを持たせている（shikiのデフォルト挙動では未指定時は
+ * light側の値がそのままインラインcolorとして採用される）。
+ * P1時点では data-world によるテーマ切替をまだ配線していないため、
+ * ここでは暫定的にダーク固定表示にしておく（P2でtech/daily世界に追従させる）。
+ */
+code[data-theme] span {
+  color: var(--shiki-dark) !important;
+}

@@ -65,6 +65,81 @@ const getMarkdownStyles = (isDaily: boolean) => ({
   '& table': { borderCollapse: 'collapse', width: '100%', marginBottom: '1rem' },
   '& th, & td': { border: isDaily ? '1px solid #e2e8f0' : '1px solid #4a5568', padding: '0.5rem', color: isDaily ? '#4a5568' : 'inherit' },
   '& th': { backgroundColor: isDaily ? '#f7fafc' : '#2d3748' },
+  // コードブロックのファイル名ヘッダ（```js:app.js` → title）。P2で再デザイン予定の暫定スタイル。
+  '& [data-rehype-pretty-code-title]': {
+    fontFamily: 'var(--font-mono, ui-monospace, monospace)',
+    fontSize: '0.8rem',
+    padding: '0.4rem 1rem',
+    borderRadius: '8px 8px 0 0',
+    backgroundColor: isDaily ? '#e2e8f0' : '#0d1117',
+    color: isDaily ? '#4a5568' : '#8b949e',
+    border: isDaily ? '1px solid #e2e8f0' : 'none',
+    borderBottom: 'none',
+  },
+  '& [data-rehype-pretty-code-title] + pre': { marginTop: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0 },
+  // noteブロック（:::note info|warn|alert）。DESIGN.md §5準拠の暫定配色（P2でトークン化）。
+  '& .note': {
+    borderRadius: '8px',
+    padding: '1rem 1.25rem',
+    margin: '1.5rem 0',
+    borderLeft: '4px solid',
+    lineHeight: 1.8,
+  },
+  '& .note p:last-child, & .note ul:last-child, & .note ol:last-child': { marginBottom: 0 },
+  '& .note-info': {
+    backgroundColor: 'rgba(59, 130, 246, 0.08)',
+    borderLeftColor: '#3b82f6',
+  },
+  '& .note-warn': {
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    borderLeftColor: '#f59e0b',
+  },
+  '& .note-alert': {
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderLeftColor: '#ef4444',
+  },
+  // リンクカード（裸URL段落 → OGPカード）。DESIGN.md §5準拠の暫定スタイル（P2でトークン化）。
+  '& .link-card': {
+    display: 'flex',
+    alignItems: 'stretch',
+    gap: '1rem',
+    border: isDaily ? '1px solid #e2e8f0' : '1px solid #2d3748',
+    borderRadius: '12px',
+    padding: '1rem',
+    margin: '1.5rem 0',
+    textDecoration: 'none',
+    color: 'inherit',
+    transition: 'border-color 0.2s ease',
+  },
+  '& .link-card:hover': { borderColor: isDaily ? '#94a3b8' : '#4a5568' },
+  '& .link-card-text': { display: 'flex', flexDirection: 'column', gap: '0.35rem', flex: '1 1 auto', minWidth: 0 },
+  '& .link-card-title': {
+    fontWeight: 700,
+    color: isDaily ? '#1a202c' : 'inherit',
+    display: '-webkit-box',
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: 'vertical',
+    overflow: 'hidden',
+  },
+  '& .link-card-description': {
+    fontSize: '0.875rem',
+    color: isDaily ? '#718096' : '#a0aec0',
+    display: '-webkit-box',
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: 'vertical',
+    overflow: 'hidden',
+  },
+  '& .link-card-meta': {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.35rem',
+    fontSize: '0.75rem',
+    color: isDaily ? '#a0aec0' : '#718096',
+    marginTop: 'auto',
+  },
+  '& .link-card-favicon': { width: '16px', height: '16px', margin: 0, borderRadius: '3px' },
+  '& .link-card-image': { flex: '0 0 33%', maxWidth: '160px', borderRadius: '8px', overflow: 'hidden' },
+  '& .link-card-image img': { width: '100%', height: '100%', margin: 0, borderRadius: 0, objectFit: 'cover' },
 })
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {

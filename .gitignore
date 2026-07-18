@@ -20,6 +20,9 @@
 /.next/
 /out/
 
+# OGP取得キャッシュ（scripts/lib/markdown/ogp.ts）
+/.cache/
+
 # production
 /build
 
