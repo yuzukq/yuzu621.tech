@@ -158,6 +158,18 @@ three.js + `@pixiv/three-vrm` 一式は `next/dynamic`(`ssr: false`)でCSR分離
 - `src/data/products.ts` — プロダクトカード(制作物)
 - `src/data/skills.ts` — スキルのレーダーチャート・保有資格
 - `src/data/aboutme.ts` — 自己紹介文
+- `src/data/external-articles.ts` — 外部プラットフォームに書いた記事(Zenn・会社Techブログ等)の手動リスト
+
+## 外部記事の表示
+
+ブログ一覧(techタブ)には、ローカル記事に加えて外部プラットフォームの記事が
+出典バッジ付きで日付順に混ざって表示されます。
+
+- **Qiita**: [公開API](https://qiita.com/api/v2/users/yuzukq/items)から自動取得
+  (`src/lib/external-articles.ts`)。Next.js Data Cacheで1時間キャッシュされるため、
+  投稿後はデプロイ不要で最長1時間で反映されます。取得失敗時はローカル記事のみで表示。
+- **Zenn・会社Techブログ等**: `src/data/external-articles.ts` に1エントリ追加するだけ。
+- サムネイルは未指定なら記事URLのog:imageを自動取得。外部記事はsitemapに含めません。
 
 ## 開発
 

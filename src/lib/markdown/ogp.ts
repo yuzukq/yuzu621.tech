@@ -59,7 +59,7 @@ function decodeEntities(input: string): string {
     .trim()
 }
 
-function extractMetaContent(html: string, prop: string): string | undefined {
+export function extractMetaContent(html: string, prop: string): string | undefined {
   const escaped = prop.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   const patterns = [
     new RegExp(`<meta[^>]+(?:property|name)=["']${escaped}["'][^>]*content=["']([^"']*)["'][^>]*>`, 'i'),
@@ -77,7 +77,7 @@ function extractTitleTag(html: string): string | undefined {
   return m ? decodeEntities(m[1]) : undefined
 }
 
-function resolveUrl(base: string, maybeRelative: string): string {
+export function resolveUrl(base: string, maybeRelative: string): string {
   try {
     return new URL(maybeRelative, base).toString()
   } catch {
