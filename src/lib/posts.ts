@@ -41,10 +41,21 @@ export function getPostBySlug(slug: string): Post | null {
   const fileContents = fs.readFileSync(fullPath, 'utf8')
   const { data, content } = matter(fileContents)
 
+  // gray-matter はfrontmatterの日付をDateオブジェクトで返す。Dateのまま
+  // クライアントコンポーネントへ渡すとSSRとhydrationでシリアライズ結果が
+  // 食い違うため、ここで必ずISO文字列に正規化する。
+  const rawDate = data.date
+  const date =
+    rawDate instanceof Date
+      ? rawDate.toISOString()
+      : rawDate
+        ? new Date(rawDate).toISOString()
+        : new Date().toISOString()
+
   const meta: PostMeta = {
     slug: data.slug || slug,
     title: data.title || slug,
-    date: data.date || new Date().toISOString(),
+    date,
     description: data.description || getExcerpt(content),
     tags: Array.isArray(data.tags) ? data.tags : undefined,
     thumbnail: data.thumbnail || extractFirstImageSrc(content),

@@ -3,6 +3,7 @@
 import NextImage from "next/image"
 import NextLink from "next/link"
 import type { PostMeta } from "@/lib/posts"
+import { formatDateJa } from "@/lib/format-date"
 import { useInView } from "@/hooks/useInView"
 import Tag from "./Tag"
 
@@ -47,13 +48,7 @@ export default function BlogCard({ post, index }: BlogCardProps) {
           <div className="flex items-center gap-2 font-mono text-xs text-ink-faint">
             <span className="uppercase tracking-wider">{post.category}</span>
             <span aria-hidden="true">/</span>
-            <time dateTime={post.date}>
-              {new Date(post.date).toLocaleDateString("ja-JP", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </time>
+            <time dateTime={post.date}>{formatDateJa(post.date)}</time>
           </div>
 
           <h2 className="line-clamp-2 font-body text-lg font-bold text-ink">

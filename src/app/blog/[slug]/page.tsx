@@ -1,6 +1,7 @@
 // ブログ記事本文ページ
 import type { Metadata } from 'next'
 import { getAllPostSlugs, getPostBySlug, getPostHtml } from '@/lib/posts'
+import { formatDateJa } from '@/lib/format-date'
 import Image from 'next/image'
 import Tag from '@/components/blog/Tag'
 import WorldSync from '@/components/blog/WorldSync'
@@ -101,9 +102,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         </h1>
 
         <div className="mt-4 flex flex-wrap items-center gap-3 font-mono text-sm text-ink-faint">
-          <time dateTime={new Date(post.date).toISOString()}>
-            {new Date(post.date).toLocaleDateString('ja-JP')}
-          </time>
+          <time dateTime={post.date}>{formatDateJa(post.date)}</time>
           {post.tags?.map((tag) => <Tag key={tag}>{tag}</Tag>)}
         </div>
 

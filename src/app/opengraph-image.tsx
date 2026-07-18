@@ -19,7 +19,7 @@ export default function OpengraphImage() {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: '#0B0E14',
+          backgroundColor: '#0C1214',
         }}
       >
         <div
@@ -28,7 +28,7 @@ export default function OpengraphImage() {
             fontSize: 96,
             fontWeight: 700,
             letterSpacing: -2,
-            color: '#FFC838',
+            color: '#39C5BB',
           }}
         >
           yuzu621.tech
@@ -39,7 +39,7 @@ export default function OpengraphImage() {
             marginTop: 20,
             fontSize: 28,
             fontWeight: 400,
-            color: '#9AA3B2',
+            color: '#96A8A7',
           }}
         >
           Portfolio & Blog

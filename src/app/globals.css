@@ -11,22 +11,22 @@
  * CSS変数で解決し、コンポーネント側で tech/daily の三項分岐はしない。
  * ============================================================ */
 [data-world="tech"] {
-  --bg: #0b0e14; /* ベース背景(近黒ネイビー) */
-  --surface: #131826; /* カード・浮遷面 */
-  --surface-hover: #1a2132;
-  --ink: #e6e9f0; /* 本文 */
-  --ink-muted: #9aa3b2; /* 補助テキスト */
-  --ink-faint: #5c6572; /* さらに弱い(日付等) */
-  --accent: #ffc838; /* 柚子イエロー(主役) */
-  --accent-hover: #ffd75e;
-  --accent-2: #7c86ff; /* ペリウィンクル(宇宙の差し色) */
-  --border: rgba(230, 233, 240, 0.08);
-  --border-strong: rgba(230, 233, 240, 0.16);
-  --glow: 0 0 24px rgba(255, 200, 56, 0.15); /* アクセントの発光 */
+  --bg: #0c1214; /* ベース背景(ティールがかった近黒) */
+  --surface: #121a1d; /* カード・浮遷面 */
+  --surface-hover: #182428;
+  --ink: #e4eceb; /* 本文 */
+  --ink-muted: #96a8a7; /* 補助テキスト */
+  --ink-faint: #5d6d6d; /* さらに弱い(日付等) */
+  --accent: #39c5bb; /* ミクティール(主役) */
+  --accent-hover: #5bd5cc;
+  --accent-2: #e12885; /* ミクマゼンタ(差し色。多用しない) */
+  --border: rgba(228, 236, 235, 0.08);
+  --border-strong: rgba(228, 236, 235, 0.16);
+  --glow: 0 0 24px rgba(57, 197, 187, 0.18); /* ティールの発光 */
 
   /* note ブロック(§5)専用の拡張トークン。§2の基本パレットにない
      warn/alert の色相のみ、ここに限定して追加する。 */
-  --note-info: var(--accent-2);
+  --note-info: var(--accent);
   --note-warn: #f5a524;
   --note-alert: #f0554a;
 
@@ -34,20 +34,20 @@
 }
 
 [data-world="daily"] {
-  --bg: #faf6ef; /* 温かい紙色 */
+  --bg: #f4f9f8; /* ミントがかった淡いグレー */
   --surface: #ffffff;
-  --surface-hover: #fff9ee;
-  --ink: #2a2722;
-  --ink-muted: #6b675f;
-  --ink-faint: #9c968a;
-  --accent: #d97706; /* 柚子オレンジ(ライトで読める濃度) */
-  --accent-hover: #b45f04;
-  --accent-2: #7ba05b; /* 葉っぱのグリーン */
-  --border: rgba(42, 39, 34, 0.1);
-  --border-strong: rgba(42, 39, 34, 0.2);
+  --surface-hover: #eaf4f3;
+  --ink: #253335;
+  --ink-muted: #5c6e6d;
+  --ink-faint: #8fa1a0;
+  --accent: #0f8f86; /* ティール(ライト背景でAAを満たす濃度) */
+  --accent-hover: #0b6f68;
+  --accent-2: #c21e6f; /* マゼンタ(ライト用濃度) */
+  --border: rgba(37, 51, 53, 0.1);
+  --border-strong: rgba(37, 51, 53, 0.2);
   --glow: none;
 
-  --note-info: var(--accent-2);
+  --note-info: var(--accent);
   --note-warn: #b45309;
   --note-alert: #c0362c;
 

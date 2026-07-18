@@ -70,7 +70,7 @@ export default function VrmCanvas() {
       <canvas
         ref={canvasRef}
         aria-hidden="true"
-        className={`h-full w-full transition-opacity duration-700 ${
+        className={`h-full w-full transition-opacity duration-700 [mask-image:linear-gradient(to_bottom,black_82%,transparent_100%)] ${
           status === "ready" ? "opacity-100" : "opacity-0"
         }`}
       />

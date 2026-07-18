@@ -48,6 +48,10 @@ const LOOK_AT_RANGE_Y = 0.35
 const BLINK_DURATION_SEC = 0.16
 const BLINK_MIN_INTERVAL_SEC = 2.5
 const BLINK_MAX_INTERVAL_SEC = 6.5
+const HEAD_TOP_MARGIN = 0.24 // m, 頭ボーンから頭頂+髪までの見込み高さ
+const HIPS_BOTTOM_MARGIN = 0.05 // m, 腰ボーンの下に持たせる余白
+const UPPER_ARM_DOWN = 1.15 // rad, Tポーズから腕を下ろす角度(≈66°)
+const LOWER_ARM_BEND = 0.25 // rad, 肘のわずかな曲げ
 const MAX_PIXEL_RATIO = 2
 const MAX_DELTA_SEC = 0.1 // タブ非表示からの復帰時などに大きな delta で動きが飛ばないようにする
 
@@ -109,6 +113,18 @@ export async function createVrmScene({
   const spineBone = vrm.humanoid.getNormalizedBoneNode(VRMHumanBoneName.Spine)
   const hipsBone = vrm.humanoid.getNormalizedBoneNode(VRMHumanBoneName.Hips)
 
+  // VRMのレスト姿勢はTポーズなので、腕を下ろした自然な立ちポーズを一度だけ
+  // 設定する(正規化ボーン空間: 左腕は+X向き、下ろすのはZ軸まわりの回転)。
+  // 待機モーションは腕を触らないため、この姿勢はそのまま維持される。
+  const leftUpperArm = vrm.humanoid.getNormalizedBoneNode(VRMHumanBoneName.LeftUpperArm)
+  const rightUpperArm = vrm.humanoid.getNormalizedBoneNode(VRMHumanBoneName.RightUpperArm)
+  const leftLowerArm = vrm.humanoid.getNormalizedBoneNode(VRMHumanBoneName.LeftLowerArm)
+  const rightLowerArm = vrm.humanoid.getNormalizedBoneNode(VRMHumanBoneName.RightLowerArm)
+  if (leftUpperArm) leftUpperArm.rotation.z = UPPER_ARM_DOWN
+  if (rightUpperArm) rightUpperArm.rotation.z = -UPPER_ARM_DOWN
+  if (leftLowerArm) leftLowerArm.rotation.z = LOWER_ARM_BEND
+  if (rightLowerArm) rightLowerArm.rotation.z = -LOWER_ARM_BEND
+
   // 各ボーンのレスト姿勢を保持し、毎フレーム「レスト * オフセット」で
   // 姿勢を再構築する(差分の積み重ねによるドリフトを防ぐ)。
   const restQuats = new Map<THREE.Object3D, THREE.Quaternion>()
@@ -117,12 +133,30 @@ export async function createVrmScene({
   }
   const hipsRestY = hipsBone?.position.y ?? 0
 
-  // カメラフレーミング: 特定モデルの身長を前提にせず、ロード後のバウンディング
-  // ボックスから胸〜頭が収まる高さを自動算出する。
-  const box = new THREE.Box3().setFromObject(vrm.scene)
-  const size = box.getSize(new THREE.Vector3())
-  const focusHeight = box.min.y + size.y * 0.62
-  const cameraDistance = Math.max(size.y * 0.95, 0.8)
+  // カメラフレーミング: メッシュ全体のバウンディングボックスは頭上のリング・
+  // 髪・スカートなどのアクセサリで実際の体格より大きくブレるため使わない。
+  // ヒューマノイドの生ボーン(頭・腰)のワールド座標から「腰上〜頭上」の
+  // バストアップを組み立てる。ボーンが取れない場合のみボックスに退避する。
+  vrm.scene.updateMatrixWorld(true)
+  const measureHead = vrm.humanoid.getRawBoneNode(VRMHumanBoneName.Head)
+  const measureHips = vrm.humanoid.getRawBoneNode(VRMHumanBoneName.Hips)
+  const fovHalfTan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))
+
+  let focusHeight: number
+  let cameraDistance: number
+  if (measureHead && measureHips) {
+    const headY = measureHead.getWorldPosition(new THREE.Vector3()).y
+    const hipsY = measureHips.getWorldPosition(new THREE.Vector3()).y
+    const top = headY + HEAD_TOP_MARGIN // 頭ボーンより上の頭部メッシュ+髪の分
+    const bottom = hipsY - HIPS_BOTTOM_MARGIN
+    focusHeight = (top + bottom) / 2
+    cameraDistance = Math.max((top - bottom) / (2 * fovHalfTan), 0.6)
+  } else {
+    const box = new THREE.Box3().setFromObject(vrm.scene)
+    const size = box.getSize(new THREE.Vector3())
+    focusHeight = box.min.y + size.y * 0.62
+    cameraDistance = Math.max(size.y * 0.95, 0.8)
+  }
   camera.position.set(0, focusHeight, cameraDistance)
   camera.lookAt(0, focusHeight, 0)
 
