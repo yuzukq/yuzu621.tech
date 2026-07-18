@@ -110,7 +110,7 @@ export default function BlogCard({ item, index }: BlogCardProps) {
   return (
     <div
       ref={ref}
-      className={isInView ? "animate-fade-in-up" : "opacity-0"}
+      className={isInView ? "animate-fade-in" : "opacity-0"}
       style={{ animationDelay: `${index * 100}ms` }}
     >
       {external ? (

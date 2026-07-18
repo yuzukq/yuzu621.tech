@@ -76,18 +76,18 @@
 
   --shadow-glow: var(--glow);
 
-  --animate-fade-in-up: fade-in-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  /* fill-mode は both 必須: forwards だと animationDelay の待機中に素の状態
+     (opacity:1)が見え、「一瞬見える→消える→フェードイン」の二重発火に見える */
+  --animate-fade-in: fade-in 0.8s ease-out both;
   --animate-vrm-float: vrm-float 6s ease-in-out infinite;
 }
 
-@keyframes fade-in-up {
+@keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(24px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 

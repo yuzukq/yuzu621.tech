@@ -16,7 +16,7 @@ export default function FadeIn({ children, delay = 0, className }: FadeInProps) 
   return (
     <div
       ref={ref}
-      className={`${isInView ? "animate-fade-in-up" : "opacity-0"}${className ? ` ${className}` : ""}`}
+      className={`${isInView ? "animate-fade-in" : "opacity-0"}${className ? ` ${className}` : ""}`}
       style={{ animationDelay: `${delay}ms` }}
     >
       {children}

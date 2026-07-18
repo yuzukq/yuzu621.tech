@@ -131,7 +131,7 @@ rem値に 16/18 を掛けた補正値で従来の実寸(h1: 28〜40px / h2: 24px
 
 ## 6. モーション
 
-- 入場: IntersectionObserver で `opacity 0→1` + `translateY(24px→0)`、`0.9s cubic-bezier(0.16, 1, 0.3, 1)`(ゆったり減速)。連続要素は 100ms ずつ stagger。速すぎるとチラつきに見えるため、これ以上短くしない。
+- 入場: IntersectionObserver で `opacity 0→1` の純フェード、`0.8s ease-out`。連続要素は 100ms ずつ stagger。位置は動かさない(transform併用時にチラつきの原因になったため)。fill-mode は必ず `both`: `forwards` だと stagger の待機中に素の状態が見えて二重発火に見える。
 - `prefers-reduced-motion: reduce` では全アニメーション無効化。
 - ページ遷移やホバーで過剰な動きをつけない。「上品に、少しだけ」。
 
