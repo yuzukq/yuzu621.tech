@@ -5,12 +5,19 @@ import VrmFallback from "./VrmFallback"
 import { createVrmScene, type VrmSceneHandle } from "./createVrmScene"
 
 const MODEL_URL = "/models/avatar.vrm"
-// 無い/読めない場合は createVrmScene 側でプロシージャル待機に切り替わる
-const ANIMATION_URL = "/models/happy-sway.vrma"
+const ANIMATION_URL = "/models/present-card.vrma"
+// 両腕を伸ばして下から持ち上げる演技を画角に収めるため、Heroのバストアップ
+// フレーミングより下方向に広げる
+const CAMERA_FRAMING = { hipsBottomMargin: 0.55 }
 
 type Status = "loading" | "ready" | "failed"
 
-export default function VrmCanvas() {
+interface VrmScrubCanvasProps {
+  /** 0〜1。TechStackShowcase がスクロール位置から計算し、refで渡す(再レンダー回避) */
+  progressRef: React.RefObject<number>
+}
+
+export default function VrmScrubCanvas({ progressRef }: VrmScrubCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [status, setStatus] = useState<Status>("loading")
@@ -27,7 +34,12 @@ export default function VrmCanvas() {
       canvas,
       container,
       modelUrl: MODEL_URL,
-      motion: { mode: "loop", animationUrl: ANIMATION_URL },
+      cameraFraming: CAMERA_FRAMING,
+      motion: {
+        mode: "scrub",
+        animationUrl: ANIMATION_URL,
+        getProgress: () => progressRef.current,
+      },
     })
       .then((sceneHandle) => {
         if (cancelled) {
@@ -38,9 +50,8 @@ export default function VrmCanvas() {
         setStatus("ready")
       })
       .catch((error: unknown) => {
-        // モデル未配置は正常系(ファイルを置けば表示される)のため error にしない
         console.info(
-          "[vrm] avatar.vrm を読み込めなかったため、プレースホルダを表示します。",
+          "[vrm] present-card.vrma を読み込めなかったため、プレースホルダを表示します。",
           error,
         )
         if (!cancelled) setStatus("failed")
@@ -50,17 +61,14 @@ export default function VrmCanvas() {
       cancelled = true
       handle?.dispose()
     }
-  }, [])
+  }, [progressRef])
 
   if (status === "failed") {
     return <VrmFallback />
   }
 
   return (
-    <div
-      ref={containerRef}
-      className="relative mx-auto aspect-square w-full max-w-sm md:mx-0 md:ml-auto"
-    >
+    <div ref={containerRef} className="relative h-full w-full">
       {status === "loading" && (
         <div className="absolute inset-0">
           <VrmFallback />
@@ -69,7 +77,7 @@ export default function VrmCanvas() {
       <canvas
         ref={canvasRef}
         aria-hidden="true"
-        className={`h-full w-full transition-opacity duration-700 [mask-image:linear-gradient(to_bottom,black_82%,transparent_100%)] ${
+        className={`h-full w-full transition-opacity duration-700 ${
           status === "ready" ? "opacity-100" : "opacity-0"
         }`}
       />

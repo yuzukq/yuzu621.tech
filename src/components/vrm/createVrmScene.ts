@@ -15,13 +15,30 @@ import {
   type VRMAnimation,
 } from "@pixiv/three-vrm-animation"
 
+export interface VrmCameraFraming {
+  /** 頭ボーンより上の頭部メッシュ+髪ぶん(m) */
+  headTopMargin?: number
+  /** 腰ボーンより下に持たせる余白(m)。腕を下に伸ばす演技を含める場合は広げる */
+  hipsBottomMargin?: number
+}
+
+export type VrmMotion =
+  | { mode: "loop"; animationUrl: string }
+  | {
+      mode: "scrub"
+      animationUrl: string
+      /** 0〜1。毎フレーム読み出し、クリップ内の再生位置に変換する */
+      getProgress: () => number
+    }
+
 export interface VrmSceneOptions {
   canvas: HTMLCanvasElement
   /** サイズ計測と可視判定(IntersectionObserver)の対象になる canvas の親要素 */
   container: HTMLElement
   modelUrl: string
   /** 未指定・読込失敗時はプロシージャル待機モーションにフォールバックする */
-  animationUrl?: string
+  motion?: VrmMotion
+  cameraFraming?: VrmCameraFraming
 }
 
 export interface VrmSceneHandle {
@@ -42,8 +59,8 @@ const LOOK_AT_RANGE_Y = 0.35
 const BLINK_DURATION_SEC = 0.16
 const BLINK_MIN_INTERVAL_SEC = 2.5
 const BLINK_MAX_INTERVAL_SEC = 6.5
-const HEAD_TOP_MARGIN = 0.24 // m, 頭ボーンより上の頭部メッシュ+髪ぶん
-const HIPS_BOTTOM_MARGIN = 0.05 // m
+const DEFAULT_HEAD_TOP_MARGIN = 0.24 // m, 頭ボーンより上の頭部メッシュ+髪ぶん
+const DEFAULT_HIPS_BOTTOM_MARGIN = 0.05 // m
 const UPPER_ARM_DOWN = 1.15 // rad
 const LOWER_ARM_BEND = 0.25 // rad
 const MAX_PIXEL_RATIO = 2
@@ -57,7 +74,8 @@ export async function createVrmScene({
   canvas,
   container,
   modelUrl,
-  animationUrl,
+  motion,
+  cameraFraming,
 }: VrmSceneOptions): Promise<VrmSceneHandle> {
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
@@ -131,14 +149,16 @@ export async function createVrmScene({
   const measureHead = vrm.humanoid.getRawBoneNode(VRMHumanBoneName.Head)
   const measureHips = vrm.humanoid.getRawBoneNode(VRMHumanBoneName.Hips)
   const fovHalfTan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))
+  const headTopMargin = cameraFraming?.headTopMargin ?? DEFAULT_HEAD_TOP_MARGIN
+  const hipsBottomMargin = cameraFraming?.hipsBottomMargin ?? DEFAULT_HIPS_BOTTOM_MARGIN
 
   let focusHeight: number
   let cameraDistance: number
   if (measureHead && measureHips) {
     const headY = measureHead.getWorldPosition(new THREE.Vector3()).y
     const hipsY = measureHips.getWorldPosition(new THREE.Vector3()).y
-    const top = headY + HEAD_TOP_MARGIN
-    const bottom = hipsY - HIPS_BOTTOM_MARGIN
+    const top = headY + headTopMargin
+    const bottom = hipsY - hipsBottomMargin
     focusHeight = (top + bottom) / 2
     cameraDistance = Math.max((top - bottom) / (2 * fovHalfTan), 0.6)
   } else {
@@ -157,19 +177,34 @@ export async function createVrmScene({
     vrm.lookAt.target = lookAtTarget
   }
 
-  // VRMA再生中は happy トラックが毎フレーム上書きするため、これはVRMA無し・
-  // reduced-motion 静止時のための初期値
+  // scrubモードのクリップ自体がexpressionsを持つため、この初期値はloopモード
+  // (happy-sway)とアニメーション無しのフォールバック時にのみ意味を持つ
   expressionManager?.setValue(VRMExpressionPresetName.Happy, 0.85)
 
   let mixer: THREE.AnimationMixer | undefined
-  if (!reducedMotion && animationUrl) {
+  let scrubAction: THREE.AnimationAction | undefined
+  let scrubDuration = 0
+  let getScrubProgress: (() => number) | undefined
+
+  if (!reducedMotion && motion) {
     try {
-      const animGltf = await loader.loadAsync(animationUrl)
+      const animGltf = await loader.loadAsync(motion.animationUrl)
       const vrmAnimation = (animGltf.userData.vrmAnimations as VRMAnimation[] | undefined)?.[0]
       if (vrmAnimation) {
         const clip = createVRMAnimationClip(vrmAnimation, vrm)
         mixer = new THREE.AnimationMixer(vrm.scene)
-        mixer.clipAction(clip).play() // デフォルトが LoopRepeat のためループ指定は不要
+        const action = mixer.clipAction(clip)
+        if (motion.mode === "loop") {
+          action.play() // デフォルトが LoopRepeat のためループ指定は不要
+        } else {
+          // scrubは時間を毎フレーム外部から指定するため、自動再生はさせない。
+          // play()自体は内部状態の初期化(_effectiveWeight等)に必要なため呼んでおく
+          action.play()
+          action.paused = true
+          scrubAction = action
+          scrubDuration = clip.duration
+          getScrubProgress = motion.getProgress
+        }
       }
     } catch (error) {
       // アニメーション欠落はモデル表示を止める理由にならないため、throwしない
@@ -212,6 +247,28 @@ export async function createVrmScene({
 
   let blinkPhase = 0 // 0 = 待機中、>0 = まばたき経過秒
   let blinkCooldown = randomBlinkInterval()
+
+  // scrubモードは体・表情をクリップに委ねるため呼ばない(呼ぶとポインタ追従の
+  // 首振りと外部から設定した姿勢が競合する)。blinkはどのモードでも独立して動く
+  function updateBlink(delta: number) {
+    if (!expressionManager) return
+    if (blinkPhase > 0) {
+      blinkPhase += delta
+      const t = blinkPhase / BLINK_DURATION_SEC
+      if (t >= 1) {
+        expressionManager.setValue(VRMExpressionPresetName.Blink, 0)
+        blinkPhase = 0
+        blinkCooldown = randomBlinkInterval()
+      } else {
+        expressionManager.setValue(VRMExpressionPresetName.Blink, Math.sin(Math.PI * t))
+      }
+    } else {
+      blinkCooldown -= delta
+      if (blinkCooldown <= 0) {
+        blinkPhase = 1e-4
+      }
+    }
+  }
 
   // composeOnAnimatedPose: VRMA再生中はミキサーが決めた頭の姿勢に乗算合成する。
   // レスト基準で上書きするとVRMA側の頭の動きが消えるため
@@ -260,25 +317,7 @@ export async function createVrmScene({
     }
 
     updatePointerFollow(delta, false)
-
-    if (expressionManager) {
-      if (blinkPhase > 0) {
-        blinkPhase += delta
-        const t = blinkPhase / BLINK_DURATION_SEC
-        if (t >= 1) {
-          expressionManager.setValue(VRMExpressionPresetName.Blink, 0)
-          blinkPhase = 0
-          blinkCooldown = randomBlinkInterval()
-        } else {
-          expressionManager.setValue(VRMExpressionPresetName.Blink, Math.sin(Math.PI * t))
-        }
-      } else {
-        blinkCooldown -= delta
-        if (blinkCooldown <= 0) {
-          blinkPhase = 1e-4
-        }
-      }
-    }
+    updateBlink(delta)
   }
 
   function tick(now: number) {
@@ -287,9 +326,14 @@ export async function createVrmScene({
     lastTime = now
     elapsed += delta
 
-    if (mixer) {
+    if (scrubAction && getScrubProgress) {
+      scrubAction.time = THREE.MathUtils.clamp(getScrubProgress(), 0, 1) * scrubDuration
+      mixer!.update(0) // update(0): 内部クロックを進めず、time代入分のポーズだけ反映する
+      updateBlink(delta)
+    } else if (mixer) {
       mixer.update(delta)
       updatePointerFollow(delta, true)
+      updateBlink(delta)
     } else {
       updateIdleMotion(delta)
     }

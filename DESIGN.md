@@ -145,6 +145,31 @@ rem値に 16/18 を掛けた補正値で従来の実寸(h1: 28〜40px / h2: 24px
   (呼吸・揺れ・まばたき)にフォールバック。いずれも派手に動かさない。
 - 品質: `<canvas>` は `aria-hidden`。SEOテキストは通常DOMに置く。低スペック・reduced-motion時は静止。
 
+## 7.5 スクロール連動アバターショーケース(Tech Stack)
+
+lg以上(1024px)・`prefers-reduced-motion`でない場合のみ、TechStackセクションが「左にアバター・
+右に1カテゴリのカード」の構成になり、スクロールでカードとアバターの演技が連動する
+(`TechStackShowcase.tsx` / `VrmScrubCanvas.tsx`)。それ以外(狭い画面・reduced-motion・SSR/初回CSR)
+は従来の全カテゴリ一覧グリッド(`TechStackBody.tsx`のフォールバック分岐)を表示する。
+判定はマウント後の`matchMedia`で行い、フォールバックを初期値にすることでhydrationミスマッチと
+no-js/クローラー向けの全文露出を両立する。全カテゴリのカードは常にDOMに存在し、opacity/translateY
+のみで表示を切り替える(内容の出し分けはしない)。
+
+- **スクロール数式**: 外側wrapperの高さ = `カテゴリ数 × 70vh + 100dvh`。`position: sticky; top: 0`
+  の内側コンテナがピン留めされる区間(=`wrapper高さ - viewport高さ` = カテゴリ数×70vh)を
+  `globalProgress`(0〜1)としてカテゴリ数に按分し、各カテゴリ区間の後半35%(`TRANSITION_BAND`)を
+  次カードへの遷移(アバターの演技)に、前半65%を静止した読了時間に割り当てる。
+- **アバターの演技**: `present-card.vrma`(両手で下から掬い上げて掲げる、非ループ、t=0とt=durationが
+  同一の「休め」姿勢になるよう設計)を、`THREE.AnimationMixer`で自動再生させず
+  `action.time = progress * duration; mixer.update(0)` によって毎フレーム直接スクラブする
+  (`createVrmScene.ts`の`motion.mode === 'scrub'`)。カテゴリの境目でprogressが1→0に飛んでも、
+  両端が同じ姿勢なので見た目はスナップしない。
+- **VRMAの符号に注意**: このアバターでは、three-vrm-animationのretargeting適用後、
+  upperArm/lowerArmのZ、chest/spine/headのXの符号が、生成時にauthorした値から反転して現れる
+  (Yはそのまま)。大きな振れ幅のモーションを作る際は必ず実機で描画確認し、意図と逆に動く場合は
+  該当軸の符号を反転して再生成する(詳細は `~/.claude/skills/vrma-create/reference.md`)。
+- カメラフレーミングはHeroのバストアップより下方向に広げる(`cameraFraming.hipsBottomMargin`)。
+
 ## 8. 禁止事項
 
 - 生HEX・任意値のアドホック指定(トークンを経由する)
