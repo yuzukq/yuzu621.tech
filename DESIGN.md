@@ -170,15 +170,18 @@ sticky headerの下に自然に着地させるためのもの。リード文の�
   の内側コンテナがピン留めされる区間(=`wrapper高さ - viewport高さ` = カテゴリ数×50vh)を
   `globalProgress`(0〜1)としてカテゴリ数に按分し、各カテゴリ区間の後半35%(`TRANSITION_BAND`)を
   次カードへの遷移(アバターの演技)に、前半65%を静止した読了時間に割り当てる。
-- **アバターの演技**: `present-card.vrma`(両手で下から掬い上げて掲げる、非ループ、t=0とt=durationが
-  同一の「休め」姿勢になるよう設計)を、`THREE.AnimationMixer`で自動再生させず
-  `action.time = progress * duration; mixer.update(0)` によって毎フレーム直接スクラブする
-  (`createVrmScene.ts`の`motion.mode === 'scrub'`)。カテゴリの境目でprogressが1→0に飛んでも、
-  両端が同じ姿勢なので見た目はスナップしない。
+- **アバターの演技**: `present-card.vrma`(体ごとカード側へターンしながら屈み込んで両手で掴み、
+  よいしょと気合いを入れて持ち上げる。非ループ、t=0とt=durationが同一の「休め」姿勢になるよう設計)を、
+  `THREE.AnimationMixer`で自動再生させず`action.time = progress * duration; mixer.update(0)`
+  によって毎フレーム直接スクラブする(`createVrmScene.ts`の`motion.mode === 'scrub'`)。カテゴリの
+  境目でprogressが1→0に飛んでも、両端が同じ姿勢なので見た目はスナップしない。
 - **VRMAの符号に注意**: このアバターでは、three-vrm-animationのretargeting適用後、
-  upperArm/lowerArmのZ、chest/spine/headのXの符号が、生成時にauthorした値から反転して現れる
-  (Yはそのまま)。大きな振れ幅のモーションを作る際は必ず実機で描画確認し、意図と逆に動く場合は
-  該当軸の符号を反転して再生成する(詳細は `~/.claude/skills/vrma-create/reference.md`)。
+  upperArm/lowerArmのZの符号が、生成時にauthorした値から反転して現れる(Yはそのまま)。
+  大きな振れ幅のモーションを作る際は必ず実機で描画確認し、意図と逆に動く場合は該当軸の符号を
+  反転して再生成する。**注意**: `~/.claude/skills/vrma-create/reference.md`にはchest/spine/head
+  のXも反転すると書かれているが、本セッションでPlaywright経由で実際のボーン回転値を直接検証した
+  ところ、chest/spine/headのXは反転せず標準規約通り(+で前屈)に適用されることを確認した
+  (前回セッションの記述は誤りだった可能性が高い。ユーザーに報告済み、reference.md未修正)。
 - カメラフレーミングはHeroのバストアップより下方向に広げる(`cameraFraming.hipsBottomMargin`)。
 
 ## 7.6 セクションスクロールスナップ(プロフィール)
