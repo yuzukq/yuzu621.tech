@@ -6,7 +6,7 @@ import { createVrmScene, type VrmSceneHandle } from "./createVrmScene"
 
 const MODEL_URL = "/models/avatar.vrm"
 // 無い/読めない場合は createVrmScene 側でプロシージャル待機に切り替わる
-const ANIMATION_URL = "/models/happy-sway.vrma"
+const ANIMATION_URL = "/models/loop_verse.vrma"
 
 type Status = "loading" | "ready" | "failed"
 
