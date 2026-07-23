@@ -1,23 +1,29 @@
 // Hero→About間でアバターが移動する演出の進捗計算。FloatingAvatar(アバター自体の
 // 移動)とAboutIntro(見出し・吹き出しのフェード)の両方から同じ値を参照するため、
 // 式をここ1箇所にまとめて食い違いを防ぐ。
-const TRAVEL_BAND_EXTRA_PX = 200
+//
+// ビューポート相対(「Aboutが画面下端からNpx以内に来たら」)ではなく、絶対スクロール量
+// (scrollY / 到達に必要なscrollY)で計算する。Heroが85dvhとビューポートより低いため、
+// ビューポート相対の式だとscrollY=0の時点で既にAboutが「近い」判定になってしまい、
+// ページ読み込み直後からアバターが動いた状態で表示される不具合があった。
+
 // #aboutのscroll-mt-20(Tailwind, 5rem)と揃える。scroll-snapで#aboutが実際に
-// 静止する位置はtop:0ではなくこの値になるため、0ではなくこれを「到達」とみなす
-// (0のままだと自然にスクロールしただけでは進捗が0.9台で頭打ちになり、
-// フェードイン・ドックのしきい値に届かなくなる)
+// 静止するscrollYはセクション自身のドキュメント座標topそのものではなくこの分
+// 手前になる
 const REST_TOP_PX = 80
 
 /**
- * #aboutセクション自身の上端がビューポート下端からTRAVEL_BAND_EXTRA_PX手前まで
- * 来た時点で0、scroll-snapでの静止位置(REST_TOP_PX)に達した時点で1になる
- * 0〜1の進捗値。渡すのは#aboutセクション自身のtop(アバターの配置先スロットの
- * topではない。スロットは見出し分だけ下にオフセットされ0に到達しないため)。
+ * scrollY=0で0、#aboutがscroll-snapで静止するscrollY
+ * (aboutSectionDocTop - REST_TOP_PX)に達した時点で1になる0〜1の進捗値。
+ * aboutSectionDocTopは#aboutセクション自身のドキュメント座標top
+ * (getBoundingClientRect().top + window.scrollY)。アバターの配置先スロットの
+ * topではない(スロットは見出し分だけ下にオフセットされ、それを基準にすると
+ * 自然にスクロールしただけでは進捗が0.9台で頭打ちになる)。
  */
-export function computeTravelProgress(aboutSectionTop: number, viewportHeight: number): number {
-  const bandStart = viewportHeight + TRAVEL_BAND_EXTRA_PX
-  const raw = (bandStart - aboutSectionTop) / (bandStart - REST_TOP_PX)
-  return Math.min(Math.max(raw, 0), 1)
+export function computeTravelProgress(scrollY: number, aboutSectionDocTop: number): number {
+  const travelEndY = aboutSectionDocTop - REST_TOP_PX
+  if (travelEndY <= 0) return 1
+  return Math.min(Math.max(scrollY / travelEndY, 0), 1)
 }
 
 const TEXT_FADE_START = 0.9

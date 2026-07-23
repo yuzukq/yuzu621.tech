@@ -76,8 +76,9 @@ export default function FloatingAvatar({ heroSlotRef, aboutSlotRef }: FloatingAv
       const heroRect = heroEl.getBoundingClientRect()
       const aboutRect = aboutEl.getBoundingClientRect()
       // 進捗はaboutスロット(見出し分オフセットされていて0に到達しない)ではなく
-      // セクション自身の位置から計算する(avatarTravel.tsのコメント参照)
-      const progress = computeTravelProgress(aboutSection.getBoundingClientRect().top, window.innerHeight)
+      // セクション自身の絶対位置から計算する(avatarTravel.tsのコメント参照)
+      const aboutSectionDocTop = aboutSection.getBoundingClientRect().top + window.scrollY
+      const progress = computeTravelProgress(window.scrollY, aboutSectionDocTop)
       dockedRef.current = nextDockedState(progress, dockedRef.current)
 
       // 基準位置は常にHeroスロット。transformはそこからAboutスロットへの差分を

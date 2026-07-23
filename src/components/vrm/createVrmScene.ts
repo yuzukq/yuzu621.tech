@@ -415,7 +415,12 @@ export async function createVrmScene({
         }
       }
       mixer!.update(delta)
-      updatePointerFollow(delta, true)
+      // composeOnAnimatedPose=false(レスト基準)にする: dockAction(v-sign)側に
+      // headのトラックが無い場合、mixer.update()はheadBoneに触れないため、
+      // trueのまま毎フレームmultiplyすると前フレームの結果に乗算が積み重なり
+      // 頭が際限なく回転し続けるバグになる。レスト基準で上書きすればクリップ側の
+      // 頭の動きは犠牲になるが、この方が安全
+      updatePointerFollow(delta, false)
       updateBlink(delta)
     } else if (mixer) {
       mixer.update(delta)

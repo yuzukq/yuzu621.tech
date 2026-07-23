@@ -37,10 +37,11 @@ export default function AboutIntro({ description }: AboutIntroProps) {
     function update() {
       frame = 0
       // 進捗はaboutスロット(見出し分オフセットされていて0に到達しない)ではなく
-      // セクション自身の位置から計算する(avatarTravel.tsのコメント参照)
+      // セクション自身の絶対位置から計算する(avatarTravel.tsのコメント参照)
       const aboutSection = document.getElementById("about")
       if (!aboutSection || !heading || !text) return
-      const progress = computeTravelProgress(aboutSection.getBoundingClientRect().top, window.innerHeight)
+      const aboutSectionDocTop = aboutSection.getBoundingClientRect().top + window.scrollY
+      const progress = computeTravelProgress(window.scrollY, aboutSectionDocTop)
       const opacity = String(computeTextOpacity(progress))
       heading.style.opacity = opacity
       text.style.opacity = opacity

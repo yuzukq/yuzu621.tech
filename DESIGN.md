@@ -253,12 +253,18 @@ Vue+GSAP+Three.jsのフルページ3Dシーンで、1体のアバターを3D空�
   canvasの実サイズ(`clientWidth`/`clientHeight`)は変えない:
   `createVrmScene`のResizeObserverがそこでカメラを再計算するため、動かすたびに
   カメラが暴れてしまう。見た目のサイズ変化は`transform: scale()`だけで表現する。
-- **進捗の基準点に注意**: 移動の進捗(0〜1)は`aboutSlotRef`(アバターの実際の配置先。
-  見出しぶん下にオフセットされている)ではなく`#about`セクション自身の
-  `getBoundingClientRect().top`から計算する(`avatarTravel.ts`)。スロット基準に
-  すると、scroll-snapでの自然な静止位置に達してもtopが0まで届かず、進捗が0.9台で
-  頭打ちになりフェードイン・ドックのしきい値に永久に届かない不具合になる。
-  `REST_TOP_PX`(`scroll-mt-20`と同じ80px)を「到達」とみなすことでこれを回避している。
+- **進捗はビューポート相対ではなく絶対スクロール量で計算**(`avatarTravel.ts`の
+  `computeTravelProgress(scrollY, aboutSectionDocTop)`)。渡すのは`aboutSlotRef`
+  (アバターの実際の配置先。見出しぶん下にオフセットされている)ではなく`#about`
+  セクション自身のドキュメント座標top。`REST_TOP_PX`(`scroll-mt-20`と同じ80px)を
+  引いた値を「到達scrollY」とみなし、`scrollY / 到達scrollY`を0〜1にクランプする。
+  この形にする前は「Aboutがビューポート下端から200px手前まで来たら0」という
+  ビューポート相対の式だったが、Heroが`min-h-[85dvh]`でビューポートより低いため、
+  scrollY=0の時点で既にAboutがその範囲に入ってしまい、ページ読み込み直後から
+  アバターが移動済みの状態(Heroでの位置ズレ)になる不具合があった。また
+  `aboutSlotRef`基準だと、scroll-snapでの自然な静止位置に達してもtopが0まで届かず
+  進捗が0.9台で頭打ちになる問題もあり、この2つを避けるため絶対スクロール量+
+  セクション自身のtopという現在の形にした。
 - **アニメーション**: `createVrmScene.ts`の`VrmMotion`に`"dock"`モードを追加。通常は
   Heroのループ(`loop_verse.vrma`)を再生し、`getDocked()`がtrueに変わった瞬間
   `v-sign.vrma`(ワンショット、ピースサインで静止)へ`crossFadeTo`する。逆方向は
@@ -268,6 +274,13 @@ Vue+GSAP+Three.jsのフルページ3Dシーンで、1体のアバターを3D空�
   `crossFadeTo`をそのまま使ってよい。ドック判定は0.95で入り0.85を下回るまで解除しない
   ヒステリシスを持たせ、しきい値付近の往復スクロールでの発火連打を防いでいる
   (`nextDockedState`)。
+- **マウス追従の頭部回転は`composeOnAnimatedPose=false`固定**: dockモードでは
+  `updatePointerFollow`をレスト基準(`false`)で呼ぶ。`true`(合成基準、通常の
+  `loop`モードと同じ)のままだと、`v-sign.vrma`にheadボーンのトラックが無い場合
+  `mixer.update()`がheadBoneに触れず、毎フレームの`quaternion.multiply()`が
+  前フレームの結果に積み重なって頭部が際限なく回転し続けるバグになる
+  (Aboutにドックした状態で発生していた)。レスト基準にするとクリップ側の頭の
+  動きは犠牲になるが、安全を優先した。
 - **2Dテキストのフェード**: 見出し・吹き出し(`AboutIntro.tsx`)は`FadeIn`の
   IntersectionObserverではなく、アバター移動と同じ進捗値から直接`opacity`を
   設定する(移動の最後10%でフェードイン、逆方向で対称にフェードアウト)。
