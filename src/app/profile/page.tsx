@@ -7,6 +7,7 @@ import Hero from "@/components/profile/Hero"
 import About from "@/components/profile/About"
 import Products from "@/components/profile/Products"
 import TechStack from "@/components/profile/TechStack"
+import AvatarTravelProvider from "@/components/vrm/AvatarTravelContext"
 import {
   SITE_NAME,
   DEFAULT_DESCRIPTION,
@@ -49,8 +50,10 @@ export default function ProfilePage() {
       <script {...jsonLdScriptProps(personJsonLd)} />
       <ProfileHeader />
       <main className="flex-1">
-        <Hero />
-        <About />
+        <AvatarTravelProvider>
+          <Hero />
+          <About />
+        </AvatarTravelProvider>
         <Products />
         <TechStack />
       </main>

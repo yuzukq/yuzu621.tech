@@ -1,5 +1,5 @@
 import { FaDiscord, FaGithub } from "react-icons/fa"
-import VrmHeroSlot from "@/components/vrm/VrmHeroSlot"
+import HeroAvatarDock from "@/components/vrm/HeroAvatarDock"
 import FadeIn from "./FadeIn"
 
 // Footer.tsx と同じ実在の連絡先URLを使う(プロフィールのリンク切れ防止のため勝手に増やさない)
@@ -43,7 +43,7 @@ export default function Hero() {
         </FadeIn>
 
         <FadeIn delay={120}>
-          <VrmHeroSlot />
+          <HeroAvatarDock />
         </FadeIn>
       </div>
     </section>

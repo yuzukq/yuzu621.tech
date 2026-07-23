@@ -36,6 +36,16 @@ export type VrmMotion =
        */
       idleAnimationUrl?: string
     }
+  | {
+      mode: "dock"
+      /** 通常時にループ再生する演技(例: Heroのループアニメーション) */
+      loopAnimationUrl: string
+      /** ドック時にクロスフェードするワンショット演技。最終フレームで静止する */
+      dockAnimationUrl: string
+      /** 毎フレーム読み出す。trueに変わった瞬間dockAnimationUrl側へ、falseに
+       * 戻った瞬間loopAnimationUrl側へcrossFadeToする */
+      getDocked: () => boolean
+    }
 
 export interface VrmSceneOptions {
   canvas: HTMLCanvasElement
@@ -71,6 +81,7 @@ const UPPER_ARM_DOWN = 1.15 // rad
 const LOWER_ARM_BEND = 0.25 // rad
 const MAX_PIXEL_RATIO = 2
 const MAX_DELTA_SEC = 0.1 // タブ非表示からの復帰時に delta が跳ねてモーションが飛ぶのを防ぐ
+const DOCK_CROSSFADE_SEC = 0.6
 
 function randomBlinkInterval(): number {
   return BLINK_MIN_INTERVAL_SEC + Math.random() * (BLINK_MAX_INTERVAL_SEC - BLINK_MIN_INTERVAL_SEC)
@@ -192,40 +203,62 @@ export async function createVrmScene({
   let scrubDuration = 0
   let getScrubProgress: (() => number) | undefined
   let idleAction: THREE.AnimationAction | undefined
+  let dockLoopAction: THREE.AnimationAction | undefined
+  let dockAction: THREE.AnimationAction | undefined
+  let getDocked: (() => boolean) | undefined
+  let isDocked = false
+
+  async function loadClip(url: string): Promise<THREE.AnimationClip | undefined> {
+    const animGltf = await loader.loadAsync(url)
+    const vrmAnimation = (animGltf.userData.vrmAnimations as VRMAnimation[] | undefined)?.[0]
+    return vrmAnimation ? createVRMAnimationClip(vrmAnimation, vrm) : undefined
+  }
 
   if (!reducedMotion && motion) {
     try {
-      const animGltf = await loader.loadAsync(motion.animationUrl)
-      const vrmAnimation = (animGltf.userData.vrmAnimations as VRMAnimation[] | undefined)?.[0]
-      if (vrmAnimation) {
-        const clip = createVRMAnimationClip(vrmAnimation, vrm)
-        mixer = new THREE.AnimationMixer(vrm.scene)
-        const action = mixer.clipAction(clip)
-        if (motion.mode === "loop") {
-          action.play() // デフォルトが LoopRepeat のためループ指定は不要
-        } else {
-          // scrubは時間を毎フレーム外部から指定するため、自動再生はさせない。
-          // play()自体は内部状態の初期化(_effectiveWeight等)に必要なため呼んでおく
-          action.play()
-          action.paused = true
-          scrubAction = action
-          scrubDuration = clip.duration
-          getScrubProgress = motion.getProgress
+      if (motion.mode === "dock") {
+        const [loopClip, dockClip] = await Promise.all([
+          loadClip(motion.loopAnimationUrl),
+          loadClip(motion.dockAnimationUrl),
+        ])
+        if (loopClip && dockClip) {
+          mixer = new THREE.AnimationMixer(vrm.scene)
+          dockLoopAction = mixer.clipAction(loopClip)
+          dockLoopAction.play() // デフォルトが LoopRepeat のためループ指定は不要
+          dockAction = mixer.clipAction(dockClip)
+          dockAction.setLoop(THREE.LoopOnce, 1)
+          dockAction.clampWhenFinished = true
+          getDocked = motion.getDocked
+        }
+      } else {
+        const clip = await loadClip(motion.animationUrl)
+        if (clip) {
+          mixer = new THREE.AnimationMixer(vrm.scene)
+          const action = mixer.clipAction(clip)
+          if (motion.mode === "loop") {
+            action.play() // デフォルトが LoopRepeat のためループ指定は不要
+          } else {
+            // scrubは時間を毎フレーム外部から指定するため、自動再生はさせない。
+            // play()自体は内部状態の初期化(_effectiveWeight等)に必要なため呼んでおく
+            action.play()
+            action.paused = true
+            scrubAction = action
+            scrubDuration = clip.duration
+            getScrubProgress = motion.getProgress
 
-          if (motion.idleAnimationUrl) {
-            try {
-              const idleGltf = await loader.loadAsync(motion.idleAnimationUrl)
-              const idleAnimation = (idleGltf.userData.vrmAnimations as VRMAnimation[] | undefined)?.[0]
-              if (idleAnimation) {
-                const idleClip = createVRMAnimationClip(idleAnimation, vrm)
-                idleAction = mixer.clipAction(idleClip)
-                idleAction.play() // デフォルトが LoopRepeat のためループ指定は不要
+            if (motion.idleAnimationUrl) {
+              try {
+                const idleClip = await loadClip(motion.idleAnimationUrl)
+                if (idleClip) {
+                  idleAction = mixer.clipAction(idleClip)
+                  idleAction.play() // デフォルトが LoopRepeat のためループ指定は不要
+                }
+              } catch (error) {
+                console.info(
+                  "[vrm] 待機モーションを読み込めなかったため、静止姿勢のまま表示します。",
+                  error,
+                )
               }
-            } catch (error) {
-              console.info(
-                "[vrm] 待機モーションを読み込めなかったため、静止姿勢のまま表示します。",
-                error,
-              )
             }
           }
         }
@@ -364,6 +397,25 @@ export async function createVrmScene({
       // idleAction(ループ)の時間を進めるためdeltaを渡す。scrubActionはpaused=true
       // なので内部クロックは進まず、上で代入したtimeのポーズのみが反映される
       mixer!.update(delta)
+      updateBlink(delta)
+    } else if (dockLoopAction && dockAction && getDocked) {
+      const wantDocked = getDocked()
+      if (wantDocked !== isDocked) {
+        isDocked = wantDocked
+        // crossFadeToは呼び出し元(フェードアウト側)のactionに対して呼ぶ。
+        // フェードイン側は事前にreset().play()して有効化しておく必要がある
+        // (three-vrm-animationのTechStack実装と異なりここはスクロール同期不要な
+        // 離散的な状態遷移なので、壁時計時間ベースのcrossFadeToで問題ない)
+        if (isDocked) {
+          dockAction.reset().play()
+          dockLoopAction.crossFadeTo(dockAction, DOCK_CROSSFADE_SEC, false)
+        } else {
+          dockLoopAction.reset().play()
+          dockAction.crossFadeTo(dockLoopAction, DOCK_CROSSFADE_SEC, false)
+        }
+      }
+      mixer!.update(delta)
+      updatePointerFollow(delta, true)
       updateBlink(delta)
     } else if (mixer) {
       mixer.update(delta)

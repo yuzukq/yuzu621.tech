@@ -227,6 +227,58 @@ sticky headerの下に自然に着地させるためのもの。リード文の�
   既存の全体ルール(`scroll-behavior: auto !important`と同じブロック)に
   `scroll-snap-type: none !important`を追記して打ち消す。
 
+## 7.7 Hero↔Aboutアバター移動演出
+
+lg以上・`prefers-reduced-motion`でない場合、Heroで使っているVRMアバターと同一の
+インスタンスが、スクロールでHero→Aboutへ画面上の位置を移動する
+(`AvatarTravelContext.tsx` / `FloatingAvatar.tsx` / `HeroAvatarDock.tsx` /
+`AboutAvatarDock.tsx` / `AboutIntro.tsx`)。それ以外(狭い画面・reduced-motion・
+SSR/初回CSR)ではHero・Aboutそれぞれが従来通り自前の静的なアバター/写真アイコンを
+描画する(判定はTechStackBody.tsxと同じマウント後matchMedia方式)。
+
+参考にした[davidhckh/portfolio-2025](https://github.com/davidhckh/portfolio-2025)は
+Vue+GSAP+Three.jsのフルページ3Dシーンで、1体のアバターを3D空間内のwaypoint間で
+スクラブ移動させる構成だった。本サイトはコンポーネント単位でcanvasを持つ構成のため
+同じ機構は移植できない。「アバターは体の向きを変えずtranslate+scaleのみで画面上を
+移動する」という設計判断(ユーザー確認済み)により、3Dのカメラ/waypoint再設計ではなく
+2Dスクリーン座標のtransform補間問題に単純化した。
+
+- **アーキテクチャ**: `AvatarTravelProvider`がHero・About共通の`heroSlotRef`・
+  `aboutSlotRef`とshowcase判定をReact Contextで提供する。`HeroAvatarDock`/
+  `AboutAvatarDock`はshowcase時、実体を描画せず位置測定用の空divをそれぞれのrefに
+  結びつけるだけ(実際のレンダリングは`FloatingAvatar`が1つだけ担当)。
+  `FloatingAvatar`は`position: fixed`のラッパーdivをHeroスロットの矩形に一致させて
+  基準位置とし、Aboutスロットの矩形との差分(`translate`+`scale`、
+  `transform-origin: top left`)をスクロール進捗ぶんだけ適用する(FLIP的な手法)。
+  canvasの実サイズ(`clientWidth`/`clientHeight`)は変えない:
+  `createVrmScene`のResizeObserverがそこでカメラを再計算するため、動かすたびに
+  カメラが暴れてしまう。見た目のサイズ変化は`transform: scale()`だけで表現する。
+- **進捗の基準点に注意**: 移動の進捗(0〜1)は`aboutSlotRef`(アバターの実際の配置先。
+  見出しぶん下にオフセットされている)ではなく`#about`セクション自身の
+  `getBoundingClientRect().top`から計算する(`avatarTravel.ts`)。スロット基準に
+  すると、scroll-snapでの自然な静止位置に達してもtopが0まで届かず、進捗が0.9台で
+  頭打ちになりフェードイン・ドックのしきい値に永久に届かない不具合になる。
+  `REST_TOP_PX`(`scroll-mt-20`と同じ80px)を「到達」とみなすことでこれを回避している。
+- **アニメーション**: `createVrmScene.ts`の`VrmMotion`に`"dock"`モードを追加。通常は
+  Heroのループ(`loop_verse.vrma`)を再生し、`getDocked()`がtrueに変わった瞬間
+  `v-sign.vrma`(ワンショット、ピースサインで静止)へ`crossFadeTo`する。逆方向は
+  ループへ`crossFadeTo`(v-signを逆再生するのではなく、ループの先頭へ普通にクロス
+  フェードする)。ここはスクロール位置と連続的に同期させる必要がない離散的な
+  状態遷移のため、Tech Stackの待機モーション(7.5節)と異なり壁時計時間ベースの
+  `crossFadeTo`をそのまま使ってよい。ドック判定は0.95で入り0.85を下回るまで解除しない
+  ヒステリシスを持たせ、しきい値付近の往復スクロールでの発火連打を防いでいる
+  (`nextDockedState`)。
+- **2Dテキストのフェード**: 見出し・吹き出し(`AboutIntro.tsx`)は`FadeIn`の
+  IntersectionObserverではなく、アバター移動と同じ進捗値から直接`opacity`を
+  設定する(移動の最後10%でフェードイン、逆方向で対称にフェードアウト)。
+  「ブログを読む」ボタンはこのフェード対象に含める(見出し・吹き出しと同じ
+  タイミングで現れないと視覚的に浮いて見えるため)。既存e2eテスト
+  (`home.spec.ts`・`navigation.spec.ts`)はこれに伴い、`#about`へスクロールしてから
+  可視性を確認するよう更新した。
+- **フォールバック**: モバイル・reduced-motionでは、Aboutは従来通りの丸型写真
+  アイコン(VRMアバターではない)のまま。Hero用の第2のアバターインスタンスを
+  増やさずに済み、リスクとスコープを最小化している。
+
 ## 8. 禁止事項
 
 - 生HEX・任意値のアドホック指定(トークンを経由する)

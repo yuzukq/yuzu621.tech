@@ -7,6 +7,10 @@ test('ポートフォリオページが主要セクションを表示できる',
 
   await expect(page.getByRole('heading', { level: 1, name: 'Yuzu' })).toBeVisible();
 
+  // lg以上・motion-okでは#aboutの見出しはHero→About間のアバター移動が完了する
+  // 直前にフェードインする(AboutIntro.tsx)ため、セクション上端が画面上端に
+  // 揃うまでスクロールしてから確認する
+  await page.evaluate(() => document.getElementById('about')?.scrollIntoView({ block: 'start' }));
   await expect(page.locator('#about').getByText('自己紹介')).toBeVisible();
   await expect(page.locator('#products').getByText('制作物')).toBeVisible();
   await expect(page.locator('#tech-stack').getByText('技術スタック', { exact: true })).toBeVisible();

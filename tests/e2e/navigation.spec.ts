@@ -4,6 +4,9 @@ test.describe('ナビゲーション機能', () => {
   test('About meセクションの「ブログを読む」ボタンでブログ一覧へ遷移できる', async ({ page }) => {
     await page.goto('/profile');
 
+    // lg以上・motion-okではこのボタンもHero→About間のアバター移動が完了する
+    // 直前にフェードインする(AboutIntro.tsx)ため、スクロールしてから確認する
+    await page.evaluate(() => document.getElementById('about')?.scrollIntoView({ block: 'start' }));
     const blogButton = page.getByRole('button', { name: 'ブログを読む' });
     await expect(blogButton).toBeVisible();
     await blogButton.click();
