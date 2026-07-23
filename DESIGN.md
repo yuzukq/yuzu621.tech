@@ -140,7 +140,7 @@ rem値に 16/18 を掛けた補正値で従来の実寸(h1: 28〜40px / h2: 24px
 - 配置: トップのヒーローセクション右側(モバイルでは名前の背後に薄く/または下)。
 - 実装: `three` + `@pixiv/three-vrm`。`next/dynamic` + `ssr: false` でCSR分離。ページ自体はSSGを維持。
 - モデル: `public/models/avatar.vrm` を読む。**ファイルが無い場合は静かにフォールバック**(ミクティールのグラデーション球など軽量なプレースホルダ)し、エラーを出さない。
-- 挙動: VRMAループアニメーション(`public/models/happy-sway.vrma`、ニコニコ左右揺れ)を再生し、
+- 挙動: VRMAループアニメーション(`public/models/loop_verse.vrma`)を再生し、
   マウスへの視線・頭追従を上乗せする。VRMAが読めない場合はプロシージャル待機
   (呼吸・揺れ・まばたき)にフォールバック。いずれも派手に動かさない。
 - 品質: `<canvas>` は `aria-hidden`。SEOテキストは通常DOMに置く。低スペック・reduced-motion時は静止。
