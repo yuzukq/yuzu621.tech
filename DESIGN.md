@@ -155,8 +155,19 @@ lg以上(1024px)・`prefers-reduced-motion`でない場合のみ、TechStackセ�
 no-js/クローラー向けの全文露出を両立する。全カテゴリのカードは常にDOMに存在し、opacity/translateY
 のみで表示を切り替える(内容の出し分けはしない)。
 
-- **スクロール数式**: 外側wrapperの高さ = `カテゴリ数 × 70vh + 100dvh`。`position: sticky; top: 0`
-  の内側コンテナがピン留めされる区間(=`wrapper高さ - viewport高さ` = カテゴリ数×70vh)を
+見出し(`SectionHeading`)とリード文は`TechStack.tsx`ではなく、フォールバック分岐(`TechStackBody.tsx`)
+とショーケース分岐(`TechStackShowcase.tsx`)それぞれの内側で描画する。ショーケース側は
+`position: sticky`の内側コンテナの中で見出しブロックを`shrink-0`、アバター/カード列を`flex-1`とする
+縦積みflexにし、見出しが常に画面内に留まったままカードとアバターだけがpin区間中動く構成にしている
+(見出しが通常フローに残り sticky の外側にあると、pinが始まった時点でスクロールと共に見出しが
+画面外へ流れてしまうため)。見出しブロックの`pt-20`は他セクションの`scroll-mt-20`と同じ量で、
+sticky headerの下に自然に着地させるためのもの。リード文の下には現在のカテゴリ位置を示す
+`01 / 04`形式の進捗インジケータ(既存の`font-mono text-xs uppercase tracking-[0.2em] text-ink-faint`
+のvoiceを踏襲)を置き、新規のscrollリスナーは追加せず既存の`update()`(rAFループ)内で
+`currentIndex`から直接更新する。
+
+- **スクロール数式**: 外側wrapperの高さ = `カテゴリ数 × 50vh + 100dvh`。`position: sticky; top: 0`
+  の内側コンテナがピン留めされる区間(=`wrapper高さ - viewport高さ` = カテゴリ数×50vh)を
   `globalProgress`(0〜1)としてカテゴリ数に按分し、各カテゴリ区間の後半35%(`TRANSITION_BAND`)を
   次カードへの遷移(アバターの演技)に、前半65%を静止した読了時間に割り当てる。
 - **アバターの演技**: `present-card.vrma`(両手で下から掬い上げて掲げる、非ループ、t=0とt=durationが

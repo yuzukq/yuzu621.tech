@@ -1,16 +1,10 @@
 import { certifications, skillCategories } from "@/data/skills"
-import SectionHeading from "./SectionHeading"
 import TechStackBody from "./TechStackBody"
 
 export default function TechStack() {
   return (
     <section id="tech-stack" className="scroll-mt-20 border-t border-border py-20 md:py-28">
       <div className="mx-auto max-w-6xl px-4 md:px-8">
-        <SectionHeading eyebrow="Tech Stack" title="技術スタック" />
-        <p className="wrap-phrase mt-6 text-ink-muted">
-          これまでに勉強したり開発で触れてきた技術スタック・ツールを、カテゴリ別にまとめています。
-        </p>
-
         <TechStackBody categories={skillCategories} />
 
         <div className="mt-16">
