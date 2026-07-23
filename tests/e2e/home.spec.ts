@@ -68,3 +68,60 @@ test.describe('Tech Stack: スクロール連動ショーケース / フォー�
     await expect(techStack.getByRole('heading', { name: '技術スタック' })).toBeVisible();
   });
 });
+
+test.describe('セクションスクロールスナップ(/profile限定)', () => {
+  test('/profileではhtmlにproximityのscroll-snap-typeが効き、各セクションがsnap-startになる', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.goto('/profile');
+
+    // data-scroll-snap はマウント後の useEffect で付与されるため、まず属性の反映を待つ
+    await expect(page.locator('html')).toHaveAttribute('data-scroll-snap', 'profile');
+
+    const snapType = await page.evaluate(
+      () => getComputedStyle(document.documentElement).scrollSnapType
+    );
+    // proximityはscroll-snap-typeの strictness 省略時のデフォルト値のため、
+    // Chromiumの計算値シリアライズでは "y proximity" ではなく "y" にまとめられる
+    // (mandatoryを指定した場合は "y mandatory" のように明示される)
+    expect(snapType).toBe('y');
+
+    for (const id of ['#hero', '#about', '#products', '#tech-stack']) {
+      const align = await page.locator(id).evaluate((el) => getComputedStyle(el).scrollSnapAlign);
+      expect(align).toContain('start');
+    }
+  });
+
+  test('/(ブログトップ)にはscroll-snapのスコープが漏れない', async ({ page }) => {
+    await page.goto('/');
+
+    await expect(page.locator('html')).not.toHaveAttribute('data-scroll-snap');
+
+    const snapType = await page.evaluate(
+      () => getComputedStyle(document.documentElement).scrollSnapType
+    );
+    expect(snapType).toBe('none');
+  });
+
+  test('prefers-reduced-motionでは/profileでもscroll-snapが無効化される', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/profile');
+
+    await expect(page.locator('html')).toHaveAttribute('data-scroll-snap', 'profile');
+
+    const snapType = await page.evaluate(
+      () => getComputedStyle(document.documentElement).scrollSnapType
+    );
+    expect(snapType).toBe('none');
+  });
+
+  test('プロフィールからBlogリンクでSPA遷移した後、data-scroll-snapが残らない', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/profile');
+
+    await expect(page.locator('html')).toHaveAttribute('data-scroll-snap', 'profile');
+
+    await page.getByRole('link', { name: 'Blog' }).click();
+    await expect(page).toHaveURL('/');
+    await expect(page.locator('html')).not.toHaveAttribute('data-scroll-snap');
+  });
+});

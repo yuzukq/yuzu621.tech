@@ -12,7 +12,7 @@ export default function Hero() {
   return (
     <section
       id="hero"
-      className="relative flex min-h-[85dvh] scroll-mt-20 items-center overflow-hidden"
+      className="relative flex min-h-[85dvh] scroll-mt-20 snap-start items-center overflow-hidden"
     >
       <div className="mx-auto grid w-full max-w-6xl items-center gap-16 px-4 py-16 md:grid-cols-2 md:px-8">
         <FadeIn>

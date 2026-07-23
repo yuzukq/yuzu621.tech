@@ -181,6 +181,37 @@ sticky headerの下に自然に着地させるためのもの。リード文の�
   該当軸の符号を反転して再生成する(詳細は `~/.claude/skills/vrma-create/reference.md`)。
 - カメラフレーミングはHeroのバストアップより下方向に広げる(`cameraFraming.hipsBottomMargin`)。
 
+## 7.6 セクションスクロールスナップ(プロフィール)
+
+画面の縦幅とセクションの縦幅が一致しないため、素のスクロールだと(特にTech Stackの
+`position: sticky`ピン区間へ入る瞬間)セクション境界で急に吸われる感覚が出る。これを
+和らげるため、`/profile`のトップレベルセクション(Hero / About / Products / Tech Stack)
+にCSS Scroll Snapで緩い停止リズムを付けている(`ScrollSnapSync.tsx` / 各セクションの
+`snap-start`)。
+
+- **スコープは`/profile`限定**: `globals.css`はブログページとも共有するため、`html`要素
+  に直接ではなく`html[data-scroll-snap="profile"]`にのみ`scroll-snap-type: y proximity`
+  を効かせる。この属性は`ScrollSnapSync.tsx`がマウント時に`document.documentElement`へ
+  付与し、アンマウント時に削除する(WorldSyncと違い、プロフィール専有属性のため
+  ブログへのSPA遷移時に消し忘れると漏れる)。
+- **`mandatory`ではなく`proximity`**: `mandatory`はAbout/Productsのようにビューポートより
+  縦に長いセクションで、内部を読もうとするスクロールとスナップが綱引きになり
+  コンテンツを読めなくする恐れがある。`proximity`は停止位置がスナップポイント付近の
+  時だけ緩く吸着し、セクション内部の自由なスクロールは妨げない。
+- **スナップ対象はトップレベルセクションのみ**: Tech Stack内部の`TechStackShowcase.tsx`
+  (カテゴリカード送りの`position: sticky`ピン機構)には`snap-*`を一切付けない。ネストした
+  scroll-snapコンテナにすると、`window`のスクロールイベントを前提にした
+  `TechStackShowcase.tsx`のrAFスクラブ計算と食い違う。Footerにもスナップは付けない
+  (ページ最後まで自由に読み切れる必要があるため)。
+- **オフセットは`scroll-mt-20`のみ**: 各セクションは既存の`scroll-mt-20`
+  (`scroll-margin-top: 5rem`、sticky headerの下に着地させるためのもの)を流用する。
+  scroll-snapのスナップ位置は要素の`scroll-margin`とスクロールコンテナの
+  `scroll-padding`が加算的に効くため、両方に同量を入れると二重オフセットでずれる。
+  そのため`scroll-padding-top`は追加しない。
+- **`prefers-reduced-motion: reduce`では無効化**: スナップの吸着自体もモーションとみなし、
+  既存の全体ルール(`scroll-behavior: auto !important`と同じブロック)に
+  `scroll-snap-type: none !important`を追記して打ち消す。
+
 ## 8. 禁止事項
 
 - 生HEX・任意値のアドホック指定(トークンを経由する)

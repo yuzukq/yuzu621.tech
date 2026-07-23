@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import Footer from "@/components/layouts/Footer"
 import WorldSync from "@/components/blog/WorldSync"
+import ScrollSnapSync from "@/components/profile/ScrollSnapSync"
 import ProfileHeader from "@/components/profile/ProfileHeader"
 import Hero from "@/components/profile/Hero"
 import About from "@/components/profile/About"
@@ -44,6 +45,7 @@ export default function ProfilePage() {
   return (
     <div data-world="tech" className="flex min-h-dvh flex-col bg-bg">
       <WorldSync world="tech" />
+      <ScrollSnapSync />
       <script {...jsonLdScriptProps(personJsonLd)} />
       <ProfileHeader />
       <main className="flex-1">

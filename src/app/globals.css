@@ -112,6 +112,15 @@ html {
   scroll-behavior: smooth;
 }
 
+/* プロフィールページのセクションスナップ(DESIGN.md §7.6)。ブログとhtmlを
+ * 共有するため html 全体には付けず、ScrollSnapSync が付与する
+ * data-scroll-snap="profile" でスコープする。mandatory ではなく proximity:
+ * About/Products のようにビューポートより長いセクションで内部の自由な
+ * スクロールを妨げない */
+html[data-scroll-snap="profile"] {
+  scroll-snap-type: y proximity;
+}
+
 html,
 body {
   background-color: var(--bg);
@@ -141,6 +150,8 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+    /* スナップの吸着(慣性の効いた自動スクロール)自体もモーションのため無効化する */
+    scroll-snap-type: none !important;
   }
 }
 
