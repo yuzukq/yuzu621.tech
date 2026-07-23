@@ -29,6 +29,12 @@ export type VrmMotion =
       animationUrl: string
       /** 0〜1。毎フレーム読み出し、クリップ内の再生位置に変換する */
       getProgress: () => number
+      /**
+       * 指定時、getProgress()が0付近(静止区間)ではこちらをループ再生し、
+       * scrubクリップへ滑らかにクロスフェードする。スクロール停止中に
+       * アバターが完全静止して見えるのを防ぐための待機モーション用
+       */
+      idleAnimationUrl?: string
     }
 
 export interface VrmSceneOptions {
@@ -185,6 +191,7 @@ export async function createVrmScene({
   let scrubAction: THREE.AnimationAction | undefined
   let scrubDuration = 0
   let getScrubProgress: (() => number) | undefined
+  let idleAction: THREE.AnimationAction | undefined
 
   if (!reducedMotion && motion) {
     try {
@@ -204,6 +211,23 @@ export async function createVrmScene({
           scrubAction = action
           scrubDuration = clip.duration
           getScrubProgress = motion.getProgress
+
+          if (motion.idleAnimationUrl) {
+            try {
+              const idleGltf = await loader.loadAsync(motion.idleAnimationUrl)
+              const idleAnimation = (idleGltf.userData.vrmAnimations as VRMAnimation[] | undefined)?.[0]
+              if (idleAnimation) {
+                const idleClip = createVRMAnimationClip(idleAnimation, vrm)
+                idleAction = mixer.clipAction(idleClip)
+                idleAction.play() // デフォルトが LoopRepeat のためループ指定は不要
+              }
+            } catch (error) {
+              console.info(
+                "[vrm] 待機モーションを読み込めなかったため、静止姿勢のまま表示します。",
+                error,
+              )
+            }
+          }
         }
       }
     } catch (error) {
@@ -327,8 +351,19 @@ export async function createVrmScene({
     elapsed += delta
 
     if (scrubAction && getScrubProgress) {
-      scrubAction.time = THREE.MathUtils.clamp(getScrubProgress(), 0, 1) * scrubDuration
-      mixer!.update(0) // update(0): 内部クロックを進めず、time代入分のポーズだけ反映する
+      const t = THREE.MathUtils.clamp(getScrubProgress(), 0, 1)
+      scrubAction.time = t * scrubDuration
+      if (idleAction) {
+        // smoothstep。t=0で待機モーション、tが動き出した瞬間になめらかにscrub側へ
+        // 重みを渡す。crossFadeToは壁時計時間で走るためスクロール位置と同期できず
+        // 使えない。setEffectiveWeightを毎フレームtから直接計算するのはそのため
+        const scrubWeight = t * t * (3 - 2 * t)
+        idleAction.setEffectiveWeight(1 - scrubWeight)
+        scrubAction.setEffectiveWeight(scrubWeight)
+      }
+      // idleAction(ループ)の時間を進めるためdeltaを渡す。scrubActionはpaused=true
+      // なので内部クロックは進まず、上で代入したtimeのポーズのみが反映される
+      mixer!.update(delta)
       updateBlink(delta)
     } else if (mixer) {
       mixer.update(delta)

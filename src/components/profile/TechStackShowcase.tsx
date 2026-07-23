@@ -13,7 +13,7 @@ const VrmScrubCanvas = dynamic(() => import("@/components/vrm/VrmScrubCanvas"), 
 })
 
 // 1カテゴリあたりに割り当てるスクロール量。小さいほどテンポが速くなる
-const VH_PER_CATEGORY = 50
+const VH_PER_CATEGORY = 70
 // 各カテゴリ区間のうち、後半何割を「次のカードへの遷移(アバターの演技)」に使うか。
 // 残りの前半は静止して読める時間になる
 const TRANSITION_BAND = 0.35

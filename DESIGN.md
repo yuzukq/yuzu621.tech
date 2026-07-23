@@ -166,15 +166,27 @@ sticky headerの下に自然に着地させるためのもの。リード文の�
 のvoiceを踏襲)を置き、新規のscrollリスナーは追加せず既存の`update()`(rAFループ)内で
 `currentIndex`から直接更新する。
 
-- **スクロール数式**: 外側wrapperの高さ = `カテゴリ数 × 50vh + 100dvh`。`position: sticky; top: 0`
-  の内側コンテナがピン留めされる区間(=`wrapper高さ - viewport高さ` = カテゴリ数×50vh)を
+- **スクロール数式**: 外側wrapperの高さ = `カテゴリ数 × 70vh + 100dvh`。`position: sticky; top: 0`
+  の内側コンテナがピン留めされる区間(=`wrapper高さ - viewport高さ` = カテゴリ数×70vh)を
   `globalProgress`(0〜1)としてカテゴリ数に按分し、各カテゴリ区間の後半35%(`TRANSITION_BAND`)を
-  次カードへの遷移(アバターの演技)に、前半65%を静止した読了時間に割り当てる。
+  次カードへの遷移(アバターの演技)に、前半65%を静止した読了時間に割り当てる。`VH_PER_CATEGORY`
+  は当初50だったが、スクロール量に対して演技が速すぎたため70に引き上げた
+  (`TRANSITION_BAND × VH_PER_CATEGORY` = 演技に割り当てるスクロール距離そのものなので、
+  この積を上げるのがセンシ調整の効くノブ)。
 - **アバターの演技**: `present-card.vrma`(体ごとカード側へターンしながら屈み込んで両手で掴み、
   よいしょと気合いを入れて持ち上げる。非ループ、t=0とt=durationが同一の「休め」姿勢になるよう設計)を、
-  `THREE.AnimationMixer`で自動再生させず`action.time = progress * duration; mixer.update(0)`
-  によって毎フレーム直接スクラブする(`createVrmScene.ts`の`motion.mode === 'scrub'`)。カテゴリの
-  境目でprogressが1→0に飛んでも、両端が同じ姿勢なので見た目はスナップしない。
+  `THREE.AnimationMixer`で自動再生させず`action.time = progress * duration`によって毎フレーム
+  直接スクラブする(`createVrmScene.ts`の`motion.mode === 'scrub'`)。カテゴリの境目でprogressが
+  1→0に飛んでも、両端が同じ姿勢なので見た目はスナップしない。
+- **静止区間の待機モーション**: 前半65%(`transitionT === 0`)でアバターが完全静止して見えるのを
+  避けるため、`tech-idle.vrma`(呼吸・微揺れのループ)を同じ`mixer`上の別actionとして常時再生し、
+  `transitionT`をsmoothstepした値を`idleAction`/`scrubAction`の`setEffectiveWeight()`に毎フレーム
+  直接渡してクロスフェードする(`motion.idleAnimationUrl`)。`AnimationMixer.crossFadeTo()`は
+  壁時計時間でフェードが進む関数のため、スクロール位置(=`progress`)に同期させることができず
+  不採用。重みを`progress`から直接計算する方式にしたことで、スクロールを止めた位置でも
+  ブレンド比が一致し続ける。この待機actionを動かすため`mixer.update(delta)`に変更したが、
+  `scrubAction`は`paused = true`のままなので内部クロックは進まず、直接代入した`.time`の
+  ポーズだけが反映される(挙動は従来の`mixer.update(0)`と同じ)。
 - **VRMAの符号に注意**: このアバターでは、three-vrm-animationのretargeting適用後、
   upperArm/lowerArmのZの符号が、生成時にauthorした値から反転して現れる(Yはそのまま)。
   大きな振れ幅のモーションを作る際は必ず実機で描画確認し、意図と逆に動く場合は該当軸の符号を

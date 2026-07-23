@@ -6,6 +6,7 @@ import { createVrmScene, type VrmSceneHandle } from "./createVrmScene"
 
 const MODEL_URL = "/models/avatar.vrm"
 const ANIMATION_URL = "/models/present-card.vrma"
+const IDLE_ANIMATION_URL = "/models/tech-idle.vrma"
 // 両腕を伸ばして下から持ち上げる演技を画角に収めるため、Heroのバストアップ
 // フレーミングより下方向に広げる
 const CAMERA_FRAMING = { hipsBottomMargin: 0.55 }
@@ -39,6 +40,7 @@ export default function VrmScrubCanvas({ progressRef }: VrmScrubCanvasProps) {
         mode: "scrub",
         animationUrl: ANIMATION_URL,
         getProgress: () => progressRef.current,
+        idleAnimationUrl: IDLE_ANIMATION_URL,
       },
     })
       .then((sceneHandle) => {
