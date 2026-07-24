@@ -6,6 +6,12 @@
  * 世界(tech/daily)の分岐はコンポーネント側の三項演算子ではなく
  * data-world 属性 + この変数群で行う。
  * ============================================================ */
+/* z-index スケール(コンポーネント側は下記のいずれかの値のみを使うこと):
+ * 10   浮遊アバター(FloatingAvatar)
+ * 40   ヘッダー(BlogHeader/ProfileHeader、sticky)
+ * 50   モバイルドロワー(TerminalDrawer)
+ * 1000 モーダル(ProductDetailOverlay)
+ */
 /* 出典バッジ用ブランドカラー。世界で切り替えないため data-world 外に置く */
 :root {
   --brand-qiita: #55c500;

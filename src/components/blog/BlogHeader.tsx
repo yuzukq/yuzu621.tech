@@ -11,7 +11,7 @@ interface BlogHeaderProps {
 
 export default function BlogHeader({ variant = "list", toc }: BlogHeaderProps) {
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-bg/70 backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b border-border bg-bg/70 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-4 md:px-8">
         <NextLink
           href="/"
