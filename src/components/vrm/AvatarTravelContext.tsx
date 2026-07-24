@@ -21,24 +21,24 @@ interface AvatarTravelProviderProps {
   children: React.ReactNode
 }
 
-// Hero→Aboutをまたいでアバターが移動する演出はlg以上・prefers-reduced-motionで
-// ない場合のみ。TechStackBody.tsxと同じ理由(hydrationミスマッチ回避)でマウント後
-// のmatchMedia判定・フォールバック初期値にしている。showcaseがfalseの間は
-// Hero/About側がそれぞれ自前の静的なアバター/アイコンを描画する
+// Hero→Aboutをまたいでアバターが移動する演出はprefers-reduced-motionでない場合は
+// 画面幅を問わず有効(モバイルも含む)。avatar.vrmが23MBあり、WebGLコンテキストも
+// 限られたリソースなため、showcase=false時にHero/Aboutそれぞれが独立した
+// VrmCanvasを持つ2枚目のcanvasを作らない設計にしている(共有アバター1枚のみ)。
+// TechStackBody.tsxと同じ理由(hydrationミスマッチ回避)でマウント後のmatchMedia
+// 判定・フォールバック初期値にしている。showcaseがfalseの間(reduced-motion/
+// no-JS/SSR)はHero/About側がそれぞれ自前の静的なアバター/アイコンを描画する
 export default function AvatarTravelProvider({ children }: AvatarTravelProviderProps) {
   const [showcase, setShowcase] = useState(false)
   const heroSlotRef = useRef<HTMLDivElement | null>(null)
   const aboutSlotRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    const widthQuery = window.matchMedia("(min-width: 1024px)")
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)")
-    const evaluate = () => setShowcase(widthQuery.matches && !motionQuery.matches)
+    const evaluate = () => setShowcase(!motionQuery.matches)
     evaluate()
-    widthQuery.addEventListener("change", evaluate)
     motionQuery.addEventListener("change", evaluate)
     return () => {
-      widthQuery.removeEventListener("change", evaluate)
       motionQuery.removeEventListener("change", evaluate)
     }
   }, [])

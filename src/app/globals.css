@@ -80,6 +80,11 @@
      (opacity:1)が見え、「一瞬見える→消える→フェードイン」の二重発火に見える */
   --animate-fade-in: fade-in 0.8s ease-out both;
   --animate-vrm-float: vrm-float 6s ease-in-out infinite;
+  /* モバイルドロワー用。開く時だけアニメーションし閉じるのは即座にunmountする
+   * (Playwrightの可視性チェックが「閉じた直後」を見るため、閉じるアニメーション
+   * を残すとチェックとレースする) */
+  --animate-backdrop-in: fade-in 0.2s ease-out both;
+  --animate-drawer-in: drawer-in 0.25s ease-out both;
 }
 
 @keyframes fade-in {
@@ -88,6 +93,15 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
   }
 }
 
