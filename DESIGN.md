@@ -368,6 +368,14 @@ Vue+GSAP+Three.jsのフルページ3Dシーンで、1体のアバターを3D空�
 - **フォールバック**: モバイル・reduced-motionでは、Aboutは従来通りの丸型写真
   アイコン(VRMアバターではない)のまま。Hero用の第2のアバターインスタンスを
   増やさずに済み、リスクとスコープを最小化している。
+- **ロード中プレースホルダ**: showcase時、`avatar.vrm`(22MB)の読込完了までHero
+  スロットが空白になるのを避けるため、`AvatarTravelContext`の`avatarReady`
+  (`FloatingAvatar`が`createVrmScene()`解決時にtrueへ更新)がfalseの間、
+  `HeroAvatarDock`が`VrmFallback`(グラデーション球)を`absolute inset-0`で
+  表示する。ready後は`VrmCanvas.tsx`のロード完了と同じopacity遷移(700ms)で
+  フェードアウトする。`FloatingAvatar`のcanvasは`alpha: true`で透明なため、
+  読込中はこのフォールバックがcanvas越しに透けて見える。読込失敗時(catch)は
+  `avatarReady`がtrueにならないため、フォールバックが出続ける。
 
 ## 8. 禁止事項
 

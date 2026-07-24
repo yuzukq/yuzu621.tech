@@ -9,6 +9,9 @@ interface AvatarTravelValue {
   showcase: boolean
   heroSlotRef: RefObject<HTMLDivElement | null>
   aboutSlotRef: RefObject<HTMLDivElement | null>
+  /** createVrmScene() が解決するとtrue。失敗時はfalseのまま(HeroAvatarDockが
+   * フォールバック表示を出し続ける判定に使う) */
+  avatarReady: boolean
 }
 
 const AvatarTravelContext = createContext<AvatarTravelValue | null>(null)
@@ -30,6 +33,7 @@ interface AvatarTravelProviderProps {
 // no-JS/SSR)はHero/About側がそれぞれ自前の静的なアバター/アイコンを描画する
 export default function AvatarTravelProvider({ children }: AvatarTravelProviderProps) {
   const [showcase, setShowcase] = useState(false)
+  const [avatarReady, setAvatarReady] = useState(false)
   const heroSlotRef = useRef<HTMLDivElement | null>(null)
   const aboutSlotRef = useRef<HTMLDivElement | null>(null)
 
@@ -44,9 +48,11 @@ export default function AvatarTravelProvider({ children }: AvatarTravelProviderP
   }, [])
 
   return (
-    <AvatarTravelContext.Provider value={{ showcase, heroSlotRef, aboutSlotRef }}>
+    <AvatarTravelContext.Provider value={{ showcase, heroSlotRef, aboutSlotRef, avatarReady }}>
       {children}
-      {showcase && <FloatingAvatar heroSlotRef={heroSlotRef} aboutSlotRef={aboutSlotRef} />}
+      {showcase && (
+        <FloatingAvatar heroSlotRef={heroSlotRef} aboutSlotRef={aboutSlotRef} onReady={setAvatarReady} />
+      )}
     </AvatarTravelContext.Provider>
   )
 }

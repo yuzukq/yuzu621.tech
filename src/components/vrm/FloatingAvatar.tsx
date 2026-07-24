@@ -11,6 +11,8 @@ const DOCK_ANIMATION_URL = "/models/v-sign.vrma"
 interface FloatingAvatarProps {
   heroSlotRef: RefObject<HTMLDivElement | null>
   aboutSlotRef: RefObject<HTMLDivElement | null>
+  /** setState由来の安定した関数を渡す(effectの依存配列を汚さないため) */
+  onReady: (ready: boolean) => void
 }
 
 // Hero・About共通の1体のアバターをposition:fixedで重ね、Hero側スロットの矩形を
@@ -18,7 +20,7 @@ interface FloatingAvatarProps {
 // 追従させる(FLIP的な手法)。canvas自体の実サイズ(clientWidth/Height)は変えない:
 // createVrmSceneのResizeObserverがそこでカメラを再計算するため、動かすたびに
 // カメラが暴れてしまう
-export default function FloatingAvatar({ heroSlotRef, aboutSlotRef }: FloatingAvatarProps) {
+export default function FloatingAvatar({ heroSlotRef, aboutSlotRef, onReady }: FloatingAvatarProps) {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const dockedRef = useRef(false)
@@ -48,6 +50,7 @@ export default function FloatingAvatar({ heroSlotRef, aboutSlotRef }: FloatingAv
           return
         }
         handle = sceneHandle
+        onReady(true)
       })
       .catch((error: unknown) => {
         // モデル未配置は正常系のため error にしない(他のVRMキャンバスと同じ方針)
@@ -58,7 +61,7 @@ export default function FloatingAvatar({ heroSlotRef, aboutSlotRef }: FloatingAv
       cancelled = true
       handle?.dispose()
     }
-  }, [])
+  }, [onReady])
 
   useEffect(() => {
     const wrapper = wrapperRef.current
