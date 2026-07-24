@@ -126,6 +126,14 @@ html {
   scroll-behavior: smooth;
 }
 
+@media (max-width: 767px) {
+  html {
+    /* モバイルは18pxだと一度に読める情報量が減るため、数%だけ下げる
+       (rem基準の全サイズが追従するので、ここ一箇所の調整で全体に効く) */
+    font-size: 106%;
+  }
+}
+
 /* プロフィールページのセクションスナップ(DESIGN.md §7.6)。ブログとhtmlを
  * 共有するため html 全体には付けず、ScrollSnapSync が付与する
  * data-scroll-snap="profile" でスコープする。mandatory ではなく proximity:
