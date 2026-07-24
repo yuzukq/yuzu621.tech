@@ -41,7 +41,12 @@ export default function MobileNav({ items }: { items: NavItem[] }) {
           // document.bodyへポータルで抜け出す。開く時だけアニメーションし、閉じる
           // のは即座にunmountする(このコンポーネント自体がopen=falseで早期returnする
           // ため、閉じるアニメーションは別途用意しない)
-          <div role="dialog" aria-modal="true" aria-label="Page index" className="fixed inset-0 z-50">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Page index"
+            className="fixed inset-0 z-50 md:hidden"
+          >
             <div
               aria-hidden="true"
               onClick={() => setOpen(false)}
