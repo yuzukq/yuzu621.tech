@@ -138,11 +138,11 @@ test.describe('目次(TOC)', () => {
     await expect(links.first()).toHaveAttribute('href', /^#/);
   });
 
-  test('jキーで次の見出しへスクロールし、アクティブ項目が1つ表示される', async ({ page }) => {
+  test('kキーで次の見出しへスクロールし、アクティブ項目が1つ表示される', async ({ page }) => {
     await page.goto('/blog/devenv2026');
 
     const before = await page.evaluate(() => window.scrollY);
-    await page.keyboard.press('j');
+    await page.keyboard.press('k');
     await page.waitForFunction((y) => window.scrollY > y, before);
 
     await expect(page.getByRole('navigation', { name: '目次' }).locator('[aria-current="true"]')).toHaveCount(1);

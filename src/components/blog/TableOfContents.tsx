@@ -68,10 +68,10 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
       const target = e.target as HTMLElement | null
       if (target?.closest('input, textarea, select, [contenteditable="true"]')) return
 
-      if (e.key === "j") {
+      if (e.key === "k") {
         jumpTo(Math.min(activeIndexRef.current + 1, headings.length - 1))
         e.preventDefault()
-      } else if (e.key === "k") {
+      } else if (e.key === "j") {
         if (activeIndexRef.current <= 0) {
           const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches
           window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" })
@@ -140,7 +140,7 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
       <div className="flex items-center gap-2 border-t border-border px-4 py-2.5 font-mono text-[11px] text-ink-faint">
         <kbd className="rounded border border-border bg-surface-hover px-1.5 py-0.5 text-ink-muted">j</kbd>
         <kbd className="rounded border border-border bg-surface-hover px-1.5 py-0.5 text-ink-muted">k</kbd>
-        <span>で移動</span>
+        <span>↕ navigation</span>
       </div>
     </nav>
   )
