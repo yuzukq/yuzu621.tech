@@ -7,13 +7,9 @@ export interface AboutMe {
 
 export const aboutMe: AboutMe = {
   icon: "/images/global/icon-vr.png",
-  description: `好きなキーボードは7sPro．技術を学ぶ学生です．
-CSを専攻していて研究室ではVR(cyber sicknessやRedirected walking)について調べています．
-電子工作や身の回りのちょっとした不便を解消する開発が趣味です．
-最近はややWeb方面より... 広く浅く,興味を持ったものはとことん深く．いろいろやってます．
-（Unity, Blender, Arduino, Rails, Next, Unix）
-
-すべてのVRコンテンツとそれに付随する技術が好きです
-たまにうどんをこねてます`,
+  description: `HHKBレイアウトをこよなく愛し，技術を学ぶ学生です．
+  情報工学を専攻していて，研究室ではVR空間における「重さの知覚」をテーマに，疑似触覚(Pseudo-Haptics)と電気的筋肉刺激(EMS)を組み合わせた運動感覚提示について研究しています．
+  身の回りのちょっとした不便を解決したり，面白さを届けられるようなワクワクする開発・技術が大好きです！
+  広く浅く，興味を持ったものはとことん深く．いろいろやってます！
+`,
 };
-
