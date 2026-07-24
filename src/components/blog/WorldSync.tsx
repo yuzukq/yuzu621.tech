@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import type { BlogCategory } from "@/lib/posts"
-import { THEME_STORAGE_KEY, isWorld } from "@/lib/theme"
+import { THEME_STORAGE_KEY, resolveWorld } from "@/lib/theme"
 
 // ページラッパーの data-world だけでは足りない: オーバースクロール背景と
 // スクロールバー配色(color-scheme)は <html> 側のトークンを参照するため、
@@ -19,7 +19,7 @@ export default function WorldSync({ world }: { world: BlogCategory }) {
     } catch {
       // 無視: 保存設定が読めなければカテゴリ既定にフォールバックする
     }
-    document.documentElement.dataset.world = isWorld(stored) ? stored : world
+    document.documentElement.dataset.world = resolveWorld(stored, world)
   }, [world])
 
   return null
