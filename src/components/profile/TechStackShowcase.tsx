@@ -19,11 +19,11 @@ const CARD_ENTER_OFFSET_PX = 28
 // ヒステリシス(カテゴリ1つぶんを1とした比率)
 const BOUNDARY_HYSTERESIS = 0.06
 // 退出するカードは即座にフェードアウト、入場するカードはpresent-card.vrma
-// (3秒)の山場付近まで遅らせてフェードインさせる。アバターが「持ち上げて
-// 見せる」タイミングとカードの出現を合わせるための遅延
+// (3秒だが2倍速再生のため実質1.5秒)の山場付近まで遅らせてフェードインさせる。
+// アバターが「持ち上げて見せる」タイミングとカードの出現を合わせるための遅延
 const CARD_EXIT_DURATION_MS = 350
 const CARD_ENTER_DURATION_MS = 500
-const CARD_ENTER_DELAY_MS = 1500
+const CARD_ENTER_DELAY_MS = 750
 
 interface TechStackShowcaseProps {
   categories: SkillCategory[]

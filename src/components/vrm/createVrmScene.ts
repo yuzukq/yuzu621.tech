@@ -84,6 +84,8 @@ const MAX_PIXEL_RATIO = 2
 const MAX_DELTA_SEC = 0.1 // タブ非表示からの復帰時に delta が跳ねてモーションが飛ぶのを防ぐ
 const DOCK_CROSSFADE_SEC = 0.6
 const PULSE_CROSSFADE_SEC = 0.4
+// present-card.vrma(3秒)をテンポよく見せるため2倍速で再生する
+const PULSE_TIME_SCALE = 2
 
 function randomBlinkInterval(): number {
   return BLINK_MIN_INTERVAL_SEC + Math.random() * (BLINK_MAX_INTERVAL_SEC - BLINK_MIN_INTERVAL_SEC)
@@ -244,6 +246,7 @@ export async function createVrmScene({
           pulseAction = mixer.clipAction(pulseClip)
           pulseAction.setLoop(THREE.LoopOnce, 1)
           pulseAction.clampWhenFinished = true
+          pulseAction.timeScale = PULSE_TIME_SCALE
           getTriggerToken = motion.getTriggerToken
           lastTriggerToken = motion.getTriggerToken()
           // ワンショットが最後まで再生し終えたら自動でidleへ戻す
