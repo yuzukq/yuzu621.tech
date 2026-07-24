@@ -8,7 +8,7 @@ techStack:
   - Tailwind CSS
   - GPT-4o
   - Daisy UI
-description: 写真と位置情報から生成AIが自動で日記を書いてくれるWebアプリケーション。
+description: 写真と位置情報から生成AIが自動で日記を書いてくれるWebアプリケーション．
 screenshots:
   - /images/Recolle/prev_recolle_1.png
   - /images/Recolle/prev_recolle_2.png
@@ -27,7 +27,7 @@ urls:
   github: https://student.redesigner.jp/portfolios/PF2e831921f7aa86dc5b77430183df1c1b
 ---
 
-Recolle（リコレ）は、ユーザーの個性、写真と位置情報をもとに、自動で日記を生成してくれるウェブアプリケーションです。画像をアップロードするだけで、撮影場所や写っている風景をもとに、AIが自然な文章を生成し、旅の記録や日常の思い出を手軽に残せます。Z世代の「思い出の整理」をもっと簡単に、もっと楽しく——そんな思いから生まれました。
+Recolle（リコレ）は，ユーザーの個性，写真と位置情報をもとに，自動で日記を生成してくれるウェブアプリケーションです．画像をアップロードするだけで，撮影場所や写っている風景をもとに，AIが自然な文章を生成し，旅の記録や日常の思い出を手軽に残せます．Z世代の「思い出の整理」をもっと簡単に，もっと楽しく——そんな思いから生まれました．
 
 ## 主な機能
 

@@ -7,7 +7,7 @@ techStack:
   - C#
   - Blender
   - Photoshop
-description: VRChatワールドやVket出展作品など、UnityとBlenderを用いた創作活動のまとめ。
+description: VRChatワールドやVket出展作品など，UnityとBlenderを用いた創作活動のまとめ．
 screenshots:
   - /images/products/Unity/thumb_unity.png
   - /images/products/Unity/prev_saber.png
@@ -18,7 +18,7 @@ urls:
   github: https://github.com/yuzukq/Custom-Saber-MikuMikuSaber
 ---
 
-VRChat上でのワールドギミックやモデルの制作、Vketへの出展、サークル活動での共同ゲーム開発においてUnityやBlenderを使用した開発を行っています。三枚目の画像は「世界一、テンポ、光、井」というテーマをもとに作られた作品だったりします(?!?!)
+VRChat上でのワールドギミックやモデルの制作，Vketへの出展，サークル活動での共同ゲーム開発においてUnityやBlenderを使用した開発を行っています．三枚目の画像は「世界一，テンポ，光，井」というテーマをもとに作られた作品だったりします(?!?!)
 
 ## 主な機能
 
@@ -29,4 +29,4 @@ VRChat上でのワールドギミックやモデルの制作、Vketへの出展�
 
 ## 工夫点・課題
 
-- 趣味で行う創作活動では幅広く興味を持った技術領域へ挑戦しています。
+- 趣味で行う創作活動では幅広く興味を持った技術領域へ挑戦しています．
