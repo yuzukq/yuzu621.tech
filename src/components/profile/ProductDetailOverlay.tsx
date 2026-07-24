@@ -3,7 +3,7 @@
 import { useEffect } from "react"
 import Image from "next/image"
 import { FaDesktop, FaExternalLinkAlt, FaGithub, FaTimes } from "react-icons/fa"
-import type { Product } from "@/data/products"
+import type { Product } from "@/lib/products"
 
 interface ProductDetailOverlayProps {
   product: Product
@@ -68,21 +68,7 @@ export default function ProductDetailOverlay({ product, onClose }: ProductDetail
           {/* 詳細 */}
           <div className="flex-1">
             <div className="flex flex-col gap-6">
-              <div>
-                <h4 className="mb-2 text-lg font-semibold text-ink">概要</h4>
-                <p className="leading-loose text-ink-muted">{product.description}</p>
-              </div>
-
-              <hr className="border-border" />
-
-              <div>
-                <h4 className="mb-2 text-lg font-semibold text-ink">主な機能</h4>
-                <ul className="flex flex-col gap-1 text-ink-muted">
-                  {product.features.map((feature) => (
-                    <li key={feature}>・{feature}</li>
-                  ))}
-                </ul>
-              </div>
+              <div className="markdown-body" dangerouslySetInnerHTML={{ __html: product.html }} />
 
               <hr className="border-border" />
 
@@ -98,17 +84,6 @@ export default function ProductDetailOverlay({ product, onClose }: ProductDetail
                     </span>
                   ))}
                 </div>
-              </div>
-
-              <hr className="border-border" />
-
-              <div>
-                <h4 className="mb-2 text-lg font-semibold text-ink">工夫点・課題</h4>
-                <ul className="flex flex-col gap-1 text-ink-muted">
-                  {product.challenges.map((challenge) => (
-                    <li key={challenge}>・{challenge}</li>
-                  ))}
-                </ul>
               </div>
 
               <hr className="border-border" />

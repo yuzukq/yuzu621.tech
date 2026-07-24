@@ -1,7 +1,10 @@
+import { getAllProducts } from "@/lib/products"
 import SectionHeading from "./SectionHeading"
 import ProductsGrid from "./ProductsGrid"
 
-export default function Products() {
+export default async function Products() {
+  const products = await getAllProducts()
+
   return (
     <section id="products" className="scroll-mt-20 snap-start border-t border-border py-20 md:py-28">
       <div className="mx-auto max-w-6xl px-4 md:px-8">
@@ -11,7 +14,7 @@ export default function Products() {
         </p>
 
         <div className="mt-12">
-          <ProductsGrid />
+          <ProductsGrid products={products} />
         </div>
       </div>
     </section>

@@ -1,5 +1,5 @@
 import Image from "next/image"
-import type { Product } from "@/data/products"
+import type { Product } from "@/lib/products"
 
 interface ProductCardProps {
   product: Product
@@ -25,6 +25,10 @@ export default function ProductCard({ product, onSelect }: ProductCardProps) {
 
       <div className="flex flex-1 flex-col gap-3 p-5">
         <h3 className="font-body text-lg font-bold text-ink">{product.title}</h3>
+
+        {product.description && (
+          <p className="line-clamp-2 text-sm text-ink-muted">{product.description}</p>
+        )}
 
         <div className="mt-auto flex flex-wrap gap-2 pt-1">
           {product.techStack.map((tech) => (

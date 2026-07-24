@@ -1,12 +1,16 @@
 "use client"
 
 import { useState } from "react"
-import { products, type Product } from "@/data/products"
+import type { Product } from "@/lib/products"
 import FadeIn from "./FadeIn"
 import ProductCard from "./ProductCard"
 import ProductDetailOverlay from "./ProductDetailOverlay"
 
-export default function ProductsGrid() {
+interface ProductsGridProps {
+  products: Product[]
+}
+
+export default function ProductsGrid({ products }: ProductsGridProps) {
   const [selected, setSelected] = useState<Product | null>(null)
 
   return (
