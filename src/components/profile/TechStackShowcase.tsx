@@ -7,17 +7,23 @@ import VrmFallback from "@/components/vrm/VrmFallback"
 import SectionHeading from "./SectionHeading"
 
 // three一式をこのセクションが画面内に来るまで初回ロードJSに含めない
-const VrmScrubCanvas = dynamic(() => import("@/components/vrm/VrmScrubCanvas"), {
+const VrmTechStackCanvas = dynamic(() => import("@/components/vrm/VrmTechStackCanvas"), {
   ssr: false,
   loading: () => <VrmFallback />,
 })
 
 // 1カテゴリあたりに割り当てるスクロール量。小さいほどテンポが速くなる
-const VH_PER_CATEGORY = 70
-// 各カテゴリ区間のうち、後半何割を「次のカードへの遷移(アバターの演技)」に使うか。
-// 残りの前半は静止して読める時間になる
-const TRANSITION_BAND = 0.35
+const VH_PER_CATEGORY = 50
 const CARD_ENTER_OFFSET_PX = 28
+// カテゴリ境界ちょうどで往復スクロールされた時にトリガーが連打されるのを防ぐ
+// ヒステリシス(カテゴリ1つぶんを1とした比率)
+const BOUNDARY_HYSTERESIS = 0.06
+// 退出するカードは即座にフェードアウト、入場するカードはpresent-card.vrma
+// (3秒)の山場付近まで遅らせてフェードインさせる。アバターが「持ち上げて
+// 見せる」タイミングとカードの出現を合わせるための遅延
+const CARD_EXIT_DURATION_MS = 350
+const CARD_ENTER_DURATION_MS = 500
+const CARD_ENTER_DELAY_MS = 1500
 
 interface TechStackShowcaseProps {
   categories: SkillCategory[]
@@ -27,9 +33,11 @@ export default function TechStackShowcase({ categories }: TechStackShowcaseProps
   const wrapperRef = useRef<HTMLDivElement>(null)
   const cardRefs = useRef<Array<HTMLDivElement | null>>([])
   const progressLabelRef = useRef<HTMLParagraphElement>(null)
-  // VrmScrubCanvas はこのrefを毎フレーム読むだけなので、更新してもReactの
-  // 再レンダーは発生しない(60fps更新をReact stateで行うと重くなるため)
-  const progressRef = useRef(0)
+  const displayedIndexRef = useRef(0)
+  // VrmTechStackCanvas はこのrefを毎フレーム読むだけなので、更新してもReactの
+  // 再レンダーは発生しない(60fps更新をReact stateで行うと重くなるため)。値が
+  // 変わるたびpresent-card.vrmaを頭から再生し直すトリガーカウンタとして使う
+  const triggerTokenRef = useRef(0)
 
   useEffect(() => {
     const wrapper = wrapperRef.current
@@ -50,38 +58,48 @@ export default function TechStackShowcase({ categories }: TechStackShowcaseProps
           : 0
 
       const categoryFloat = globalProgress * categories.length
-      const currentIndex = Math.min(Math.floor(categoryFloat), categories.length - 1)
-      const localT = categoryFloat - currentIndex
-      const isLast = currentIndex === categories.length - 1
+      const rawIndex = Math.min(Math.floor(categoryFloat), categories.length - 1)
 
-      const transitionStart = 1 - TRANSITION_BAND
-      const transitionT = isLast
-        ? 0
-        : Math.min(Math.max((localT - transitionStart) / TRANSITION_BAND, 0), 1)
+      const prevDisplayed = displayedIndexRef.current
+      let nextDisplayed = prevDisplayed
+      if (rawIndex > prevDisplayed) {
+        // 1つ先の境界をヒステリシスぶん越えるまでは確定させない。2つ以上先へ
+        // 一気にスクロールされた場合はヒステリシスを待たず即座に追従する
+        nextDisplayed =
+          rawIndex - prevDisplayed > 1 || categoryFloat - rawIndex >= BOUNDARY_HYSTERESIS
+            ? rawIndex
+            : prevDisplayed
+      } else if (rawIndex < prevDisplayed) {
+        nextDisplayed =
+          prevDisplayed - rawIndex > 1 || prevDisplayed - categoryFloat >= BOUNDARY_HYSTERESIS
+            ? rawIndex
+            : prevDisplayed
+      }
 
-      // present-card.vrma はt=0とt=durationがどちらも同じ「休め」姿勢になる
-      // よう設計してある。カテゴリの境目でこの値が1→0に飛んでも、見た目は
-      // 同じ姿勢同士の切り替えなのでスナップして見えない
-      progressRef.current = transitionT
+      if (nextDisplayed === prevDisplayed) return
+      displayedIndexRef.current = nextDisplayed
+      triggerTokenRef.current += 1
 
       if (progressLabelRef.current) {
         const total = String(categories.length).padStart(2, "0")
-        progressLabelRef.current.textContent = `${String(currentIndex + 1).padStart(2, "0")} / ${total}`
+        progressLabelRef.current.textContent = `${String(nextDisplayed + 1).padStart(2, "0")} / ${total}`
       }
 
       cardRefs.current.forEach((el, i) => {
         if (!el) return
-        let opacity = 0
-        let translateY = CARD_ENTER_OFFSET_PX
-        if (i === currentIndex) {
-          opacity = 1 - transitionT
-        } else if (i === currentIndex + 1) {
-          opacity = transitionT
-          translateY = (1 - transitionT) * CARD_ENTER_OFFSET_PX
+        if (i === nextDisplayed) {
+          el.style.transitionDelay = `${CARD_ENTER_DELAY_MS}ms`
+          el.style.transitionDuration = `${CARD_ENTER_DURATION_MS}ms`
+          el.style.opacity = "1"
+          el.style.transform = "translateY(0px)"
+          el.style.pointerEvents = "auto"
+        } else {
+          el.style.transitionDelay = "0ms"
+          el.style.transitionDuration = `${CARD_EXIT_DURATION_MS}ms`
+          el.style.opacity = "0"
+          el.style.transform = `translateY(${CARD_ENTER_OFFSET_PX}px)`
+          el.style.pointerEvents = "none"
         }
-        el.style.opacity = String(opacity)
-        el.style.transform = `translateY(${translateY}px)`
-        el.style.pointerEvents = opacity > 0.5 ? "auto" : "none"
       })
     }
 
@@ -126,7 +144,7 @@ export default function TechStackShowcase({ categories }: TechStackShowcaseProps
               ここでは幅制約を重ねない */}
           <div className="grid w-full grid-cols-[20rem_minmax(0,1fr)] items-center gap-12">
             <div className="aspect-square w-full">
-              <VrmScrubCanvas progressRef={progressRef} />
+              <VrmTechStackCanvas triggerTokenRef={triggerTokenRef} />
             </div>
 
             <div className="relative h-80">
@@ -137,7 +155,7 @@ export default function TechStackShowcase({ categories }: TechStackShowcaseProps
                     cardRefs.current[index] = el
                   }}
                   style={{ opacity: index === 0 ? 1 : 0 }}
-                  className="absolute inset-0 flex flex-col rounded-2xl border border-border bg-surface p-6 will-change-[opacity,transform]"
+                  className="absolute inset-0 flex flex-col rounded-2xl border border-border bg-surface p-6 transition-[opacity,transform] ease-out will-change-[opacity,transform]"
                 >
                   <h3 className="font-mono text-xs font-medium uppercase tracking-[0.2em] text-accent">
                     <span aria-hidden="true">#</span> {category.label}

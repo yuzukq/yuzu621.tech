@@ -25,18 +25,6 @@ export interface VrmCameraFraming {
 export type VrmMotion =
   | { mode: "loop"; animationUrl: string }
   | {
-      mode: "scrub"
-      animationUrl: string
-      /** 0〜1。毎フレーム読み出し、クリップ内の再生位置に変換する */
-      getProgress: () => number
-      /**
-       * 指定時、getProgress()が0付近(静止区間)ではこちらをループ再生し、
-       * scrubクリップへ滑らかにクロスフェードする。スクロール停止中に
-       * アバターが完全静止して見えるのを防ぐための待機モーション用
-       */
-      idleAnimationUrl?: string
-    }
-  | {
       mode: "dock"
       /** 通常時にループ再生する演技(例: Heroのループアニメーション) */
       loopAnimationUrl: string
@@ -45,6 +33,19 @@ export type VrmMotion =
       /** 毎フレーム読み出す。trueに変わった瞬間dockAnimationUrl側へ、falseに
        * 戻った瞬間loopAnimationUrl側へcrossFadeToする */
       getDocked: () => boolean
+    }
+  | {
+      mode: "pulse"
+      /** 静止中にループ再生する待機モーション */
+      idleAnimationUrl: string
+      /** トリガーされるたびに最初から再生されるワンショット演技。終端で静止し、
+       * 自動的にidleAnimationUrlへ戻る */
+      pulseAnimationUrl: string
+      /** 毎フレーム読み出す。値が変わるたびpulseAnimationUrlを頭から再生し直す。
+       * 真偽値ではなくカウンタにしているのは、前の演技が終わる前に短時間で
+       * 連続トリガーされても(カテゴリを素早くスクロールし切った場合など)、
+       * 取りこぼさず都度頭から再生し直すため */
+      getTriggerToken: () => number
     }
 
 export interface VrmSceneOptions {
@@ -82,6 +83,7 @@ const LOWER_ARM_BEND = 0.25 // rad
 const MAX_PIXEL_RATIO = 2
 const MAX_DELTA_SEC = 0.1 // タブ非表示からの復帰時に delta が跳ねてモーションが飛ぶのを防ぐ
 const DOCK_CROSSFADE_SEC = 0.6
+const PULSE_CROSSFADE_SEC = 0.4
 
 function randomBlinkInterval(): number {
   return BLINK_MIN_INTERVAL_SEC + Math.random() * (BLINK_MAX_INTERVAL_SEC - BLINK_MIN_INTERVAL_SEC)
@@ -194,19 +196,19 @@ export async function createVrmScene({
     vrm.lookAt.target = lookAtTarget
   }
 
-  // scrubモードのクリップ自体がexpressionsを持つため、この初期値はloopモード
-  // (happy-sway)とアニメーション無しのフォールバック時にのみ意味を持つ
+  // pulse/dockモードのクリップ自体がexpressionsを持つため、この初期値はloop
+  // モードとアニメーション無しのフォールバック時にのみ意味を持つ
   expressionManager?.setValue(VRMExpressionPresetName.Happy, 0.85)
 
   let mixer: THREE.AnimationMixer | undefined
-  let scrubAction: THREE.AnimationAction | undefined
-  let scrubDuration = 0
-  let getScrubProgress: (() => number) | undefined
-  let idleAction: THREE.AnimationAction | undefined
   let dockLoopAction: THREE.AnimationAction | undefined
   let dockAction: THREE.AnimationAction | undefined
   let getDocked: (() => boolean) | undefined
   let isDocked = false
+  let pulseIdleAction: THREE.AnimationAction | undefined
+  let pulseAction: THREE.AnimationAction | undefined
+  let getTriggerToken: (() => number) | undefined
+  let lastTriggerToken: number | undefined
 
   async function loadClip(url: string): Promise<THREE.AnimationClip | undefined> {
     const animGltf = await loader.loadAsync(url)
@@ -230,37 +232,33 @@ export async function createVrmScene({
           dockAction.clampWhenFinished = true
           getDocked = motion.getDocked
         }
+      } else if (motion.mode === "pulse") {
+        const [idleClip, pulseClip] = await Promise.all([
+          loadClip(motion.idleAnimationUrl),
+          loadClip(motion.pulseAnimationUrl),
+        ])
+        if (idleClip && pulseClip) {
+          mixer = new THREE.AnimationMixer(vrm.scene)
+          pulseIdleAction = mixer.clipAction(idleClip)
+          pulseIdleAction.play() // デフォルトが LoopRepeat のためループ指定は不要
+          pulseAction = mixer.clipAction(pulseClip)
+          pulseAction.setLoop(THREE.LoopOnce, 1)
+          pulseAction.clampWhenFinished = true
+          getTriggerToken = motion.getTriggerToken
+          lastTriggerToken = motion.getTriggerToken()
+          // ワンショットが最後まで再生し終えたら自動でidleへ戻す
+          mixer.addEventListener("finished", (event) => {
+            if (event.action !== pulseAction) return
+            pulseIdleAction!.reset().play()
+            pulseAction!.crossFadeTo(pulseIdleAction!, PULSE_CROSSFADE_SEC, false)
+          })
+        }
       } else {
         const clip = await loadClip(motion.animationUrl)
         if (clip) {
           mixer = new THREE.AnimationMixer(vrm.scene)
           const action = mixer.clipAction(clip)
-          if (motion.mode === "loop") {
-            action.play() // デフォルトが LoopRepeat のためループ指定は不要
-          } else {
-            // scrubは時間を毎フレーム外部から指定するため、自動再生はさせない。
-            // play()自体は内部状態の初期化(_effectiveWeight等)に必要なため呼んでおく
-            action.play()
-            action.paused = true
-            scrubAction = action
-            scrubDuration = clip.duration
-            getScrubProgress = motion.getProgress
-
-            if (motion.idleAnimationUrl) {
-              try {
-                const idleClip = await loadClip(motion.idleAnimationUrl)
-                if (idleClip) {
-                  idleAction = mixer.clipAction(idleClip)
-                  idleAction.play() // デフォルトが LoopRepeat のためループ指定は不要
-                }
-              } catch (error) {
-                console.info(
-                  "[vrm] 待機モーションを読み込めなかったため、静止姿勢のまま表示します。",
-                  error,
-                )
-              }
-            }
-          }
+          action.play() // デフォルトが LoopRepeat のためループ指定は不要
         }
       }
     } catch (error) {
@@ -305,8 +303,8 @@ export async function createVrmScene({
   let blinkPhase = 0 // 0 = 待機中、>0 = まばたき経過秒
   let blinkCooldown = randomBlinkInterval()
 
-  // scrubモードは体・表情をクリップに委ねるため呼ばない(呼ぶとポインタ追従の
-  // 首振りと外部から設定した姿勢が競合する)。blinkはどのモードでも独立して動く
+  // blinkはどのモードでも独立して動く(体のポーズをクリップに委ねるモードでも
+  // 表情モーフはミキサーのバインディング対象外なので競合しない)
   function updateBlink(delta: number) {
     if (!expressionManager) return
     if (blinkPhase > 0) {
@@ -383,20 +381,19 @@ export async function createVrmScene({
     lastTime = now
     elapsed += delta
 
-    if (scrubAction && getScrubProgress) {
-      const t = THREE.MathUtils.clamp(getScrubProgress(), 0, 1)
-      scrubAction.time = t * scrubDuration
-      if (idleAction) {
-        // smoothstep。t=0で待機モーション、tが動き出した瞬間になめらかにscrub側へ
-        // 重みを渡す。crossFadeToは壁時計時間で走るためスクロール位置と同期できず
-        // 使えない。setEffectiveWeightを毎フレームtから直接計算するのはそのため
-        const scrubWeight = t * t * (3 - 2 * t)
-        idleAction.setEffectiveWeight(1 - scrubWeight)
-        scrubAction.setEffectiveWeight(scrubWeight)
+    if (pulseIdleAction && pulseAction && getTriggerToken) {
+      const token = getTriggerToken()
+      if (token !== lastTriggerToken) {
+        lastTriggerToken = token
+        // 前の演技が終わっていなくても打ち切って頭から再生し直す。3秒の演技を
+        // 待たずカテゴリを連続で送られても都度反応できるようにするため
+        pulseAction.reset().play()
+        pulseIdleAction.crossFadeTo(pulseAction, PULSE_CROSSFADE_SEC, false)
       }
-      // idleAction(ループ)の時間を進めるためdeltaを渡す。scrubActionはpaused=true
-      // なので内部クロックは進まず、上で代入したtimeのポーズのみが反映される
       mixer!.update(delta)
+      // composeOnAnimatedPose=false(レスト基準)にする: dockモードと同じ理由
+      // (pulseAnimationUrl側にheadのトラックが無い場合の頭部回転暴走対策)
+      updatePointerFollow(delta, false)
       updateBlink(delta)
     } else if (dockLoopAction && dockAction && getDocked) {
       const wantDocked = getDocked()
