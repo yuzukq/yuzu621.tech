@@ -117,8 +117,29 @@ rem値に 16/18 を掛けた補正値で従来の実寸(h1: 28〜40px / h2: 24px
 - 項目: 最浅見出しレベルを親として2階層に正規化。親には mono の連番 `01`〜、子はインデントのみ。
   アクティブ項目は左2pxの `--accent` バー + `--accent` 10%背景 + `--accent` 文字。それ以外は
   `--ink-muted`、ホバーで `--surface-hover`。
-- 挙動: スクロール連動ハイライト、`j`/`k` で次/前の見出しへジャンプ(入力欄フォーカス中・修飾キー
-  押下時は無効)。クリックは素のアンカー遷移。reduced-motion では即時ジャンプ。
+- 挙動: スクロール連動ハイライト、`k`/`j` で次/前の見出しへジャンプ(入力欄フォーカス中・修飾キー
+  押下時は無効)。クリックは素のアンカー遷移。reduced-motion では即時ジャンプ。フッターの
+  ヒントは`↕ navigation`(英語表記で統一。ヘッダーの`$ index`・`sections`と揃えた)。
+
+### モバイルナビゲーション(MobileNav)
+プロフィールページのモバイル(`md:hidden`)で右上のハンバーガーから開く、右からスライドインする
+ドロワー。目次(TableOfContents)と同じターミナル様式に揃えている: ヘッダーは mono で
+`$ index`(`$`は`--accent`)+ 閉じるボタン、各項目は mono の連番`01`〜+ラベル、フッターに
+`esc` キーバッジ + `close`。パネルは`--surface`地の完全不透明(半透明だと背後のコンテンツと
+文字が被って読めなくなるため)、背景(バックドロップ)はクリックで閉じる`bg-black/70`。
+Escapeキーでも閉じる(`ProductDetailOverlay.tsx`と挙動を統一)。
+
+**`document.body`へのポータル必須**: `<header>`に`backdrop-blur-md`(backdrop-filter)が
+かかっており、これは`position: fixed`子要素の包含ブロックを作ってしまう。ドロワーを
+`<header>`の子としてそのまま`fixed inset-0`しても、画面全体ではなく`<header>`自身の
+高さ(数十px)に押し込められて表示が壊れる(=旧UIで「背景が透けて文字と被る」と
+報告されていた不具合の実体もこれだった可能性が高い)。`createPortal`で`document.body`
+直下に描画することでこの包含ブロック問題を回避している。
+
+開閉アニメーションは開く時のみ(`--animate-drawer-in`: 右からslide-in 0.25s /
+`--animate-backdrop-in`: fade-in 0.2s)。閉じる時は演出をつけずコンポーネント自体が
+即座にunmountする: 閉じるボタンにe2eの可視性アサーションが直後に続くため、閉じるアニメーション
+を残すとPlaywrightの可視性チェックとレースする(Hero↔Aboutの導線で一度踏んだのと同じ教訓)。
 
 ### Markdown本文 (`.markdown-body`)
 - 見出し・段落は §3 のスケールに従う。h2 は下辺に `--border` の細線。
@@ -149,7 +170,7 @@ rem値に 16/18 を掛けた補正値で従来の実寸(h1: 28〜40px / h2: 24px
 
 lg以上(1024px)・`prefers-reduced-motion`でない場合のみ、TechStackセクションが「左にアバター・
 右に1カテゴリのカード」の構成になり、スクロールでカードとアバターの演技が連動する
-(`TechStackShowcase.tsx` / `VrmScrubCanvas.tsx`)。それ以外(狭い画面・reduced-motion・SSR/初回CSR)
+(`TechStackShowcase.tsx` / `VrmTechStackCanvas.tsx`)。それ以外(狭い画面・reduced-motion・SSR/初回CSR)
 は従来の全カテゴリ一覧グリッド(`TechStackBody.tsx`のフォールバック分岐)を表示する。
 判定はマウント後の`matchMedia`で行い、フォールバックを初期値にすることでhydrationミスマッチと
 no-js/クローラー向けの全文露出を両立する。全カテゴリのカードは常にDOMに存在し、opacity/translateY
@@ -166,27 +187,32 @@ sticky headerの下に自然に着地させるためのもの。リード文の�
 のvoiceを踏襲)を置き、新規のscrollリスナーは追加せず既存の`update()`(rAFループ)内で
 `currentIndex`から直接更新する。
 
-- **スクロール数式**: 外側wrapperの高さ = `カテゴリ数 × 70vh + 100dvh`。`position: sticky; top: 0`
-  の内側コンテナがピン留めされる区間(=`wrapper高さ - viewport高さ` = カテゴリ数×70vh)を
-  `globalProgress`(0〜1)としてカテゴリ数に按分し、各カテゴリ区間の後半35%(`TRANSITION_BAND`)を
-  次カードへの遷移(アバターの演技)に、前半65%を静止した読了時間に割り当てる。`VH_PER_CATEGORY`
-  は当初50だったが、スクロール量に対して演技が速すぎたため70に引き上げた
-  (`TRANSITION_BAND × VH_PER_CATEGORY` = 演技に割り当てるスクロール距離そのものなので、
-  この積を上げるのがセンシ調整の効くノブ)。
-- **アバターの演技**: `present-card.vrma`(体ごとカード側へターンしながら屈み込んで両手で掴み、
-  よいしょと気合いを入れて持ち上げる。非ループ、t=0とt=durationが同一の「休め」姿勢になるよう設計)を、
-  `THREE.AnimationMixer`で自動再生させず`action.time = progress * duration`によって毎フレーム
-  直接スクラブする(`createVrmScene.ts`の`motion.mode === 'scrub'`)。カテゴリの境目でprogressが
-  1→0に飛んでも、両端が同じ姿勢なので見た目はスナップしない。
-- **静止区間の待機モーション**: 前半65%(`transitionT === 0`)でアバターが完全静止して見えるのを
-  避けるため、`tech-idle.vrma`(呼吸・微揺れのループ)を同じ`mixer`上の別actionとして常時再生し、
-  `transitionT`をsmoothstepした値を`idleAction`/`scrubAction`の`setEffectiveWeight()`に毎フレーム
-  直接渡してクロスフェードする(`motion.idleAnimationUrl`)。`AnimationMixer.crossFadeTo()`は
-  壁時計時間でフェードが進む関数のため、スクロール位置(=`progress`)に同期させることができず
-  不採用。重みを`progress`から直接計算する方式にしたことで、スクロールを止めた位置でも
-  ブレンド比が一致し続ける。この待機actionを動かすため`mixer.update(delta)`に変更したが、
-  `scrubAction`は`paused = true`のままなので内部クロックは進まず、直接代入した`.time`の
-  ポーズだけが反映される(挙動は従来の`mixer.update(0)`と同じ)。
+- **スクロール数式**: 外側wrapperの高さ = `カテゴリ数 × 50vh + 100dvh`。`position: sticky; top: 0`
+  の内側コンテナがピン留めされる区間(=`wrapper高さ - viewport高さ` = カテゴリ数×50vh)を
+  `globalProgress`(0〜1)としてカテゴリ数に按分し、`categoryFloat = globalProgress × カテゴリ数`の
+  整数部をカテゴリのインデックスとする。
+- **カード切り替えとアバターの演技はスクラブではなくワンショットトリガー方式**(旧: スクロール位置に
+  `scrubAction.time`を直接同期させる`scrub`モードだったが、スクロール速度に演技の見え方が
+  引きずられ「アニメーションがキレイに再生できない」問題があったため、カテゴリの境目を
+  跨いだ瞬間に演技を1回再生する方式に変更した)。`categoryFloat`の整数部(`displayedIndex`)が
+  変化した瞬間だけ、(1) カードをCSSトランジションでクロスフェードし、(2) アバターに
+  `present-card.vrma`(3秒、体ごとカード側へターンしながら屈み込んで両手で掴み、よいしょと
+  気合いを入れて持ち上げる。t=0とt=durationが同一の「休め」姿勢)をワンショット再生させる。
+  カテゴリ境界ちょうどでの往復スクロールによる連打を防ぐため、`displayedIndex`の確定に
+  ヒステリシス(`BOUNDARY_HYSTERESIS`)を持たせている。逆方向にスクロールした場合も同じ
+  `present-card.vrma`を順再生する(逆再生は「持ち上げ」の演技として不自然に見えるため)。
+  カードは退出側を即座に(350ms)フェードアウトし、入場側はpresent-card.vrmaの山場付近
+  (`CARD_ENTER_DELAY_MS`)まで遅らせてフェードインさせ、アバターが「持ち上げて見せる」タイミングと
+  カードの出現を合わせている。スクロール速度と演技の再生速度が完全に分離されたため、
+  以前センシ調整のために引き上げていた`VH_PER_CATEGORY`(70)は50に戻せた。
+- **`createVrmScene.ts`の`"pulse"`モード**: `idleAnimationUrl`(常時ループ再生)と
+  `pulseAnimationUrl`(トリガーされるたびに頭から再生し直すワンショット)の2action構成。
+  `getTriggerToken()`が返す値が変化するたびに`pulseAction.reset().play()` +
+  `idleAction.crossFadeTo(pulseAction, ...)`する。真偽値の`"dock"`モード(7.7節)と違い
+  カウンタにしているのは、演技が終わる前に短時間で連続トリガーされても(カテゴリを素早く
+  スクロールし切った場合など)取りこぼさず都度頭から再生し直すため。ワンショットが最後まで
+  再生し終えたら`mixer`の`"finished"`イベントで自動的に`idleAction`へcrossFadeToし直す
+  (`dock`モードと違い、呼び出し側が明示的に「戻す」タイミングを与える必要がない)。
 - **VRMAの符号に注意**: このアバターでは、three-vrm-animationのretargeting適用後、
   upperArm/lowerArmのZの符号が、生成時にauthorした値から反転して現れる(Yはそのまま)。
   大きな振れ幅のモーションを作る際は必ず実機で描画確認し、意図と逆に動く場合は該当軸の符号を
@@ -229,12 +255,20 @@ sticky headerの下に自然に着地させるためのもの。リード文の�
 
 ## 7.7 Hero↔Aboutアバター移動演出
 
-lg以上・`prefers-reduced-motion`でない場合、Heroで使っているVRMアバターと同一の
-インスタンスが、スクロールでHero→Aboutへ画面上の位置を移動する
+`prefers-reduced-motion`でない場合(画面幅は問わない。モバイルも含む)、Heroで使っている
+VRMアバターと同一のインスタンスが、スクロールでHero→Aboutへ画面上の位置を移動する
 (`AvatarTravelContext.tsx` / `FloatingAvatar.tsx` / `HeroAvatarDock.tsx` /
-`AboutAvatarDock.tsx` / `AboutIntro.tsx`)。それ以外(狭い画面・reduced-motion・
-SSR/初回CSR)ではHero・Aboutそれぞれが従来通り自前の静的なアバター/写真アイコンを
-描画する(判定はTechStackBody.tsxと同じマウント後matchMedia方式)。
+`AboutAvatarDock.tsx` / `AboutIntro.tsx`)。それ以外(reduced-motion・SSR/初回CSR)では
+Hero・Aboutそれぞれが従来通り自前の静的なアバター/写真アイコンを描画する(判定は
+TechStackBody.tsxと同じマウント後matchMedia方式)。
+
+**あえてlg限定にしていない**: `avatar.vrm`が23MBあり、WebGLコンテキストも限られた
+リソースのため、showcase=false時にHero/Aboutそれぞれが独立したVrmCanvasを持つと
+2枚目のcanvasと2回目の23MBロードが発生してしまう。共有アバター1枚だけで完結させる
+この設計自体が「2枚目のcanvasを作らずに済ませる手段」になっているため、モバイルでも
+lg版と同じ移動演出を使う方がむしろ軽い。モバイルでの配置は「見出し→アバター→吹き出し」の
+縦積みで、`AboutAvatarDock`のdocker位置がAboutの見出しの直下に来るようレイアウトされる
+(FLIP変換自体はスロットの実際の矩形を読むだけなので、縦並びでも計算式の変更は不要)。
 
 参考にした[davidhckh/portfolio-2025](https://github.com/davidhckh/portfolio-2025)は
 Vue+GSAP+Three.jsのフルページ3Dシーンで、1体のアバターを3D空間内のwaypoint間で
