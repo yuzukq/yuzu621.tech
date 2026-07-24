@@ -71,6 +71,11 @@ CSS変数で定義し、Tailwind v4 の `@theme inline` で `--color-*` にマ�
 **例外はMarkdown見出し(.markdown-body h1〜h4)**のみ: 元々十分大きいため、
 rem値に 16/18 を掛けた補正値で従来の実寸(h1: 28〜40px / h2: 24px / h3: 20px / h4: 18px)を維持する。
 
+**モバイル(767px以下)は`font-size: 106%`(≒17px)に一段下げる**(`@media (max-width: 767px)`で
+ルートの`html { font-size }`を上書き)。一度に読める情報量を優先し、PC比で数%だけ縮小する。
+rem基準の全サイズが単一のこのルールに追従するため、コンポーネント個別のブレークポイント指定は
+不要。`clamp()`でvw成分を持つ見出し(Hero名前・ブログh1)はrem下限側のみこの縮小に追従する。
+
 スケール(rem表記はルート18px基準):
 
 - **Display** (ヒーローの名前等): `clamp(2.75rem, 7vw, 5rem)` / weight 700 / letter-spacing -0.02em
@@ -103,7 +108,16 @@ rem値に 16/18 を掛けた補正値で従来の実寸(h1: 28〜40px / h2: 24px
 世界に依存しない `:root` トークンとして globals.css に定義する。
 
 ### プロダクトカード
-大きめビジュアル + 概要 + 技術スタックタグ + リンク。奇数偶数で画像左右を入れ替えるエディトリアル風でもよい。
+大きめビジュアル + タイトル + 一文説明(`description`・`line-clamp-2`、ブログカードの概要と同じ
+voice) + 技術スタックタグ + リンク。奇数偶数で画像左右を入れ替えるエディトリアル風でもよい。
+
+データは`_products/*.md`(ブログの`_posts/*.md`と同じ構成、`src/lib/products.ts`が
+`gray-matter`+`renderMarkdown()`で読む)。フロントマターは共有フォーマット
+(`id`/`title`/`thumbnail`/`techStack`/`screenshots`/`description`(一文)/`urls`)のみとし、
+旧`description`(長文)・`features`・`challenges`は撤廃、Markdown本文に自由記述として統合した
+(見出しの立て方はプロダクトごとに任意。既存7件は`## 主な機能` / `## 工夫点・課題`の2見出しに
+揃えている)。本文は`ProductDetailOverlay.tsx`が`.markdown-body`としてレンダリングする。
+表示順はファイル名の数値プレフィックス(`01-`〜)で制御する。
 
 ### タグ
 `rounded-lg` / `--surface` 上に `--border` / テキスト `--ink-muted`、`#` 接頭辞。ホバーで `--accent` 文字色。
@@ -120,6 +134,27 @@ rem値に 16/18 を掛けた補正値で従来の実寸(h1: 28〜40px / h2: 24px
 - 挙動: スクロール連動ハイライト、`k`/`j` で次/前の見出しへジャンプ(入力欄フォーカス中・修飾キー
   押下時は無効)。クリックは素のアンカー遷移。reduced-motion では即時ジャンプ。フッターの
   ヒントは`↕ navigation`(英語表記で統一。ヘッダーの`$ index`・`sections`と揃えた)。
+
+**xl未満はモバイル目次モーダル(`MobileToc.tsx`)に切り替わる**: 記事ヘッダー右上の
+ハンバーガー(`FiMenu`)から開く、MobileNav.tsx(プロフィールページ)と同じポータル+開閉モーダル。
+見出し一覧は`normalizeToc()`(このファイルからexport)を共有し、連番+インデントの見た目も
+デスクトップ版と統一。スクロールスパイのハイライトは持たない(タップで該当見出しへ飛んで
+即閉じるだけの単純な用途のため)。`<header>`の`backdrop-blur-md`が`position: fixed`の
+包含ブロックを作る問題は同じなので、`createPortal(..., document.body)`も同様に必須。
+
+### ブログヘッダー(BlogHeader) — list / article バリアント
+一覧ページと記事ページで表示するナビゲーションが異なるため、`variant`propで分岐する。
+- **list**(デフォルト、`(blog)/layout.tsx`が使用): タイトル「Yuzuのブログ」(`/`へのリンク) +
+  右上「Profile」リンクのみ。「Blog」リンクは自分自身への遷移で無意味なため削除した。
+- **article**(`blog/[slug]/page.tsx`が`toc`付きで直接描画): タイトルリンクのみ、ナビリンクは
+  PC・モバイルとも一切出さない(記事内では不要と判断)。代わりに`toc`があれば右上に
+  `MobileToc`のトリガーボタンを出す(xl以上ではデスクトップ目次が既にあるため`xl:hidden`)。
+
+**Headerの描画位置に注意**: 記事ページのHeaderは`blog/layout.tsx`ではなく`[slug]/page.tsx`が
+自前で描画する。目次データ(`toc`)はpage側の`renderPost()`でしか手に入らず、Next.jsのlayoutは
+子pageが計算したpropsを受け取れない(逆方向の受け渡しができない)ため。`blog/layout.tsx`は
+Footerのみのパススルーになっている。一覧ページ側(`(blog)/layout.tsx`)は従来通りlayoutが
+Headerを描画する(こちらはpage側の動的データに依存しないため問題ない)。
 
 ### モバイルナビゲーション(MobileNav)
 プロフィールページのモバイル(`md:hidden`)で右上のハンバーガーから開く、右からスライドインする
@@ -205,6 +240,9 @@ sticky headerの下に自然に着地させるためのもの。リード文の�
   (`CARD_ENTER_DELAY_MS`)まで遅らせてフェードインさせ、アバターが「持ち上げて見せる」タイミングと
   カードの出現を合わせている。スクロール速度と演技の再生速度が完全に分離されたため、
   以前センシ調整のために引き上げていた`VH_PER_CATEGORY`(70)は50に戻せた。
+  `pulseAction.timeScale = 2`でpresent-card.vrma(3秒)を実質1.5秒のテンポに上げており、
+  `CARD_ENTER_DELAY_MS`もそれに合わせて750msに調整済み(山場のタイミングは`timeScale`に
+  対して比例して縮むため、`timeScale`を変える場合はこの値も追従させる)。
 - **`createVrmScene.ts`の`"pulse"`モード**: `idleAnimationUrl`(常時ループ再生)と
   `pulseAnimationUrl`(トリガーされるたびに頭から再生し直すワンショット)の2action構成。
   `getTriggerToken()`が返す値が変化するたびに`pulseAction.reset().play()` +
