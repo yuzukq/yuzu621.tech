@@ -1,4 +1,18 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+
+// スムーズスクロール完了を固定waitではなく、scrollYが開始位置から動いた後
+// 2フレーム連続で同値になったこと(=静止)で検知する。pollingのデフォルトは
+// rafのため、returnがtrueになるのは実際に連続フレームで値が一致した時のみ
+async function waitForScrollSettle(page: Page, startY: number) {
+  await page.waitForFunction((initial) => {
+    const w = window as unknown as { __scrollSettleY?: number };
+    const current = window.scrollY;
+    if (current === initial) return false;
+    if (w.__scrollSettleY === current) return true;
+    w.__scrollSettleY = current;
+    return false;
+  }, startY);
+}
 
 test.describe('ナビゲーション機能', () => {
   test('About meセクションの「ブログを読む」ボタンでブログ一覧へ遷移できる', async ({ page }) => {
@@ -142,8 +156,8 @@ test.describe('モバイルビュー - アンカーリンク機能', () => {
 
     await drawer.getByRole('link', { name: 'Products' }).click();
 
-    // ドロワーが閉じてからスクロールが完了するまで待つ
-    await page.waitForTimeout(800);
+    // ドロワーが閉じてからスムーズスクロールが完了するまで待つ
+    await waitForScrollSettle(page, initialScrollY);
 
     const afterScrollY = await page.evaluate(() => window.scrollY);
     expect(afterScrollY).toBeGreaterThan(initialScrollY);

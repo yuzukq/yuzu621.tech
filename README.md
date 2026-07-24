@@ -226,6 +226,8 @@ npm run test:e2e     # Playwright E2E(内部でビルド+起動してから実�
 npm run test:e2e:ui  # Playwright UIモード
 ```
 
+`npm run test:e2e` の前に、自分で起動した `npm run start` 等の3000番ポートのサーバーは停止してください(`playwright.config.ts` の `reuseExistingServer` によりローカルでは既存サーバーが再利用され、古いビルドのままテストされてしまいます)。
+
 ## テスト(Playwright E2E)
 
 `tests/e2e/` に一覧・記事・カテゴリ切替・ナビゲーション・プロダクト詳細・404・SEO(sitemap/robots/
