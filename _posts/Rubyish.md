@@ -1,5 +1,4 @@
 --- 
-slug: Rubyish
 title: Rubyらしさを学んだ話
 date: 2026-01-15
 description: Rubyを学び直しました。この記事ではRubyの文法Rubyらしい書き方の好きなところを書き残しておこうと思います。

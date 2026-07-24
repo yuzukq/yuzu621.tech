@@ -1,5 +1,4 @@
 ---
-slug: windows-rice
 title: RiceはLinuxだけの嗜みじゃない!! winで利用可能なウィンドウマネージャとタブバーの紹介[yasb, GlazeWM]
 date: 2025-10-28
 description: waylandのような美しいタイリングマネージャをwindowsで利用できる，GlazeWMというOSS．yasbというタブバーの導入とセットアップを紹介します．

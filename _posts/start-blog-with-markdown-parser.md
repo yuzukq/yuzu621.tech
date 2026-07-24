@@ -1,5 +1,4 @@
 ---
-slug: start-blog-with-markdown-parser
 title: マークダウンパーサーを使ったブログの運用
 date: 2025-10-27
 description: Next.js と Chakra UI で Markdown ベースのブログ機能を実装しました．仕組みと設計のこだわりを紹介します．

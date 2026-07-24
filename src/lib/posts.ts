@@ -52,7 +52,7 @@ export function getPostBySlug(slug: string): Post | null {
         : new Date().toISOString()
 
   const meta: PostMeta = {
-    slug: data.slug || slug,
+    slug,
     title: data.title || slug,
     date,
     description: data.description || getExcerpt(content),
