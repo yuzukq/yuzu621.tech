@@ -164,6 +164,11 @@ Headerを描画する(こちらはpage側の動的データに依存しないた
 文字が被って読めなくなるため)、背景(バックドロップ)はクリックで閉じる`bg-black/70`。
 Escapeキーでも閉じる(`ProductDetailOverlay.tsx`と挙動を統一)。
 
+同じ意匠のモバイル記事目次(`blog/MobileToc.tsx`)とは、トリガー・ポータル・バックドロップ・
+ヘッダー・フッター・Escapeハンドラを`TerminalDrawer.tsx`として共通化している。両者の差は
+リスト部(`NextLink`+連番 vs アンカー+連番/インデント)、アクセシブルネーム、ブレークポイント
+(`md:hidden` vs `xl:hidden`)のみ。
+
 **`document.body`へのポータル必須**: `<header>`に`backdrop-blur-md`(backdrop-filter)が
 かかっており、これは`position: fixed`子要素の包含ブロックを作ってしまう。ドロワーを
 `<header>`の子としてそのまま`fixed inset-0`しても、画面全体ではなく`<header>`自身の
