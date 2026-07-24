@@ -83,7 +83,7 @@ export function getAllPostsMeta(filterCategory?: BlogCategory): PostMeta[] {
   return posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 }
 
-export function getExcerpt(markdown: string, maxLen = 140): string {
+function getExcerpt(markdown: string, maxLen = 140): string {
   const noMd = markdown
     .replace(/```[\s\S]*?```/g, '')
     .replace(/`[^`]*`/g, '')
@@ -95,7 +95,7 @@ export function getExcerpt(markdown: string, maxLen = 140): string {
   return noMd.length > maxLen ? `${noMd.slice(0, maxLen)}…` : noMd
 }
 
-export function extractFirstImageSrc(markdown: string): string | undefined {
+function extractFirstImageSrc(markdown: string): string | undefined {
   const m = markdown.match(/!\[[^\]]*\]\(([^)]+)\)/)
   return m?.[1]
 }

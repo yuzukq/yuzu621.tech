@@ -28,7 +28,7 @@ SEO(sitemap/robots/JSON-LD/OGP)を整備、プロフィールページに VRM �
 | Markdown | [unified](https://unifiedjs.com/) パイプライン(独自 remark/rehype プラグインで Qiita 互換記法を実装) |
 | フォント | `next/font/google`(Space Grotesk / Zen Maru Gothic / JetBrains Mono、全てセルフホスト) |
 | 3D | three.js + [@pixiv/three-vrm](https://github.com/pixiv/three-vrm) + three-vrm-animation(プロフィールのVRMヒーロー) |
-| データ管理 | Markdown(`_posts/`)+ `src/data/*.ts` によるデータドリブン設計 |
+| データ管理 | Markdown(`_posts/` 記事 / `_products/` 制作物)+ `src/data/*.ts` によるデータドリブン設計 |
 | テスト | Playwright(E2E) |
 | CI/CD | GitHub Actions(Lint / Typecheck / Build / npm audit / E2E) + Vercel(自動デプロイ) |
 
@@ -39,6 +39,7 @@ Chakra UI・Emotion・next-themes は P3 で全面撤去済みで、依存には
 ```
 yuzu621.tech/
 ├── _posts/                        # Qiita互換Markdownのブログ記事(1ファイル1記事)
+├── _products/                     # 制作物Markdown(1ファイル1プロダクト、ファイル名の数値プレフィックスが表示順)
 ├── src/
 │   ├── app/                       # Next.js App Router
 │   │   ├── layout.tsx             # ルートレイアウト(next/font, WebSite JSON-LD)
@@ -58,11 +59,13 @@ yuzu621.tech/
 │   │   └── profile/
 │   │       └── page.tsx           # プロフィール "/profile" (Person JSON-LD)
 │   ├── components/
-│   │   ├── blog/                  # BlogCard, BlogHeader, CategoryTabs, Tag, WorldSync
-│   │   ├── profile/                # Hero, About, Products(Grid/Card/Overlay), TechStack, Header, MobileNav, FadeIn 等
+│   │   ├── blog/                  # BlogCard, BlogHeader(list/articleバリアント), CategoryTabs, Tag, TableOfContents(j/k操作), MobileToc, WorldSync
+│   │   ├── profile/                # Hero, About, Products(Grid/Card/Overlay), TechStack(Body/Showcase), Header, MobileNav, FadeIn 等
 │   │   ├── layouts/                # Footer
-│   │   └── vrm/                    # VrmHeroSlot(CSR分離), VrmCanvas, VrmFallback, createVrmScene(three.js本体)
-│   ├── data/                      # aboutme.ts / products.ts / skills.ts(データドリブン、文言はここを編集)
+│   │   ├── vrm/                    # createVrmScene(three.js本体), VrmCanvas, VrmFallback, VrmHeroSlot(CSR分離), VrmTechStackCanvas, Hero↔Aboutアバター移動(AvatarTravelContext/FloatingAvatar/HeroAvatarDock/AboutAvatarDock)
+│   │   ├── ThemeToggle.tsx         # tech/dailyテーマの手動切替ボタン(localStorageに保存)
+│   │   └── ThemeSync.tsx           # プロフィールページのテーマ初期化・SPA遷移時の同期
+│   ├── data/                      # aboutme.ts / skills.ts / external-articles.ts(データドリブン、文言はここを編集。制作物データは`_products/`へ移行済み)
 │   ├── hooks/                     # useInView.ts(IntersectionObserverによる入場アニメーション用フック)
 │   └── lib/
 │       ├── markdown/
@@ -70,8 +73,13 @@ yuzu621.tech/
 │       │   ├── remark-code-filename.ts   # ```js:app.js → ファイル名ヘッダ
 │       │   ├── remark-note.ts            # :::note info|warn|alert
 │       │   ├── remark-link-card.ts       # 裸URL段落 → リンクカード
+│       │   ├── rehype-extract-toc.ts     # 見出しからTOC(目次)データを抽出
 │       │   └── ogp.ts                     # ビルド時OGP取得 + .cache/ogp.json
 │       ├── posts.ts               # _posts 読み込み・フロントマター解析(gray-matter)
+│       ├── products.ts            # _products 読み込み・Markdown本文のHTML化(gray-matter)
+│       ├── theme.ts               # テーマ定数(tech/daily) + pre-paint初期化スクリプト生成
+│       ├── external-articles.ts   # Qiita API取得 + OGPサムネイル
+│       ├── format-date.ts         # 日付表示用フォーマッタ
 │       └── seo.ts                 # SITE_URL 等の定数 + JSON-LDビルダー
 ├── public/
 │   ├── models/                    # avatar.vrm を置く場所(README同梱、未配置ならフォールバック表示)
@@ -96,7 +104,7 @@ yuzu621.tech/
 
 - `/` — ブログ一覧(`?category=tech|daily` でtech/daily世界を切替、デフォルトtech)
 - `/blog/[slug]` — 記事本文(SSG)
-- `/profile` — プロフィール(常にtech世界固定)
+- `/profile` — プロフィール(既定はシステムの`prefers-color-scheme`。`localStorage`の明示保存があれば優先)
 - `/blog`, `/portfolio` — 旧URL。それぞれ `/`, `/profile` へ301リダイレクト(`next.config.ts`)
 
 ## ブログ記事の書き方(Qiita互換Markdown)
@@ -133,6 +141,16 @@ category: "tech"  # "tech" | "daily"。省略時は "tech"
 - **生HTML**: `<details>` 等の直書きも可能です。
 - **数式には対応していません。**
 
+## 目次とヘッダー
+
+記事ページ(`/blog/[slug]`)はxl以上の画面で右サイドにvimライクな目次(TableOfContents)を表示します。
+`k`/`j`キーで次/前の見出しへジャンプでき(先頭で`j`を押すとページトップへ)、スクロールに連動して
+現在位置がハイライトされます。xl未満では目次はハンバーガーから開くモーダル(MobileToc)に切り替わり、
+タップで該当見出しへ移動して閉じます。プロフィールページ(`/profile`)のモバイル(md未満)には同様の
+構成のナビゲーションドロワー(MobileNav)があります。ヘッダーはページごとに構成が異なります
+(ブログ一覧=タイトル+Profileリンク、記事=タイトルのみ、プロフィール=フルナビ)。詳細は
+[`DESIGN.md`](./DESIGN.md) §5 を参照してください。
+
 ## VRMヒーロー
 
 `public/models/avatar.vrm` にVRMモデルを配置すると、プロフィール(`/profile`)のヒーローセクションに
@@ -140,34 +158,49 @@ category: "tech"  # "tech" | "daily"。省略時は "tech"
 (プレースホルダ)が静かに表示され、エラーにはなりません。詳細は `public/models/README.md` を参照してください。
 
 three.js + `@pixiv/three-vrm` 一式は `next/dynamic`(`ssr: false`)でCSR分離されており、
-ページ自体(`/profile`)はSSGのままです。`public/models/happy-sway.vrma` のVRMAアニメーション(ニコニコ左右揺れ)をループ再生し、
-マウス追従の視線制御を上乗せしています。VRMAが読めない場合はプロシージャル待機モーションに
+ページ自体(`/profile`)はSSGのままです。`public/models/loop_verse.vrma` のVRMAアニメーションを
+ループ再生し、マウス追従の視線制御を上乗せしています。VRMAが読めない場合はプロシージャル待機モーションに
 フォールバックし、`prefers-reduced-motion` 環境や画面外スクロール時はループが止まります。
 
-### Tech Stackのスクロール連動アバターショーケース
+### Hero↔Aboutアバター移動
+
+`prefers-reduced-motion` でない場合(モバイル含む)、HeroのVRMアバターと同一インスタンスが
+スクロールに合わせてAboutセクションへ画面上を移動し(FLIP的な`transform`補間)、到達すると
+`public/models/v-sign.vrma`(ピースサインの静止ポーズ)へワンショットで切り替わります。それ以外の
+環境ではHero・Aboutそれぞれが従来通り静的なアバター/写真アイコンを描画します。詳細な設計は
+[`DESIGN.md`](./DESIGN.md) §7.7 を参照してください。
+
+### Tech Stackのアバターショーケース
 
 画面幅1024px以上かつ`prefers-reduced-motion`でない場合、Tech Stackセクションは
-「左にアバター・右に1カテゴリのカード」の構成になり、スクロールに合わせてアバターが
-`public/models/present-card.vrma`(両手で下から掬い上げて掲げるジェスチャー)を演じながら
-次のカテゴリのカードへ切り替わります。それ以外の環境では従来の全カテゴリ一覧グリッドに
-フォールバックします(全カテゴリの内容は常にDOM上に存在するため、SEO/no-js環境への影響はありません)。
-詳細な数式・実装方針は [`DESIGN.md`](./DESIGN.md) §7.5 を参照してください。
+「左にアバター・右に1カテゴリのカード」の構成になり、`public/models/tech-idle.vrma` を
+常時ループしながら、スクロールでカテゴリの境目を跨いだ瞬間に `public/models/present-card.vrma`
+(両手で下から掬い上げて掲げるジェスチャー)をワンショット再生してカードを切り替えます
+(スクロール位置に直接同期するスクラブ方式ではありません)。それ以外の環境では従来の
+全カテゴリ一覧グリッドにフォールバックします(全カテゴリの内容は常にDOM上に存在するため、
+SEO/no-js環境への影響はありません)。詳細な数式・実装方針は [`DESIGN.md`](./DESIGN.md) §7.5 を参照してください。
 
 ## デザイン
 
 見た目のルールは [`DESIGN.md`](./DESIGN.md) に集約しています。「二つの世界を持つ、ゆずのサイト」という
 コンセプトのもと、`data-world="tech"`(深い夜空のダークトーン。プロフィール・技術ブログ)と
 `data-world="daily"`(温かい紙のようなライトトーン。日常ブログ)をCSS変数トークンで切り替えています。
-生HEXやアドホックな値は使わず、必ずセマンティックトークン(`bg-surface` / `text-ink` 等)経由で参照します。
+既定はページごとに決まります(プロフィール=システムの`prefers-color-scheme`、ブログ=記事/一覧の
+カテゴリ)が、ヘッダーの`ThemeToggle`で手動切り替えでき、選択は`localStorage`に保存されて以降の
+既定より優先されます。生HEXやアドホックな値は使わず、必ずセマンティックトークン(`bg-surface` /
+`text-ink` 等)経由で参照します。
 
 ## データドリブン設計
 
 `src/data/` 内のデータファイルを編集するだけで、フロントエンドに自動反映されます。
 
-- `src/data/products.ts` — プロダクトカード(制作物)
 - `src/data/skills.ts` — カテゴリ別の技術スタック・保有資格
 - `src/data/aboutme.ts` — 自己紹介文
 - `src/data/external-articles.ts` — 外部プラットフォームに書いた記事(Zenn・会社Techブログ等)の手動リスト
+
+プロダクトカード(制作物)は `_products/*.md`(1ファイル1プロダクト、フロントマターに
+id/title/thumbnail/techStack/screenshots/description/urls)で管理します。読み込みは
+`src/lib/products.ts` が行います。
 
 ## 外部記事の表示
 
