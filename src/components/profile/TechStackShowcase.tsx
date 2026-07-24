@@ -32,7 +32,6 @@ interface TechStackShowcaseProps {
 export default function TechStackShowcase({ categories }: TechStackShowcaseProps) {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const cardRefs = useRef<Array<HTMLDivElement | null>>([])
-  const progressLabelRef = useRef<HTMLParagraphElement>(null)
   const displayedIndexRef = useRef(0)
   // VrmTechStackCanvas はこのrefを毎フレーム読むだけなので、更新してもReactの
   // 再レンダーは発生しない(60fps更新をReact stateで行うと重くなるため)。値が
@@ -80,11 +79,6 @@ export default function TechStackShowcase({ categories }: TechStackShowcaseProps
       displayedIndexRef.current = nextDisplayed
       triggerTokenRef.current += 1
 
-      if (progressLabelRef.current) {
-        const total = String(categories.length).padStart(2, "0")
-        progressLabelRef.current.textContent = `${String(nextDisplayed + 1).padStart(2, "0")} / ${total}`
-      }
-
       cardRefs.current.forEach((el, i) => {
         if (!el) return
         if (i === nextDisplayed) {
@@ -131,18 +125,12 @@ export default function TechStackShowcase({ categories }: TechStackShowcaseProps
           <p className="wrap-phrase mt-6 text-ink-muted">
             これまでに勉強したり開発で触れてきた技術スタック・ツールを、カテゴリ別にまとめています。
           </p>
-          <p
-            ref={progressLabelRef}
-            className="mt-6 font-mono text-xs uppercase tracking-[0.2em] text-ink-faint"
-          >
-            {`01 / ${String(categories.length).padStart(2, "0")}`}
-          </p>
         </div>
 
         <div className="flex flex-1 items-center">
           {/* 親(TechStack.tsx)が既に max-w-6xl + px-4 md:px-8 を適用済みのため、
-              ここでは幅制約を重ねない */}
-          <div className="grid w-full grid-cols-[20rem_minmax(0,1fr)] items-center gap-12">
+              ここでは幅制約を重ねない。列幅はHeroのアバター(max-w-sm=24rem)に揃えた */}
+          <div className="grid w-full grid-cols-[24rem_minmax(0,1fr)] items-center gap-12">
             <div className="aspect-square w-full">
               <VrmTechStackCanvas triggerTokenRef={triggerTokenRef} />
             </div>

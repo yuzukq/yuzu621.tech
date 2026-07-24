@@ -8,8 +8,9 @@ const MODEL_URL = "/models/avatar.vrm"
 const PULSE_ANIMATION_URL = "/models/present-card.vrma"
 const IDLE_ANIMATION_URL = "/models/tech-idle.vrma"
 // 両腕を伸ばして下から持ち上げる演技を画角に収めるため、Heroのバストアップ
-// フレーミングより下方向に広げる
-const CAMERA_FRAMING = { hipsBottomMargin: 0.55 }
+// フレーミングより下方向に広げる(ただし演技全体が収まる範囲で最小限に留め、
+// アバターが小さく見えすぎないようにする)
+const CAMERA_FRAMING = { hipsBottomMargin: 0.35 }
 
 type Status = "loading" | "ready" | "failed"
 
