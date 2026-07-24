@@ -8,7 +8,7 @@ test('プロダクトカードをクリックするとオーバーレイが表�
   
   await expect(page.getByText('Portfolio Website').first()).toBeVisible();
   await expect(page.getByText('スクリーンショット')).toBeVisible();
-  await expect(page.getByText('概要')).toBeVisible();
+  await expect(page.getByText('主な機能')).toBeVisible();
 });
 
 test('オーバーレイを閉じるボタンで閉じられる', async ({ page }) => {

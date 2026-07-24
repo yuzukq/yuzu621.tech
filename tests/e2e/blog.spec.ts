@@ -155,3 +155,50 @@ test.describe('目次(TOC)', () => {
     await expect(page.getByRole('navigation', { name: '目次' })).toBeHidden();
   });
 });
+
+test.describe('モバイルの目次モーダル', () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test('記事ページでは右上のBlog/Profileリンクが表示されない', async ({ page }) => {
+    await page.goto('/blog/devenv2026');
+
+    await expect(page.getByRole('link', { name: 'Blog' })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: 'Profile' })).toHaveCount(0);
+  });
+
+  test('目次トリガーを開くとモーダルが開き、項目クリックで閉じて該当見出しへ移動する', async ({ page }) => {
+    await page.goto('/blog/devenv2026');
+
+    const dialog = page.getByRole('dialog', { name: '目次' });
+    await expect(dialog).toBeHidden();
+
+    await page.getByRole('button', { name: '目次を開く' }).click();
+    await expect(dialog).toBeVisible();
+
+    const beforeScrollY = await page.evaluate(() => window.scrollY);
+    await dialog.getByRole('link').nth(1).click();
+
+    await expect(dialog).toBeHidden();
+    await page.waitForFunction((y) => window.scrollY > y, beforeScrollY);
+  });
+
+  test('Escapeキーでモーダルを閉じられる', async ({ page }) => {
+    await page.goto('/blog/devenv2026');
+
+    await page.getByRole('button', { name: '目次を開く' }).click();
+    const dialog = page.getByRole('dialog', { name: '目次' });
+    await expect(dialog).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+  });
+});
+
+test.describe('ブログ一覧ヘッダー', () => {
+  test('Blogリンクは表示されず、Profileリンクのみ表示される', async ({ page }) => {
+    await page.goto('/');
+
+    await expect(page.locator('header').getByRole('link', { name: 'Blog' })).toHaveCount(0);
+    await expect(page.locator('header').getByRole('link', { name: 'Profile' })).toBeVisible();
+  });
+});

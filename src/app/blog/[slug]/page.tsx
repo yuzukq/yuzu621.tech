@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { getAllPostSlugs, getPostBySlug, renderPost } from '@/lib/posts'
 import TableOfContents from '@/components/blog/TableOfContents'
+import BlogHeader from '@/components/blog/BlogHeader'
 import { formatDateJa } from '@/lib/format-date'
 import Image from 'next/image'
 import Tag from '@/components/blog/Tag'
@@ -61,7 +62,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   const post = getPostBySlug(slug)
   if (!post) {
     return (
-      <div data-world="tech" className="flex-1 bg-bg">
+      <div data-world="tech" className="flex flex-1 flex-col bg-bg">
+        <BlogHeader variant="list" />
         <div className="mx-auto max-w-3xl px-4 py-16 md:px-8">
           <h1 className="text-2xl font-bold text-ink">Not Found</h1>
         </div>
@@ -72,7 +74,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   const rendered = await renderPost(slug)
   if (!rendered) {
     return (
-      <div data-world="tech" className="flex-1 bg-bg">
+      <div data-world="tech" className="flex flex-1 flex-col bg-bg">
+        <BlogHeader variant="list" />
         <div className="mx-auto max-w-3xl px-4 py-16 md:px-8">
           <h1 className="text-2xl font-bold text-ink">Content Error</h1>
         </div>
@@ -91,8 +94,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   })
 
   return (
-    <div data-world={world} className="flex-1 bg-bg">
+    <div data-world={world} className="flex flex-1 flex-col bg-bg">
       <WorldSync world={world} />
+      <BlogHeader variant="article" toc={rendered.toc} />
       <script {...jsonLdScriptProps(postJsonLd)} />
       <div className="mx-auto max-w-6xl px-4 py-16 md:px-8 md:py-24 xl:grid xl:grid-cols-[minmax(0,1fr)_17rem] xl:gap-10">
         <article className="mx-auto w-full max-w-3xl xl:mx-0">
