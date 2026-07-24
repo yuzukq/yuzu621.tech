@@ -10,6 +10,7 @@ import {
   jsonLdScriptProps,
 } from "@/lib/seo";
 import "./globals.css";
+import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -70,6 +71,9 @@ export default function RootLayout({
       className={`${spaceGrotesk.variable} ${zenMaruGothic.variable} ${jetBrainsMono.variable}`}
     >
       <body className="bg-bg font-body text-ink antialiased">
+        {/* ハードロード時、テーマ確定前の一瞬だけ既定の世界(tech)が見えて
+            切り替わる「ちらつき」を防ぐため、最初のペイント前に同期実行する */}
+        <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <script {...jsonLdScriptProps(buildWebsiteJsonLd())} />
         {children}
       </body>

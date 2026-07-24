@@ -6,6 +6,7 @@ import { formatDateJa } from '@/lib/format-date'
 import Image from 'next/image'
 import Tag from '@/components/blog/Tag'
 import WorldSync from '@/components/blog/WorldSync'
+import { buildWorldPrePaintScript } from '@/lib/theme'
 import ShareRow from './ShareRow'
 import {
   SITE_NAME,
@@ -62,7 +63,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   const post = getPostBySlug(slug)
   if (!post) {
     return (
-      <div data-world="tech" className="flex flex-1 flex-col bg-bg">
+      <div className="flex flex-1 flex-col bg-bg">
         <BlogHeader variant="list" />
         <div className="mx-auto max-w-3xl px-4 py-16 md:px-8">
           <h1 className="text-2xl font-bold text-ink">Not Found</h1>
@@ -74,7 +75,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   const rendered = await renderPost(slug)
   if (!rendered) {
     return (
-      <div data-world="tech" className="flex flex-1 flex-col bg-bg">
+      <div className="flex flex-1 flex-col bg-bg">
         <BlogHeader variant="list" />
         <div className="mx-auto max-w-3xl px-4 py-16 md:px-8">
           <h1 className="text-2xl font-bold text-ink">Content Error</h1>
@@ -94,7 +95,13 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   })
 
   return (
-    <div data-world={world} className="flex flex-1 flex-col bg-bg">
+    <div className="flex flex-1 flex-col bg-bg">
+      {/* 保存済みテーマが無い読者へ、記事カテゴリ既定の世界をペイント前に適用する
+          (ルート直下のinitスクリプトはスラッグからカテゴリを判別できないため) */}
+      <script
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: buildWorldPrePaintScript(world) }}
+      />
       <WorldSync world={world} />
       <BlogHeader variant="article" toc={rendered.toc} />
       <script {...jsonLdScriptProps(postJsonLd)} />

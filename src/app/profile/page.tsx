@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import Footer from "@/components/layouts/Footer"
-import WorldSync from "@/components/blog/WorldSync"
+import ThemeSync from "@/components/ThemeSync"
 import ScrollSnapSync from "@/components/profile/ScrollSnapSync"
 import ProfileHeader from "@/components/profile/ProfileHeader"
 import Hero from "@/components/profile/Hero"
@@ -44,8 +44,8 @@ export default function ProfilePage() {
   const personJsonLd = buildPersonJsonLd({ sameAs: SAME_AS })
 
   return (
-    <div data-world="tech" className="flex min-h-dvh flex-col bg-bg">
-      <WorldSync world="tech" />
+    <div className="flex min-h-dvh flex-col bg-bg">
+      <ThemeSync />
       <ScrollSnapSync />
       <script {...jsonLdScriptProps(personJsonLd)} />
       <ProfileHeader />

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
 import NextLink from "next/link"
 import { FiMenu, FiX } from "react-icons/fi"
+import ThemeToggle from "@/components/ThemeToggle"
 
 interface NavItem {
   href: string
@@ -84,11 +85,14 @@ export default function MobileNav({ items }: { items: NavItem[] }) {
                 ))}
               </nav>
 
-              <div className="flex items-center gap-2 border-t border-border px-4 py-2.5 font-mono text-[11px] text-ink-faint">
-                <kbd className="rounded border border-border bg-surface-hover px-1.5 py-0.5 text-ink-muted">
-                  esc
-                </kbd>
-                <span>close</span>
+              <div className="flex items-center justify-between border-t border-border px-4 py-2 font-mono text-[11px] text-ink-faint">
+                <div className="flex items-center gap-2">
+                  <kbd className="rounded border border-border bg-surface-hover px-1.5 py-0.5 text-ink-muted">
+                    esc
+                  </kbd>
+                  <span>close</span>
+                </div>
+                <ThemeToggle />
               </div>
             </div>
           </div>,

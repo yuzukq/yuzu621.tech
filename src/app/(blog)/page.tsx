@@ -4,6 +4,7 @@ import { getExternalArticles } from '@/lib/external-articles'
 import CategoryTabs from '@/components/blog/CategoryTabs'
 import BlogCard, { type BlogCardData } from '@/components/blog/BlogCard'
 import WorldSync from '@/components/blog/WorldSync'
+import { buildWorldPrePaintScript } from '@/lib/theme'
 import { SITE_TITLE, SITE_NAME, DEFAULT_DESCRIPTION, DEFAULT_OG_IMAGE_PATH } from '@/lib/seo'
 
 const VALID_CATEGORIES: BlogCategory[] = ['tech', 'daily']
@@ -81,7 +82,13 @@ export default async function BlogIndexPage({ searchParams }: BlogIndexPageProps
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
   return (
-    <div data-world={category} className="flex-1 bg-bg">
+    <div className="flex-1 bg-bg">
+      {/* 保存済みテーマが無い読者へ、カテゴリ既定の世界をペイント前に適用する
+          (ルート直下のinitスクリプトはURLからカテゴリを判別できないため) */}
+      <script
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: buildWorldPrePaintScript(category) }}
+      />
       <WorldSync world={category} />
       <div className="mx-auto max-w-6xl px-4 py-16 md:px-8 md:py-24">
         <div className="mb-10 flex flex-col gap-6 md:mb-14 md:flex-row md:items-end md:justify-between">

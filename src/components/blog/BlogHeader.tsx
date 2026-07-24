@@ -1,5 +1,6 @@
 import NextLink from "next/link"
 import type { TocItem } from "@/lib/markdown"
+import ThemeToggle from "@/components/ThemeToggle"
 import MobileToc from "./MobileToc"
 
 interface BlogHeaderProps {
@@ -27,12 +28,16 @@ export default function BlogHeader({ variant = "list", toc }: BlogHeaderProps) {
             >
               Profile
             </NextLink>
+            <ThemeToggle />
           </nav>
         )}
 
-        {variant === "article" && toc && (
-          <div className="ml-auto">
-            <MobileToc items={toc} />
+        {variant === "article" && (
+          <div className="ml-auto flex items-center gap-1">
+            {/* 記事ページのデスクトップ目次はxl以上でサイドバー表示のため、
+                トグルもそこに合わせて出す(xl未満はMobileTocの中に置く) */}
+            <ThemeToggle className="hidden xl:inline-flex" />
+            {toc && <MobileToc items={toc} />}
           </div>
         )}
       </div>

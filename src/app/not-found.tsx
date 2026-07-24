@@ -9,10 +9,7 @@ export const metadata: Metadata = {
 // アクセシブルネームで検証しているため、変える場合はテストも更新する)。
 export default function NotFound() {
   return (
-    <div
-      data-world="tech"
-      className="flex min-h-dvh flex-col items-center justify-center bg-bg px-4 text-center"
-    >
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-bg px-4 text-center">
       <h1 className="font-display text-7xl font-bold text-accent md:text-8xl">404</h1>
       <h2 className="mt-4 text-lg font-bold text-ink md:text-xl">
         This page could not be found.

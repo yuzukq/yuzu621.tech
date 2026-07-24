@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
 import { FiMenu, FiX } from "react-icons/fi"
 import type { TocItem } from "@/lib/markdown"
+import ThemeToggle from "@/components/ThemeToggle"
 import { normalizeToc } from "./TableOfContents"
 
 // デスクトップ側の目次(TableOfContents.tsx)は xl 以上で常時表示のサイドバーの
@@ -85,11 +86,14 @@ export default function MobileToc({ items }: { items: TocItem[] }) {
                 })}
               </nav>
 
-              <div className="flex items-center gap-2 border-t border-border px-4 py-2.5 font-mono text-[11px] text-ink-faint">
-                <kbd className="rounded border border-border bg-surface-hover px-1.5 py-0.5 text-ink-muted">
-                  esc
-                </kbd>
-                <span>close</span>
+              <div className="flex items-center justify-between border-t border-border px-4 py-2 font-mono text-[11px] text-ink-faint">
+                <div className="flex items-center gap-2">
+                  <kbd className="rounded border border-border bg-surface-hover px-1.5 py-0.5 text-ink-muted">
+                    esc
+                  </kbd>
+                  <span>close</span>
+                </div>
+                <ThemeToggle />
               </div>
             </div>
           </div>,

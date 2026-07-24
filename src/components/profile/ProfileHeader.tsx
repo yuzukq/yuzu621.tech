@@ -1,4 +1,5 @@
 import NextLink from "next/link"
+import ThemeToggle from "@/components/ThemeToggle"
 import MobileNav from "./MobileNav"
 
 const NAV_ITEMS = [
@@ -29,6 +30,7 @@ export default function ProfileHeader() {
               {item.label}
             </NextLink>
           ))}
+          <ThemeToggle />
         </nav>
 
         <MobileNav items={NAV_ITEMS} />
