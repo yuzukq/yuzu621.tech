@@ -82,7 +82,7 @@ test('category=dailyパラメータで日常記事がフィルタリングされ
 
   await expect(page.locator('a[href="/blog/Vket2025"]')).toBeVisible();
 
-  await expect(page.locator('a[href="/blog/cognitive-debt"]')).not.toBeVisible();
+  await expect(page.locator('a[href="/blog/devenv2026"]')).not.toBeVisible();
 });
 
 test('無効なカテゴリパラメータでデフォルト（tech）にフォールバックする', async ({ page }) => {
@@ -90,7 +90,7 @@ test('無効なカテゴリパラメータでデフォルト（tech）にフォ�
 
   await expect(page.getByRole('heading', { name: 'Blog' })).toBeVisible();
 
-  const techArticle = page.locator('a[href="/blog/cognitive-debt"]');
+  const techArticle = page.locator('a[href="/blog/devenv2026"]');
   await expect(techArticle).toBeVisible();
 
   await expect(page.locator('a[href="/blog/Vket2025"]')).not.toBeVisible();
@@ -108,7 +108,7 @@ test('daily カテゴリ表示時に <html data-world="daily"> になる', async
 test('tech カテゴリ表示時は <html data-world="tech"> のままになる', async ({ page }) => {
   await page.goto('/?category=tech');
 
-  await expect(page.locator('a[href="/blog/cognitive-debt"]')).toBeVisible();
+  await expect(page.locator('a[href="/blog/devenv2026"]')).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('data-world', 'tech');
 });
 

@@ -1,55 +1,41 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+
+// プロダクトカードは #products 内の <button>。特定のプロダクト名に依存すると
+// コンテンツ(_products/*.md)を編集するたびにテストが壊れるため、先頭カードで
+// 開閉挙動だけを検証する。オーバーレイは常に「スクリーンショット」見出しと
+// .markdown-body(本文)を持つので、これを開閉判定のマーカーにする。
+async function openFirstProduct(page: Page) {
+  await page.goto('/profile');
+  await page.locator('#products button').first().click();
+  await expect(page.getByText('スクリーンショット')).toBeVisible();
+  await expect(page.locator('.markdown-body')).toBeVisible();
+}
 
 test('プロダクトカードをクリックするとオーバーレイが表示される', async ({ page }) => {
-  await page.goto('/profile');
-
-  const productCard = page.getByRole('heading', { name: 'Portfolio Website' }).locator('..');
-  await productCard.click();
-  
-  await expect(page.getByText('Portfolio Website').first()).toBeVisible();
-  await expect(page.getByText('スクリーンショット')).toBeVisible();
-  await expect(page.getByText('主な機能')).toBeVisible();
+  await openFirstProduct(page);
 });
 
 test('オーバーレイを閉じるボタンで閉じられる', async ({ page }) => {
-  await page.goto('/profile');
-  
-  const productCard = page.getByRole('heading', { name: 'Better Portal Extension' }).locator('..');
-  await productCard.click();
-  
-  await expect(page.getByText('Recolle').first()).toBeVisible();
-  await expect(page.getByText('スクリーンショット')).toBeVisible();
-  
+  await openFirstProduct(page);
+
   await page.getByRole('button', { name: '閉じる' }).click();
-  
+
   await expect(page.getByText('スクリーンショット')).not.toBeVisible();
 });
 
 test('Escapeキーでオーバーレイを閉じられる', async ({ page }) => {
-  await page.goto('/profile');
-  
-  const productCard = page.getByRole('heading', { name: 'Recolle' }).locator('..');
-  await productCard.click();
-  
-  await expect(page.getByText('Recolle').first()).toBeVisible();
-  await expect(page.getByText('スクリーンショット')).toBeVisible();
-  
+  await openFirstProduct(page);
+
   await page.keyboard.press('Escape');
-  
+
   await expect(page.getByText('スクリーンショット')).not.toBeVisible();
 });
 
 test('オーバーレイの外側をクリックして閉じられる', async ({ page }) => {
-  await page.goto('/profile');
-  
-  const productCard = page.getByRole('heading', { name: 'AttendanceReminder-forCIT' }).locator('..');
-  await productCard.click();
-  
-  await expect(page.getByText('AttendanceReminder-forCIT').first()).toBeVisible();
-  await expect(page.getByText('スクリーンショット')).toBeVisible();
-  
-  // 座標(10,10)=左上の端はオーバーレイの外側にあたる
+  await openFirstProduct(page);
+
+  // 座標(10,10)=左上の端はオーバーレイの外側(バックドロップ)にあたる
   await page.mouse.click(10, 10);
-  
+
   await expect(page.getByText('スクリーンショット')).not.toBeVisible();
 });
