@@ -1,0 +1,92 @@
+---
+id: hatsune-synthesizer
+title: 初音シンセサイザー
+thumbnail: /images/products/hatsune-synthesizer/thumb_hatsuneSynthesizer.jpg
+techStack:
+  - JavaScript
+  - TextAlive API
+  - Three.js
+description: 初音ミク「マジカルミライ」プログラミング・コンテストの応募作品です
+screenshots:
+  - /images/products/hatsune-synthesizer/prev1.png
+  - /images/products/hatsune-synthesizer/prev2.png
+  - /images/products/hatsune-synthesizer/prev3.png
+  - /images/products/hatsune-synthesizer/prev4.png
+  - /images/products/hatsune-synthesizer/prev5.png
+  - /images/products/hatsune-synthesizer/prev6.png
+  - /images/products/hatsune-synthesizer/prev7.png
+urls:
+  github: https://github.com/yuzukq/MM2026-ProgrammingContest
+  demo: http://hatsune-synthesizer.yuzu621.tech/
+---
+
+本アプリは[初音ミク「マジカルミライ 2026」プログラミング・コンテスト](https://magicalmirai.com/2026/procon/)のエントリー作品です。課題曲 6 曲に対応しており、Songle のデータベースに登録された任意の曲でも同じリリックゲームとして遊ぶことができます。
+
+「初音シンセサイザー」は、TextAlive App API と Three.js を用いて制作した、3D リリックゲームです。
+
+マジカルミライ2026のテーマ「湖のソナーレ」をモチーフに、ミクが声を奏でるためのツールであるピアプロスタジオから着想を得た UI/UX で、湖の情景をイメージした幻想的な 3D セカイを舞台に、ミクと音楽を通じて共鳴できる体験を目指して制作しました。
+
+流れてくる MIDIノートを正しいピッチでなぞると、歌詞が 3D 空間上の五線譜へと浮かび上がります。ミクは歌詞に合わせて歌いながらビートに乗って踊り、正しく回収できた歌詞の割合に応じて表情や動きが変化。曲の終わりには、ミクが奏でた歌が刻まれた歌詞カードが作られます。
+
+
+## 遊んでみる
+
+下記のリンクから、ブラウザですぐにプレイできます。
+
+https://hatsune-synthesizer.yuzu621.tech/
+
+## ムービー
+
+サムネイルをクリックすると YouTube 動画にジャンプします。
+
+[![初音シンセサイザー デモ動画](https://img.youtube.com/vi/DuSsOBr_FqE/0.jpg)](https://youtu.be/DuSsOBr_FqE)
+
+## 推奨環境
+
+- **PC**（ラップトップ・一般的なモニター想定。極端なウルトラワイドモニターは非推奨）
+- **タブレット**（iPad）
+
+※スマートフォンでも動作しますが、大画面デバイスでの体験を推奨しています。  
+
+
+## 工夫点とこだわりなど
+
+###  ゲームプレイ関連
+- **MIDIノート譜面の自動生成**: 
+TextAlive で取得した歌詞の word 単位でノートブロックを自動生成。
+ブロックのピッチは各単語頭の声量（`getAmplitude`）をピッチに見立て、 MIDI キー 2 音階分に自動マッピングされ、課題曲 6 曲すべての譜面が構築されます。動的に譜面を構築するため、今回の課題曲以外であっても同じアルゴリズムのまま Songle に登録された任意の曲でもプレイが可能です。
+
+- **3D 五線譜の生成**: three.js のシーン上に五線譜を生成。
+フレーズごとの判定結果を管理し、Perfect 取得済みの単語は濃く表示されることで、ミクと一緒に歌を作っていく世界観を演出しています。
+
+- **フレーズ単位の特殊演出**: 五線譜をすべて埋めると、three-vrm のミキサーでワンショットアニメーションが再生され、ミクが特別なポージングをします。またこの時各フレーズごとの五線譜の埋まり具合に応じて、ミクの表情が変化するため、ユーザーのプレイに応じて毎回変わった演出が得られます。
+
+### VRM モデルとモーションのビート連携
+- **オリジナル VRM モデル**: Blender で制作した、今回のキービジュアルに即した白ワンピースとひまわりの装飾を施したオリジナルモデルを使用しています。
+- **モーションキャプチャ**: 使用する VRMA アニメーションはライトハウス環境で実際にモーションキャプチャを行い、MotionBuilder で調整したアニメーションを使用しています。
+- **アニメーションとビートの同期の工夫**: TextAlive で取得したビート間隔から、アニメーションクリップの再生位相を曲中で動的に指定することで、ミクの着地タイミングや左右の揺れが直感的にリズムに乗るように調整しています。
+- **サビ連動切り替え**: TextAlive で判定できる楽曲の盛り上がり（コーラス）区間に合わせて、ループアニメーションとカメラ構図を切り替えます。サビでは特にノリのよい演出に変化します。
+- **リップシンクによる発声表現**: 
+TextAlive App API の `phrase.word.char` で 1 文字ずつ発声タイミングを取得し、各文字の母音を割り当て、VRM モデルのブレンドシェイプを制御することで、実際の発声タイミングに合わせてミクの口が動く動かすことで、MIDIで奏でる体験を演出しています。
+
+### 世界観構築のための演出の工夫
+- **水のシェーダー**: three.js の Water シェーダーにパッチを当て、ビートに連動した波紋を法線移動で表現。ミクのダンスと足元の湖面の波紋が連動して広がります。
+- **ひまわりの開花（2D プログレスバー）**: 曲の進行に合わせて先頭の蝶が通ったあとからひまわりが徐々に開花するデザインのプログレスバーで、曲の進行度を表現しています。
+- **朝〜夕日の空（3D 背景）**: ひまわりが太陽を追うことから着想を得て、曲の進行と連動して 3D 背景の空が朝から夕日へと移り変わります。
+- **ローディング演出（2D スチル）**: 3D空間の構築,曲の準備,譜面の構築など、SPAのステート移動時に負荷を分散させるために、ステートマシンでローディングのステートを設けてプリロードしています。この時選曲後のロード中はミクが目を閉じたスチルを表示し、ロード完了のタイミングで開眼したスチルに切り替わります。現実世界の自分と電子の世界のミクが手を合わせる過程を経ることで、ミクとともに音楽を作る3D プレイシーンへの入場を演出しています。
+
+### リザルトのフィードバック
+- **歌詞カード**: Perfect 判定で取得した単語のみ濃く印字された歌詞カードをリザルトとして生成します。歌を「奏でる」という体験が、カードとして手元に残ります(今回の企画展入場特典のインビテーションカード風)。
+- **ミクの表情差分**: 最終スコアに応じてリザルト画面のミクの表情が変化します。
+
+## 使用技術
+
+| カテゴリ | 技術 |
+|---|---|
+| 3D 描画 | [Three.js](https://threejs.org/) |
+| VRM モデル | [@pixiv/three-vrm](https://github.com/pixiv/three-vrm) / [@pixiv/three-vrm-animation](https://github.com/pixiv/three-vrm) |
+| 音楽・歌詞同期 | [TextAlive App API](https://developer.textalive.jp/) |
+| ビルドツール | [Vite](https://vitejs.dev/) |
+| モデリング | Blender |
+| モーションキャプチャ | VMC / MotionBuilder |
+| その他作画 | Figma / Illustrator / CLIP STUDIO PAINT |

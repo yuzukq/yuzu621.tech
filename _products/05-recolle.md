@@ -6,7 +6,7 @@ techStack:
   - Ruby on Rails
   - PostgreSQL
   - Tailwind CSS
-  - GPT-4o
+  - openAI API
   - Daisy UI
 description: 写真と位置情報から生成AIが自動で日記を書いてくれるWebアプリケーション．
 screenshots:

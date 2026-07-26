@@ -6,7 +6,6 @@ techStack:
   - Unity
   - C#
   - Blender
-  - Photoshop
 description: VRChatワールドやVket出展作品など，UnityとBlenderを用いた創作活動のまとめ．
 screenshots:
   - /images/products/Unity/thumb_unity.png

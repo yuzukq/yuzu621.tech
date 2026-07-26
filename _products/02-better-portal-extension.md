@@ -3,8 +3,6 @@ id: better-portal-extension
 title: Better Portal Extension
 thumbnail: /images/products/better-portal-extension/thumb_betterPortalExtension.png
 techStack:
-  - HTML
-  - CSS
   - JavaScript
   - Chrome Extension API
 description: 大学ポータルサイトのUI/UXを改善するChrome拡張機能．

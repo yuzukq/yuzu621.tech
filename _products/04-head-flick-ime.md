@@ -5,8 +5,6 @@ thumbnail: /images/products/HeadFlickIME/thumb_HeadFlickIME.jpg
 techStack:
   - Arduino
   - Processing
-  - 六軸加速度センサ
-  - フォトリフレクタ
 description: 頭部と瞼の動きだけで文字入力を可能にする，外部カメラ不要のウェアラブルデバイス．
 screenshots:
   - /images/products/HeadFlickIME/prev_HeadFlickIME_1.png
