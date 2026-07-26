@@ -18,12 +18,10 @@ const CARD_ENTER_OFFSET_PX = 28
 // カテゴリ境界ちょうどで往復スクロールされた時にトリガーが連打されるのを防ぐ
 // ヒステリシス(カテゴリ1つぶんを1とした比率)
 const BOUNDARY_HYSTERESIS = 0.06
-// 退出するカードは即座にフェードアウト、入場するカードはpresent-card.vrma
-// (3秒だが2倍速再生のため実質1.5秒)の山場付近まで遅らせてフェードインさせる。
-// アバターが「持ち上げて見せる」タイミングとカードの出現を合わせるための遅延
+// カード切り替えとワンショットアニメーションは境界を跨いだ瞬間に同時開始する。
 const CARD_EXIT_DURATION_MS = 350
 const CARD_ENTER_DURATION_MS = 500
-const CARD_ENTER_DELAY_MS = 750
+const CARD_ENTER_DELAY_MS = 0
 
 interface TechStackShowcaseProps {
   categories: SkillCategory[]

@@ -241,21 +241,31 @@ sticky headerの下に自然に着地させるためのもの。リード文の�
   カテゴリ境界ちょうどでの往復スクロールによる連打を防ぐため、`displayedIndex`の確定に
   ヒステリシス(`BOUNDARY_HYSTERESIS`)を持たせている。逆方向にスクロールした場合も同じ
   `present-card.vrma`を順再生する(逆再生は「持ち上げ」の演技として不自然に見えるため)。
-  カードは退出側を即座に(350ms)フェードアウトし、入場側はpresent-card.vrmaの山場付近
-  (`CARD_ENTER_DELAY_MS`)まで遅らせてフェードインさせ、アバターが「持ち上げて見せる」タイミングと
-  カードの出現を合わせている。スクロール速度と演技の再生速度が完全に分離されたため、
-  以前センシ調整のために引き上げていた`VH_PER_CATEGORY`(70)は50に戻せた。
-  `pulseAction.timeScale = 2`でpresent-card.vrma(3秒)を実質1.5秒のテンポに上げており、
-  `CARD_ENTER_DELAY_MS`もそれに合わせて750msに調整済み(山場のタイミングは`timeScale`に
-  対して比例して縮むため、`timeScale`を変える場合はこの値も追従させる)。
+  カード切り替えとワンショット再生は境界を跨いだ瞬間に同時開始する: 退出側を即座に
+  (350ms)フェードアウトしつつ入場側も遅延なし(`CARD_ENTER_DELAY_MS = 0`)でフェードイン
+  させ、アバターの演技がカードの動き出しに同期して始まる(スワイプへの即応性を優先)。
+  スクロール速度と演技の再生速度が完全に分離されたため、以前センシ調整のために引き上げて
+  いた`VH_PER_CATEGORY`(70)は50に戻せた。`pulseAction.timeScale = 2`でpresent-card.vrma
+  (3秒)は実質1.5秒のテンポで再生される。`CARD_ENTER_DELAY_MS`は演技の山場に合わせる用途を
+  やめ、カード動き出しとの同期(=0)を既定とするため`timeScale`とは独立した調整値になった。
 - **`createVrmScene.ts`の`"pulse"`モード**: `idleAnimationUrl`(常時ループ再生)と
-  `pulseAnimationUrl`(トリガーされるたびに頭から再生し直すワンショット)の2action構成。
+  `pulseAnimationUrl`(トリガーされるたびに再生し直すワンショット)の2action構成。
   `getTriggerToken()`が返す値が変化するたびに`pulseAction.reset().play()` +
   `idleAction.crossFadeTo(pulseAction, ...)`する。真偽値の`"dock"`モード(7.7節)と違い
   カウンタにしているのは、演技が終わる前に短時間で連続トリガーされても(カテゴリを素早く
   スクロールし切った場合など)取りこぼさず都度頭から再生し直すため。ワンショットが最後まで
   再生し終えたら`mixer`の`"finished"`イベントで自動的に`idleAction`へcrossFadeToし直す
   (`dock`モードと違い、呼び出し側が明示的に「戻す」タイミングを与える必要がない)。
+  - **切替後の無反応時間を避けるための2点**: (1) クロスフェードは onset(idle→演技、
+    `PULSE_ONSET_CROSSFADE_SEC`)と return(演技→idle、`PULSE_RETURN_CROSSFADE_SEC`)で
+    分離する。onsetの秒数ぶん演技がidleとブレンドされて中立のまま留まり切替への遅延として
+    体感されるため、onsetはほぼ即時の最小値にする(反応の要。演技全体の速さは
+    `PULSE_TIME_SCALE`側で決める)。(2) present-card.vrma冒頭の中立立ち保持
+    (旧スクラブ機構がt=0を中立姿勢に要求した名残)を**アセット側で除去**した。以前は
+    先頭0.35秒がほぼ静止で、コード側で再生開始位置を飛ばして対処していたが、途中から
+    再生する回避策(行儀が悪い)をやめ、キーフレーム時刻のリタイミングで冒頭[0,0.35]を
+    [0,0.06]へ圧縮した(ポーズは不変、duration 3.0→2.71秒)。t=0は中立のまま残すので
+    idleからのクロスフェードは綺麗なまま、切替直後から屈み込みが始まる。
 - **VRMAの符号に注意**: このアバターでは、three-vrm-animationのretargeting適用後、
   upperArm/lowerArmのZの符号が、生成時にauthorした値から反転して現れる(Yはそのまま)。
   大きな振れ幅のモーションを作る際は必ず実機で描画確認し、意図と逆に動く場合は該当軸の符号を

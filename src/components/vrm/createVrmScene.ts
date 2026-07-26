@@ -83,9 +83,13 @@ const LOWER_ARM_BEND = 0.25 // rad
 const MAX_PIXEL_RATIO = 2
 const MAX_DELTA_SEC = 0.1 // タブ非表示からの復帰時に delta が跳ねてモーションが飛ぶのを防ぐ
 const DOCK_CROSSFADE_SEC = 0.6
-const PULSE_CROSSFADE_SEC = 0.4
-// present-card.vrma(3秒)をテンポよく見せるため2倍速で再生する
-const PULSE_TIME_SCALE = 2
+// onset(idle→演技)はカード切替への反応そのもの。ここを長くするとその秒数ぶん
+// 演技がアイドルとブレンドされて中立のまま留まり「動かない間」に見えるため、
+// ほぼ即時に切り替える最小値にする。return(演技→idle)は演技後の収束
+const PULSE_ONSET_CROSSFADE_SEC = 0.04
+const PULSE_RETURN_CROSSFADE_SEC = 0.1
+// present-card.vrma(2.7秒)をテンポよく見せるため3倍速で再生する
+const PULSE_TIME_SCALE = 3
 
 function randomBlinkInterval(): number {
   return BLINK_MIN_INTERVAL_SEC + Math.random() * (BLINK_MAX_INTERVAL_SEC - BLINK_MIN_INTERVAL_SEC)
@@ -253,7 +257,7 @@ export async function createVrmScene({
           mixer.addEventListener("finished", (event) => {
             if (event.action !== pulseAction) return
             pulseIdleAction!.reset().play()
-            pulseAction!.crossFadeTo(pulseIdleAction!, PULSE_CROSSFADE_SEC, false)
+            pulseAction!.crossFadeTo(pulseIdleAction!, PULSE_RETURN_CROSSFADE_SEC, false)
           })
         }
       } else {
@@ -388,10 +392,10 @@ export async function createVrmScene({
       const token = getTriggerToken()
       if (token !== lastTriggerToken) {
         lastTriggerToken = token
-        // 前の演技が終わっていなくても打ち切って頭から再生し直す。3秒の演技を
-        // 待たずカテゴリを連続で送られても都度反応できるようにするため
+        // 前の演技が終わっていなくても打ち切って頭から再生し直す。演技を待たず
+        // カテゴリを連続で送られても都度反応できるようにするため
         pulseAction.reset().play()
-        pulseIdleAction.crossFadeTo(pulseAction, PULSE_CROSSFADE_SEC, false)
+        pulseIdleAction.crossFadeTo(pulseAction, PULSE_ONSET_CROSSFADE_SEC, false)
       }
       mixer!.update(delta)
       // composeOnAnimatedPose=false(レスト基準)にする: dockモードと同じ理由
