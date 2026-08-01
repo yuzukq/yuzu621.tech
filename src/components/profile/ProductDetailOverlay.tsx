@@ -66,7 +66,7 @@ export default function ProductDetailOverlay({ product, onClose }: ProductDetail
           </div>
 
           {/* 詳細 */}
-          <div className="flex-1">
+          <div className="min-w-0 flex-1">
             <div className="flex flex-col gap-6">
               <div className="markdown-body" dangerouslySetInnerHTML={{ __html: product.html }} />
 

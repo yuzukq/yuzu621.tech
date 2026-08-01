@@ -105,7 +105,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       <WorldSync world={world} />
       <BlogHeader variant="article" toc={rendered.toc} />
       <script {...jsonLdScriptProps(postJsonLd)} />
-      <div className="mx-auto max-w-6xl px-4 py-16 md:px-8 md:py-24 xl:grid xl:grid-cols-[minmax(0,1fr)_17rem] xl:gap-10">
+      <div className="mx-auto w-full max-w-6xl px-4 py-16 md:px-8 md:py-24 xl:grid xl:grid-cols-[minmax(0,1fr)_17rem] xl:gap-10">
         <article className="mx-auto w-full max-w-3xl xl:mx-0">
           <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold leading-tight text-ink">
             {post.title}

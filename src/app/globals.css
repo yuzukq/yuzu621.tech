@@ -288,18 +288,23 @@ body {
   margin-bottom: 0;
 }
 
-/* テーブル */
+/* テーブル: 列を折り返して幅に収めるのではなく、コードブロックと同様に
+ * テーブル自体を横スクロールさせる(モバイルでの潰れを防ぐ) */
 .markdown-body table {
-  width: 100%;
+  display: block;
+  width: max-content;
+  max-width: 100%;
   margin: 1.5rem 0;
   border-collapse: collapse;
   font-size: 0.9375rem;
+  overflow-x: auto;
 }
 .markdown-body th,
 .markdown-body td {
   border: 1px solid var(--border);
   padding: 0.5rem 0.75rem;
   text-align: left;
+  white-space: nowrap;
 }
 .markdown-body th {
   background: var(--surface);
