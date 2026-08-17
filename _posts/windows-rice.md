@@ -40,7 +40,7 @@ winget install glazewm
 ![インストール](/images/blog/20251029/installer_check.png)
 
 ### コンフィグファイルの変更
-　コンフィグファイルの変更必須箇所と，主要パラメータを抜粋してご紹介します．また，これから行う変更を加えた私が使用しているコンフィグファイルは[こちら](https://github.com/yuzukq/dotfiles/blob/main/laptop-windows/.glzr/glazewm/config.yaml)から閲覧可能です．よろしければご活用ください．
+　コンフィグファイルの変更必須箇所と，主要パラメータを抜粋してご紹介します．また，これから行う変更を加えた私が使用しているコンフィグファイルは[こちら](https://github.com/yuzukq/dotfiles/blob/main/windows/.glzr/glazewm/config.yaml)から閲覧可能です．よろしければご活用ください．
 GlazeWMの導入が完了したら~(ユーザーのホームディレクトリ)直下に`.glzr`が生成されます． スタートメニューからGlazeWMを起動してください．実行後，タスクバー右側のタスクトレイにGlazeWMが表示されます．これを押下することでコンフィグファイルへアクセスが出来ます(直接`C:\Users\[yourName]\.glzr\glazewm`を開いてもかまいません)．またこの時，wingetでインストールしてる場合は`.glzr`に`zebar`のコンフィグディレクトリが一緒に生成されている場合がありますが使用しないため削除してしまっても問題ありません．
 ![タスクトレイ](/images/blog/20251029/glaze_tray.png)
 `config.yaml`を編集します．コンフィグファイルの上部から主要部分を解説していきます．
