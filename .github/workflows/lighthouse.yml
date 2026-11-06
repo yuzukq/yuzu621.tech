@@ -1,0 +1,58 @@
+name: Lighthouse
+
+# CI 環境の計測値はばらつくため参考値として扱う。assertions はすべて warn にして
+# PR を失敗させない。既存の ci.yml の実行時間を延ばさないよう別ワークフローにする
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lighthouse:
+    name: Lighthouse CI (mobile)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          check-latest: true
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (Next.js)
+        run: npm run build
+
+      # サーバーの起動と計測・アップロードは lighthouserc.json の設定で行う
+      - name: Run Lighthouse CI
+        run: npx --yes @lhci/cli@0.15.1 autorun
+
+      - name: Write report links to job summary
+        if: always()
+        run: |
+          {
+            echo '## Lighthouse レポート'
+            echo
+            if [ -f .lighthouseci/links.json ]; then
+              node -e 'for (const [url, report] of Object.entries(require("./.lighthouseci/links.json"))) console.log(`- [${new URL(url).pathname}](${report})`)'
+            else
+              echo 'レポートのリンクがありません。artifact の lighthouse-reports を確認してください。'
+            fi
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+      # temporary-public-storage は数日で消えるため、HTML レポートも artifact に残す
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci
+          # upload-artifact v4 はドットで始まるディレクトリを既定で除外する
+          include-hidden-files: true
+          retention-days: 14
