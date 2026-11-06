@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test';
 test.describe('JS無効環境でもフェード対象のコンテンツが表示される', () => {
   test.use({ javaScriptEnabled: false });
 
-  test('プロフィールのHeroの見出しが表示される', async ({ page }) => {
+  test('プロフィールのHeroの見出しとアバター枠が表示される', async ({ page }) => {
     await page.goto('/profile');
 
     const heading = page.getByRole('heading', { level: 1, name: 'Yuzu' });
@@ -34,6 +34,13 @@ test.describe('ファーストビューの要素はハイドレーションを�
 
     expect(hero).toContain('animate-fade-in');
     expect(hero).not.toContain('opacity-0');
+  });
+
+  test('プロフィールのHeroの見出しはフェードの対象外になっている', async ({ page }) => {
+    await page.goto('/profile');
+
+    await expect(page.getByRole('heading', { level: 1, name: 'Yuzu' })).toBeVisible();
+    await expect(page.locator('#hero [data-fade] h1')).toHaveCount(0);
   });
 
   test('ブログ一覧は先頭3枚だけがSSRの時点でanimate-fade-inになっている', async ({ request }) => {

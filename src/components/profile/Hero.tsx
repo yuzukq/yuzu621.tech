@@ -15,7 +15,9 @@ export default function Hero() {
       className="relative flex min-h-[85dvh] scroll-mt-20 snap-start items-center overflow-hidden"
     >
       <div className="mx-auto grid w-full max-w-6xl items-center gap-16 px-4 py-16 md:grid-cols-2 md:px-8">
-        <FadeIn eager>
+        {/* テキストはフェードさせない: LCP要素になり、フェードがあると Lighthouse の
+            シミュレーションで LCP が three.js/VRM の初期化完了まで遅れる */}
+        <div>
           <span className="block font-display text-xs font-medium uppercase tracking-[0.25em] text-accent">
             Profile
           </span>
@@ -40,7 +42,7 @@ export default function Hero() {
               </a>
             ))}
           </div>
-        </FadeIn>
+        </div>
 
         <FadeIn eager delay={120}>
           <HeroAvatarDock />

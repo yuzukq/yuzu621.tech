@@ -192,8 +192,8 @@ Escapeキーでも閉じる(`ProductDetailOverlay.tsx`と挙動を統一)。
 
 ## 6. モーション
 
-- 入場: IntersectionObserver で `opacity 0→1` の純フェード、`0.8s ease-out`。連続要素は 100ms ずつ stagger。位置は動かさない(transform併用時にチラつきの原因になったため)。fill-mode は必ず `both`: `forwards` だと stagger の待機中に素の状態が見えて二重発火に見える。
-- ファーストビューの要素(プロフィールのHero、ブログ一覧の先頭3枚のカード)は、SSRの時点から CSS アニメーション(`animate-fade-in`)を付けて出力し、JSを待たずにフェードインさせる(`FadeIn` / `BlogCard` の `eager`)。それ以外はスクロールで IntersectionObserver から発火させる。JS無効環境では `<noscript>` のスタイルで `[data-fade]` のフェードを無効化し、常に表示する。
+- 入場: `opacity 0→1` の純フェード、`0.8s ease-out`。ファーストビュー外の要素は IntersectionObserver で発火させる。連続要素は 100ms ずつ stagger。位置は動かさない(transform併用時にチラつきの原因になったため)。fill-mode は必ず `both`: `forwards` だと stagger の待機中に素の状態が見えて二重発火に見える。
+- ファーストビューの要素(プロフィールのHeroのアバター枠、ブログ一覧の先頭3枚のカード)は、SSRの時点から CSS アニメーション(`animate-fade-in`)を付けて出力し、JSを待たずにフェードインさせる(`FadeIn` / `BlogCard` の `eager`)。プロフィールのHeroのテキストは LCP 要素になるためフェードさせず常に表示する(フェードがあると Lighthouse のシミュレーションで LCP が JS の実行完了まで遅れる)。JS無効環境では `<noscript>` のスタイルで `[data-fade]` のフェードを無効化し、常に表示する。
 - `prefers-reduced-motion: reduce` では全アニメーション無効化。
 - ページ遷移やホバーで過剰な動きをつけない。「上品に、少しだけ」。
 
