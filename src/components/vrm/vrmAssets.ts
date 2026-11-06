@@ -1,0 +1,5 @@
+export const AVATAR_MODEL_URL = "/models/avatar.vrm"
+export const HERO_LOOP_ANIMATION_URL = "/models/loop_verse.vrma"
+export const ABOUT_DOCK_ANIMATION_URL = "/models/v-sign.vrma"
+export const TECH_STACK_IDLE_ANIMATION_URL = "/models/tech-idle.vrma"
+export const TECH_STACK_PULSE_ANIMATION_URL = "/models/present-card.vrma"
