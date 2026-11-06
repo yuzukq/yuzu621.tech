@@ -88,6 +88,7 @@ yuzu621.tech/
 ├── scripts/
 │   ├── optimize-images.mjs        # public/images の縮小・再圧縮(画像追加時に実行)
 │   ├── check-image-size.mjs       # public/images の 1MB 超ファイル検出(CI)
+│   ├── optimize-vrm.mjs           # VRM のテクスチャ縮小・重複排除(avatar.vrm の配置前に実行)
 │   └── migrate-posts.mjs          # 旧remark-latex-breaks記法の一括移行に使った歴史的スクリプト(通常運用では実行不要)
 ├── tests/
 │   └── e2e/                       # Playwright E2E
@@ -238,6 +239,7 @@ npm run test:e2e     # Playwright E2E(内部でビルド+起動してから実�
 npm run test:e2e:ui  # Playwright UIモード
 npm run optimize:images  # public/images の縮小・再圧縮
 npm run check:images     # public/images の 1MB 超ファイル検出
+npm run optimize:vrm -- <in.vrm> <out.vrm>  # VRM のテクスチャ縮小(public/models/README.md 参照)
 ```
 
 `npm run test:e2e` の前に、自分で起動した `npm run start` 等の3000番ポートのサーバーは停止してください(`playwright.config.ts` の `reuseExistingServer` によりローカルでは既存サーバーが再利用され、古いビルドのままテストされてしまいます)。
