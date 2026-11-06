@@ -24,6 +24,10 @@ const zenMaruGothic = Zen_Maru_Gothic({
   weight: ["400", "500", "700", "900"],
   variable: "--font-body",
   display: "swap",
+  // unicode-rangeの約120スライスにはサブセット名のCSSコメントが無く、next/fontが
+  // 直前の /* latin */ を引き継いで全スライス(約6MB)をpreload対象にしてしまう。
+  // preloadせず、ページで使う文字のスライスだけをブラウザに取らせる
+  preload: false,
 });
 
 const jetBrainsMono = JetBrains_Mono({
@@ -71,6 +75,11 @@ export default function RootLayout({
       className={`${spaceGrotesk.variable} ${zenMaruGothic.variable} ${jetBrainsMono.variable}`}
     >
       <body className="bg-bg font-body text-ink antialiased">
+        {/* JS無効環境ではIntersectionObserverが動かずopacity-0のまま見えなくなるため、
+            フェード演出を無効化して常に表示する */}
+        <noscript>
+          <style>{`[data-fade]{opacity:1!important;animation:none!important}`}</style>
+        </noscript>
         {/* ハードロード時、テーマ確定前の一瞬だけ既定の世界(tech)が見えて
             切り替わる「ちらつき」を防ぐため、最初のペイント前に同期実行する */}
         <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />

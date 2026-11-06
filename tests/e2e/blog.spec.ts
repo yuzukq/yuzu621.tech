@@ -105,11 +105,45 @@ test('daily カテゴリ表示時に <html data-world="daily"> になる', async
   await expect(page.locator('html')).toHaveAttribute('data-world', 'daily');
 });
 
+// /?category=daily は rewrite で静的な /daily を返すため、ハードリロードではなく
+// クライアント側の遷移でも rewrite 先の一覧と世界観に切り替わることを確かめる
+test('カテゴリタブで日常へ切り替えると、日常記事の一覧と data-world="daily" になる', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('html')).toHaveAttribute('data-world', 'tech');
+
+  await page.getByRole('link', { name: '日常' }).click();
+
+  await expect(page).toHaveURL('/?category=daily');
+  await expect(page.getByRole('heading', { name: '日常のこと' })).toBeVisible();
+  await expect(page.locator('a[href="/blog/Vket2025"]')).toBeVisible();
+  await expect(page.locator('a[href="/blog/devenv2026"]')).toHaveCount(0);
+  await expect(page.locator('html')).toHaveAttribute('data-world', 'daily');
+
+  await page.getByRole('link', { name: '技術関連' }).click();
+
+  await expect(page).toHaveURL('/?category=tech');
+  await expect(page.locator('a[href="/blog/devenv2026"]')).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('data-world', 'tech');
+});
+
 test('tech カテゴリ表示時は <html data-world="tech"> のままになる', async ({ page }) => {
   await page.goto('/?category=tech');
 
   await expect(page.locator('a[href="/blog/devenv2026"]')).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('data-world', 'tech');
+});
+
+// Qiita の記事はビルド時の外部API取得に依存するため、取得できなかったビルドでは検証しない
+test('一覧のQiita記事のサムネイルは /_next/image 経由で srcset 付きで配信される', async ({ page }) => {
+  await page.goto('/');
+
+  const thumbnails = page.locator('a[href^="https://qiita.com/"] img');
+  test.skip((await thumbnails.count()) === 0, 'Qiita の記事を取得できなかった');
+
+  for (const img of await thumbnails.all()) {
+    await expect(img).toHaveAttribute('src', /^\/_next\/image\?url=https%3A%2F%2Fqiita-user-contents\.imgix\.net/);
+    await expect(img).toHaveAttribute('srcset', /\/_next\/image\?/);
+  }
 });
 
 // 記事本文の描画テスト

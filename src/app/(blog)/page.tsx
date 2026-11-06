@@ -1,120 +1,14 @@
-import type { Metadata } from 'next'
-import { getAllPostsMeta, type BlogCategory } from '@/lib/posts'
-import { getExternalArticles } from '@/lib/external-articles'
-import CategoryTabs from '@/components/blog/CategoryTabs'
-import BlogCard, { type BlogCardData } from '@/components/blog/BlogCard'
-import WorldSync from '@/components/blog/WorldSync'
-import { buildWorldPrePaintScript } from '@/lib/theme'
-import { SITE_TITLE, SITE_NAME, DEFAULT_DESCRIPTION, DEFAULT_OG_IMAGE_PATH } from '@/lib/seo'
+import BlogIndex, { buildBlogIndexMetadata } from '@/components/blog/BlogIndex'
 
-const VALID_CATEGORIES: BlogCategory[] = ['tech', 'daily']
-function isValidCategory(value: string | null | undefined): value is BlogCategory {
-  return value !== null && value !== undefined && VALID_CATEGORIES.includes(value as BlogCategory)
-}
+// searchParams を読むと動的レンダリングになるため、カテゴリはURLから読まない。
+// /?category=daily は next.config.ts の rewrite で /daily に振り分け、
+// それ以外(tech・不正値・指定なし)はすべてこの tech 一覧になる
+export const metadata = buildBlogIndexMetadata('tech')
 
-const DAILY_TITLE = '日常のこと'
-const DAILY_DESCRIPTION = 'Yuzu の日常のちょっとした出来事や気づきを綴ったブログ記事の一覧です。'
+// external-articles.ts の LIST_REVALIDATE_SEC と同じ値。セグメント設定は静的解析されるため
+// import した定数や式は使えない(https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config)
+export const revalidate = 3600
 
-interface BlogIndexPageProps {
-  searchParams: Promise<{ category?: string }>
-}
-
-// canonical は常にクエリなしの `/`: ?category= 別のURLを正規化しないと
-// 検索エンジンに重複コンテンツと見なされうるため
-export async function generateMetadata({ searchParams }: BlogIndexPageProps): Promise<Metadata> {
-  const params = await searchParams
-  const category: BlogCategory = isValidCategory(params.category) ? params.category : 'tech'
-  const isDaily = category === 'daily'
-
-  const title = isDaily ? DAILY_TITLE : { absolute: SITE_TITLE }
-  const description = isDaily ? DAILY_DESCRIPTION : DEFAULT_DESCRIPTION
-  const ogTitle = isDaily ? `${DAILY_TITLE} | ${SITE_NAME}` : SITE_TITLE
-
-  return {
-    title,
-    description,
-    alternates: { canonical: '/' },
-    openGraph: {
-      type: 'website',
-      locale: 'ja_JP',
-      siteName: SITE_NAME,
-      title: ogTitle,
-      description,
-      url: '/',
-      images: [{ url: DEFAULT_OG_IMAGE_PATH }],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: ogTitle,
-      description,
-      images: [DEFAULT_OG_IMAGE_PATH],
-    },
-  }
-}
-
-export default async function BlogIndexPage({ searchParams }: BlogIndexPageProps) {
-  const params = await searchParams
-  const category: BlogCategory = isValidCategory(params.category) ? params.category : 'tech'
-
-  const [posts, externalArticles] = await Promise.all([
-    Promise.resolve(getAllPostsMeta(category)),
-    getExternalArticles(category),
-  ])
-  const items: BlogCardData[] = [
-    ...posts.map((post) => ({
-      href: `/blog/${post.slug}`,
-      title: post.title,
-      date: post.date,
-      description: post.description,
-      tags: post.tags,
-      thumbnail: post.thumbnail,
-      category: post.category,
-    })),
-    ...externalArticles.map((article) => ({
-      href: article.url,
-      externalSource: article.source,
-      title: article.title,
-      date: article.date,
-      tags: article.tags,
-      thumbnail: article.thumbnail,
-      category: article.category ?? ('tech' as const),
-    })),
-  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-
-  return (
-    <div className="flex-1 bg-bg">
-      {/* 保存済みテーマが無い読者へ、カテゴリ既定の世界をペイント前に適用する
-          (ルート直下のinitスクリプトはURLからカテゴリを判別できないため) */}
-      <script
-        suppressHydrationWarning
-        dangerouslySetInnerHTML={{ __html: buildWorldPrePaintScript(category) }}
-      />
-      <WorldSync world={category} />
-      <div className="mx-auto max-w-6xl px-4 py-16 md:px-8 md:py-24">
-        <div className="mb-10 flex flex-col gap-6 md:mb-14 md:flex-row md:items-end md:justify-between">
-          <h1 className="leading-tight">
-            <span className="block font-display text-xs font-medium uppercase tracking-[0.25em] text-accent">
-              Blog
-            </span>
-            <span className="mt-3 block font-body text-3xl font-extrabold text-ink md:text-4xl">
-              {category === 'daily' ? '日常のこと' : '技術記事'}
-            </span>
-          </h1>
-          <CategoryTabs currentCategory={category} />
-        </div>
-
-        {items.length === 0 ? (
-          <p className="text-ink-muted">
-            {category === 'tech' ? '技術記事' : '日常記事'}はまだありません。
-          </p>
-        ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:gap-8 lg:grid-cols-3">
-            {items.map((item, index) => (
-              <BlogCard key={item.href} item={item} index={index} />
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  )
+export default function BlogIndexPage() {
+  return <BlogIndex category="tech" />
 }
