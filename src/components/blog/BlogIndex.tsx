@@ -95,7 +95,8 @@ export default async function BlogIndex({ category }: { category: BlogCategory }
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:gap-8 lg:grid-cols-3">
             {items.map((item, index) => (
-              <BlogCard key={item.href} item={item} index={index} />
+              // 3 はデスクトップ3カラムの1行目。モバイルで画面外の2・3枚目がアニメーションしても害は無い
+              <BlogCard key={item.href} item={item} index={index} eager={index < 3} />
             ))}
           </div>
         )}
