@@ -16,6 +16,7 @@ import remarkCodeFilenamePlugin from './remark-code-filename'
 import remarkNotePlugin, { ensureNoteBlankLines } from './remark-note'
 import remarkLinkCardPlugin from './remark-link-card'
 import rehypeExtractToc, { type TocItem } from './rehype-extract-toc'
+import rehypeOptimizeImages from './rehype-optimize-images'
 
 export type { TocItem }
 
@@ -51,6 +52,7 @@ export async function renderMarkdown(markdown: string): Promise<RenderedMarkdown
       },
     })
     .use(rehypeAutolinkHeadings, { behavior: 'wrap' })
+    .use(rehypeOptimizeImages as unknown as Plugin)
     .use(rehypePrettyCode, {
       theme: { dark: 'github-dark-default', light: 'github-light' },
       keepBackground: false,
