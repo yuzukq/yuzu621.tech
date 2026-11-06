@@ -3,10 +3,12 @@
 import { useEffect, useRef, useState } from "react"
 import VrmFallback from "./VrmFallback"
 import { createVrmScene, type VrmSceneHandle } from "./createVrmScene"
+import {
+  AVATAR_MODEL_URL,
+  TECH_STACK_IDLE_ANIMATION_URL,
+  TECH_STACK_PULSE_ANIMATION_URL,
+} from "./vrmAssets"
 
-const MODEL_URL = "/models/avatar.vrm"
-const PULSE_ANIMATION_URL = "/models/present-card.vrma"
-const IDLE_ANIMATION_URL = "/models/tech-idle.vrma"
 // 両腕を伸ばして下から持ち上げる演技を画角に収めるため、Heroのバストアップ
 // フレーミングより下方向に広げる(ただし演技全体が収まる範囲で最小限に留め、
 // アバターが小さく見えすぎないようにする)
@@ -37,12 +39,12 @@ export default function VrmTechStackCanvas({ triggerTokenRef }: VrmTechStackCanv
     createVrmScene({
       canvas,
       container,
-      modelUrl: MODEL_URL,
+      modelUrl: AVATAR_MODEL_URL,
       cameraFraming: CAMERA_FRAMING,
       motion: {
         mode: "pulse",
-        idleAnimationUrl: IDLE_ANIMATION_URL,
-        pulseAnimationUrl: PULSE_ANIMATION_URL,
+        idleAnimationUrl: TECH_STACK_IDLE_ANIMATION_URL,
+        pulseAnimationUrl: TECH_STACK_PULSE_ANIMATION_URL,
         getTriggerToken: () => triggerTokenRef.current,
       },
     })

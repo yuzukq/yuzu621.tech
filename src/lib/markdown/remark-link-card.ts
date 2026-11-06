@@ -56,7 +56,7 @@ function buildCardHtml(url: string, title: string, description: string | undefin
     ? `<span class="link-card-description">${escapeHtml(description)}</span>`
     : ''
   const imageHtml = image
-    ? `<span class="link-card-image"><img src="${escapeHtml(image)}" alt=""></span>`
+    ? `<span class="link-card-image"><img src="${escapeHtml(image)}" alt="" loading="lazy" decoding="async"></span>`
     : ''
 
   return (
@@ -64,7 +64,7 @@ function buildCardHtml(url: string, title: string, description: string | undefin
     `<span class="link-card-text">` +
     `<span class="link-card-title">${escapeHtml(title)}</span>` +
     descriptionHtml +
-    `<span class="link-card-meta"><img class="link-card-favicon" src="${escapeHtml(buildFaviconUrl(host))}" alt="">${escapeHtml(host)}</span>` +
+    `<span class="link-card-meta"><img class="link-card-favicon" src="${escapeHtml(buildFaviconUrl(host))}" alt="" width="16" height="16" loading="lazy" decoding="async">${escapeHtml(host)}</span>` +
     `</span>` +
     imageHtml +
     `</a>`

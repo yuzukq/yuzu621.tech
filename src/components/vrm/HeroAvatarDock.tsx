@@ -5,13 +5,13 @@ import VrmHeroSlot from "./VrmHeroSlot"
 import { useAvatarTravel } from "./AvatarTravelContext"
 
 // showcase時はFloatingAvatarが実体を描画するため、ここは位置測定用の空スロットに
-// なる(サイズ・余白はVrmCanvasの見た目と揃える)。フォールバック時は従来通り
-// Hero自前のVRMアバターを描画する
+// なる(サイズ・余白はVrmCanvasの見た目と揃える)。フォールバック時は、3Dを
+// 読み込める環境(reduced-motionのみ)ならHero自前のVRMアバターを描画する
 export default function HeroAvatarDock() {
   const travel = useAvatarTravel()
 
   if (!travel?.showcase) {
-    return <VrmHeroSlot />
+    return travel?.allow3d ? <VrmHeroSlot /> : <VrmFallback />
   }
 
   return (
