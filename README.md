@@ -62,7 +62,7 @@ yuzu621.tech/
 │   │   ├── blog/                  # BlogCard, BlogHeader(list/articleバリアント), CategoryTabs, Tag, TableOfContents(j/k操作), MobileToc, WorldSync
 │   │   ├── profile/                # Hero, About, Products(Grid/Card/Overlay), TechStack(Body/Showcase), Header, MobileNav, FadeIn 等
 │   │   ├── layouts/                # Footer
-│   │   ├── vrm/                    # createVrmScene(three.js本体), VrmCanvas, VrmFallback, VrmHeroSlot(CSR分離), VrmTechStackCanvas, Hero↔Aboutアバター移動(AvatarTravelContext/FloatingAvatar/HeroAvatarDock/AboutAvatarDock)
+│   │   ├── vrm/                    # createVrmScene(three.js本体), VrmCanvas, VrmFallback, VrmHeroSlot(CSR分離), VrmTechStackCanvas, Hero↔Aboutアバター移動(AvatarTravelContext/FloatingAvatar/HeroAvatarDock/AboutAvatarDock), 読み込み制御(vrmAssets/fetchVrmAsset/runWhenIdleAfterLoad/useVrmShowcaseConditions)
 │   │   ├── ThemeToggle.tsx         # tech/dailyテーマの手動切替ボタン(localStorageに保存)
 │   │   └── ThemeSync.tsx           # プロフィールページのテーマ初期化・SPA遷移時の同期
 │   ├── data/                      # aboutme.ts / skills.ts / external-articles.ts(データドリブン、文言はここを編集。制作物データは`_products/`へ移行済み)
@@ -94,6 +94,7 @@ yuzu621.tech/
 │       ├── seo.spec.ts            # sitemap.xml / robots.txt / canonical / BlogPosting JSON-LD
 │       ├── navigation.spec.ts     # ヘッダー・アンカーリンク・モバイルドロワー
 │       ├── product.spec.ts        # プロダクト詳細オーバーレイ
+│       ├── vrm-loading.spec.ts    # VRM の遅延読み込み・データセーバー時の抑制
 │       └── notfound.spec.ts       # 404ページ
 ├── docs/                          # 設計・計画ドキュメント(歴史的経緯を含めそのまま保存)
 ├── DESIGN.md                      # デザインシステム(カラートークン・タイポ・コンポーネント様式)
@@ -162,9 +163,15 @@ three.js + `@pixiv/three-vrm` 一式は `next/dynamic`(`ssr: false`)でCSR分離
 ループ再生し、マウス追従の視線制御を上乗せしています。VRMAが読めない場合はプロシージャル待機モーションに
 フォールバックし、`prefers-reduced-motion` 環境や画面外スクロール時はループが止まります。
 
+3D の初期化は、ファーストビューの描画と帯域・CPU を奪い合わないよう `load` イベントとブラウザの
+アイドルを待ってから始めます(待っている間はプレースホルダを表示)。`avatar.vrm` は Hero/About と
+Tech Stack で共有するため、取得は1回にまとめています。データセーバーが有効な場合や回線が
+3G 以下(`navigator.connection` がある Chromium 系のみ判定)の場合は 3D を読み込まず、静的な表示に
+なります。詳細は [`DESIGN.md`](./DESIGN.md) §7 を参照してください。
+
 ### Hero↔Aboutアバター移動
 
-`prefers-reduced-motion` でない場合(モバイル含む)、HeroのVRMアバターと同一インスタンスが
+`prefers-reduced-motion` でなく低速回線でもない場合(モバイル含む)、HeroのVRMアバターと同一インスタンスが
 スクロールに合わせてAboutセクションへ画面上を移動し(FLIP的な`transform`補間)、到達すると
 `public/models/v-sign.vrma`(ピースサインの静止ポーズ)へワンショットで切り替わります。それ以外の
 環境ではHero・Aboutそれぞれが従来通り静的なアバター/写真アイコンを描画します。詳細な設計は
@@ -172,13 +179,13 @@ three.js + `@pixiv/three-vrm` 一式は `next/dynamic`(`ssr: false`)でCSR分離
 
 ### Tech Stackのアバターショーケース
 
-画面幅1024px以上かつ`prefers-reduced-motion`でない場合、Tech Stackセクションは
+画面幅1024px以上かつ`prefers-reduced-motion`でなく低速回線でもない場合、Tech Stackセクションは
 「左にアバター・右に1カテゴリのカード」の構成になり、`public/models/tech-idle.vrma` を
 常時ループしながら、スクロールでカテゴリの境目を跨いだ瞬間に `public/models/present-card.vrma`
 (両手で下から掬い上げて掲げるジェスチャー)をワンショット再生してカードを切り替えます
 (スクロール位置に直接同期するスクラブ方式ではありません)。それ以外の環境では従来の
 全カテゴリ一覧グリッドにフォールバックします(全カテゴリの内容は常にDOM上に存在するため、
-SEO/no-js環境への影響はありません)。詳細な数式・実装方針は [`DESIGN.md`](./DESIGN.md) §7.5 を参照してください。
+SEO/no-js環境への影響はありません)。アバターはセクションの1画面手前まで来てから読み込みます。詳細な数式・実装方針は [`DESIGN.md`](./DESIGN.md) §7.5 を参照してください。
 
 ## デザイン
 
