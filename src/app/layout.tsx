@@ -24,6 +24,10 @@ const zenMaruGothic = Zen_Maru_Gothic({
   weight: ["400", "500", "700", "900"],
   variable: "--font-body",
   display: "swap",
+  // unicode-rangeの約120スライスにはサブセット名のCSSコメントが無く、next/fontが
+  // 直前の /* latin */ を引き継いで全スライス(約6MB)をpreload対象にしてしまう。
+  // preloadせず、ページで使う文字のスライスだけをブラウザに取らせる
+  preload: false,
 });
 
 const jetBrainsMono = JetBrains_Mono({
