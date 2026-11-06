@@ -45,7 +45,9 @@ test.describe('ファーストビューの要素はハイドレーションを�
 
   test('ブログ一覧は先頭3枚だけがSSRの時点でanimate-fade-inになっている', async ({ request }) => {
     const html = await (await request.get('/')).text();
-    const fadeClasses = [...html.matchAll(/<div data-fade="[^"]*" class="([^"]*)"/g)].map((m) => m[1]);
+    const fadeClasses = [...html.matchAll(/<div\b[^>]*\bdata-fade="[^"]*"[^>]*>/g)].map(
+      (m) => m[0].match(/\bclass="([^"]*)"/)?.[1],
+    );
 
     expect(fadeClasses.length).toBeGreaterThan(3);
     expect(fadeClasses.slice(0, 3)).toEqual(['animate-fade-in', 'animate-fade-in', 'animate-fade-in']);
