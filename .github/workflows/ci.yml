@@ -45,6 +45,10 @@ jobs:
       - name: TypeScript typecheck
         run: npm run typecheck
 
+      # public/images に 1MB を超える画像が追加されていないか
+      - name: Image size check
+        run: npm run check:images
+
       # 本番ビルドエラーチェック(SSGの破綻等)
       - name: Build (Next.js)
         run: npm run build

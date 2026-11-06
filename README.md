@@ -86,6 +86,8 @@ yuzu621.tech/
 │   ├── images/                    # ブログ・プロダクト画像
 │   └── mov/
 ├── scripts/
+│   ├── optimize-images.mjs        # public/images の縮小・再圧縮(画像追加時に実行)
+│   ├── check-image-size.mjs       # public/images の 1MB 超ファイル検出(CI)
 │   └── migrate-posts.mjs          # 旧remark-latex-breaks記法の一括移行に使った歴史的スクリプト(通常運用では実行不要)
 ├── tests/
 │   └── e2e/                       # Playwright E2E
@@ -97,7 +99,7 @@ yuzu621.tech/
 │       └── notfound.spec.ts       # 404ページ
 ├── docs/                          # 設計・計画ドキュメント(歴史的経緯を含めそのまま保存)
 ├── DESIGN.md                      # デザインシステム(カラートークン・タイポ・コンポーネント様式)
-└── .github/workflows/ci.yml       # CI(Lint / Typecheck / Build / npm audit / E2E)
+└── .github/workflows/ci.yml       # CI(Lint / Typecheck / 画像サイズ / Build / npm audit / E2E)
 ```
 
 ## ルーティング
@@ -123,6 +125,8 @@ category: "tech"  # "tech" | "daily"。省略時は "tech"
 
 ここから本文...
 ```
+
+画像は `public/images/blog/<日付>/` に置き、**追加したら `npm run optimize:images` を実行してからコミットしてください**。長辺 2560px への縮小と再圧縮をファイル名を変えずに上書きで行います(`-- --dry-run` で書き換えずにサイズだけ確認、PNG を減色したくない場合は `-- --lossless`)。CI(`new-article` ブランチ含む)の `npm run check:images` は、`public/images` に 1MB を超えるファイルがあると失敗します。
 
 記法は [Qiita](https://help.qiita.com/ja/articles/qiita-markdown/) 互換を意識しています。
 
@@ -224,6 +228,8 @@ npm run lint         # ESLint
 npm run typecheck    # TypeScript 型チェック
 npm run test:e2e     # Playwright E2E(内部でビルド+起動してから実行)
 npm run test:e2e:ui  # Playwright UIモード
+npm run optimize:images  # public/images の縮小・再圧縮
+npm run check:images     # public/images の 1MB 超ファイル検出
 ```
 
 `npm run test:e2e` の前に、自分で起動した `npm run start` 等の3000番ポートのサーバーは停止してください(`playwright.config.ts` の `reuseExistingServer` によりローカルでは既存サーバーが再利用され、古いビルドのままテストされてしまいます)。
