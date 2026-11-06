@@ -50,7 +50,8 @@ yuzu621.tech/
 │   │   ├── opengraph-image.tsx    # サイト共通OG画像(next/ogによる生成)
 │   │   ├── (blog)/
 │   │   │   ├── layout.tsx         # ブログ用レイアウト(Header/Footer)
-│   │   │   └── page.tsx           # ブログ一覧 "/" (tech/dailyカテゴリ切替)
+│   │   │   ├── page.tsx           # ブログ一覧 "/" (tech。ISR)
+│   │   │   └── daily/page.tsx     # 日常の一覧(公開URLは "/?category=daily"。rewrite先、ISR)
 │   │   ├── blog/
 │   │   │   ├── layout.tsx         # 記事ページ用レイアウト
 │   │   │   └── [slug]/
@@ -59,7 +60,7 @@ yuzu621.tech/
 │   │   └── profile/
 │   │       └── page.tsx           # プロフィール "/profile" (Person JSON-LD)
 │   ├── components/
-│   │   ├── blog/                  # BlogCard, BlogHeader(list/articleバリアント), CategoryTabs, Tag, TableOfContents(j/k操作), MobileToc, WorldSync
+│   │   ├── blog/                  # BlogIndex(一覧本体), BlogCard, BlogHeader(list/articleバリアント), CategoryTabs, Tag, TableOfContents(j/k操作), MobileToc, WorldSync
 │   │   ├── profile/                # Hero, About, Products(Grid/Card/Overlay), TechStack(Body/Showcase), Header, MobileNav, FadeIn 等
 │   │   ├── layouts/                # Footer
 │   │   ├── vrm/                    # createVrmScene(three.js本体), VrmCanvas, VrmFallback, VrmHeroSlot(CSR分離), VrmTechStackCanvas, Hero↔Aboutアバター移動(AvatarTravelContext/FloatingAvatar/HeroAvatarDock/AboutAvatarDock), 読み込み制御(vrmAssets/fetchVrmAsset/runWhenIdleAfterLoad/useVrmShowcaseConditions)
@@ -107,6 +108,9 @@ yuzu621.tech/
 ## ルーティング
 
 - `/` — ブログ一覧(`?category=tech|daily` でtech/daily世界を切替、デフォルトtech)
+  - `/` と `/daily` の2ページを静的生成(ISR、1時間ごとに再生成)し、`/?category=daily` は `next.config.ts` の rewrite で `/daily` を返す。`?category=tech`・不正な値・指定なしは rewrite されず tech の一覧になる
+  - `searchParams` を読むと動的レンダリングに戻るため、一覧ページでは読まない
+  - `/daily` に直接アクセスしても表示できるが、canonical は `/` なので重複URLにはならない
 - `/blog/[slug]` — 記事本文(SSG)
 - `/profile` — プロフィール(既定はシステムの`prefers-color-scheme`。`localStorage`の明示保存があれば優先)
 - `/blog`, `/portfolio` — 旧URL。それぞれ `/`, `/profile` へ301リダイレクト(`next.config.ts`)
@@ -221,8 +225,10 @@ id/title/thumbnail/techStack/screenshots/description/urls)で管理します。�
 出典バッジ付きで日付順に混ざって表示されます。
 
 - **Qiita**: [公開API](https://qiita.com/api/v2/users/yuzukq/items)から自動取得
-  (`src/lib/external-articles.ts`)。Next.js Data Cacheで1時間キャッシュされるため、
-  投稿後はデプロイ不要で最長1時間で反映されます。取得失敗時はローカル記事のみで表示。
+  (`src/lib/external-articles.ts`)。一覧ページはビルド時に静的生成され、ISRで1時間ごとに
+  再生成されるため、投稿後はデプロイ不要で最長1時間程度で反映されます。
+  取得に失敗した場合やタイムアウト(5秒)した場合は、ローカル記事だけで生成します
+  (ネットワークが無い環境でもビルドは失敗しません)。
 - **Zenn・会社Techブログ等**: `src/data/external-articles.ts` に1エントリ追加するだけ。
 - サムネイルは未指定なら記事URLのog:imageを自動取得。外部記事はsitemapに含めません。
 
