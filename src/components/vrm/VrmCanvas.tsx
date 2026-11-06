@@ -3,10 +3,8 @@
 import { useEffect, useRef, useState } from "react"
 import VrmFallback from "./VrmFallback"
 import { createVrmScene, type VrmSceneHandle } from "./createVrmScene"
-
-const MODEL_URL = "/models/avatar.vrm"
-// 無い/読めない場合は createVrmScene 側でプロシージャル待機に切り替わる
-const ANIMATION_URL = "/models/loop_verse.vrma"
+import { runWhenIdleAfterLoad } from "./runWhenIdleAfterLoad"
+import { AVATAR_MODEL_URL, HERO_LOOP_ANIMATION_URL } from "./vrmAssets"
 
 type Status = "loading" | "ready" | "failed"
 
@@ -23,31 +21,36 @@ export default function VrmCanvas() {
     let cancelled = false
     let handle: VrmSceneHandle | undefined
 
-    createVrmScene({
-      canvas,
-      container,
-      modelUrl: MODEL_URL,
-      motion: { mode: "loop", animationUrl: ANIMATION_URL },
+    // ファーストビューの描画と帯域・CPU を奪い合わないよう、3D の初期化は後回しにする
+    const cancelIdle = runWhenIdleAfterLoad(() => {
+      createVrmScene({
+        canvas,
+        container,
+        modelUrl: AVATAR_MODEL_URL,
+        // 無い/読めない場合は createVrmScene 側でプロシージャル待機に切り替わる
+        motion: { mode: "loop", animationUrl: HERO_LOOP_ANIMATION_URL },
+      })
+        .then((sceneHandle) => {
+          if (cancelled) {
+            sceneHandle.dispose()
+            return
+          }
+          handle = sceneHandle
+          setStatus("ready")
+        })
+        .catch((error: unknown) => {
+          // モデル未配置は正常系(ファイルを置けば表示される)のため error にしない
+          console.info(
+            "[vrm] avatar.vrm を読み込めなかったため、プレースホルダを表示します。",
+            error,
+          )
+          if (!cancelled) setStatus("failed")
+        })
     })
-      .then((sceneHandle) => {
-        if (cancelled) {
-          sceneHandle.dispose()
-          return
-        }
-        handle = sceneHandle
-        setStatus("ready")
-      })
-      .catch((error: unknown) => {
-        // モデル未配置は正常系(ファイルを置けば表示される)のため error にしない
-        console.info(
-          "[vrm] avatar.vrm を読み込めなかったため、プレースホルダを表示します。",
-          error,
-        )
-        if (!cancelled) setStatus("failed")
-      })
 
     return () => {
       cancelled = true
+      cancelIdle()
       handle?.dispose()
     }
   }, [])

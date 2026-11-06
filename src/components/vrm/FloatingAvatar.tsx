@@ -3,10 +3,8 @@
 import { useEffect, useRef, type RefObject } from "react"
 import { createVrmScene, type VrmSceneHandle } from "./createVrmScene"
 import { computeTravelProgress, nextDockedState } from "./avatarTravel"
-
-const MODEL_URL = "/models/avatar.vrm"
-const LOOP_ANIMATION_URL = "/models/loop_verse.vrma"
-const DOCK_ANIMATION_URL = "/models/v-sign.vrma"
+import { runWhenIdleAfterLoad } from "./runWhenIdleAfterLoad"
+import { ABOUT_DOCK_ANIMATION_URL, AVATAR_MODEL_URL, HERO_LOOP_ANIMATION_URL } from "./vrmAssets"
 
 interface FloatingAvatarProps {
   heroSlotRef: RefObject<HTMLDivElement | null>
@@ -33,32 +31,36 @@ export default function FloatingAvatar({ heroSlotRef, aboutSlotRef, onReady }: F
     let cancelled = false
     let handle: VrmSceneHandle | undefined
 
-    createVrmScene({
-      canvas,
-      container: wrapper,
-      modelUrl: MODEL_URL,
-      motion: {
-        mode: "dock",
-        loopAnimationUrl: LOOP_ANIMATION_URL,
-        dockAnimationUrl: DOCK_ANIMATION_URL,
-        getDocked: () => dockedRef.current,
-      },
+    // 待っている間は HeroAvatarDock がフォールバックを重ねて表示する
+    const cancelIdle = runWhenIdleAfterLoad(() => {
+      createVrmScene({
+        canvas,
+        container: wrapper,
+        modelUrl: AVATAR_MODEL_URL,
+        motion: {
+          mode: "dock",
+          loopAnimationUrl: HERO_LOOP_ANIMATION_URL,
+          dockAnimationUrl: ABOUT_DOCK_ANIMATION_URL,
+          getDocked: () => dockedRef.current,
+        },
+      })
+        .then((sceneHandle) => {
+          if (cancelled) {
+            sceneHandle.dispose()
+            return
+          }
+          handle = sceneHandle
+          onReady(true)
+        })
+        .catch((error: unknown) => {
+          // モデル未配置は正常系のため error にしない(他のVRMキャンバスと同じ方針)
+          console.info("[vrm] Hero/About間のアバターを読み込めませんでした。", error)
+        })
     })
-      .then((sceneHandle) => {
-        if (cancelled) {
-          sceneHandle.dispose()
-          return
-        }
-        handle = sceneHandle
-        onReady(true)
-      })
-      .catch((error: unknown) => {
-        // モデル未配置は正常系のため error にしない(他のVRMキャンバスと同じ方針)
-        console.info("[vrm] Hero/About間のアバターを読み込めませんでした。", error)
-      })
 
     return () => {
       cancelled = true
+      cancelIdle()
       handle?.dispose()
     }
   }, [onReady])
