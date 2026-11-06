@@ -8,14 +8,17 @@ interface FadeInProps {
   children: ReactNode
   delay?: number
   className?: string
+  /** ファーストビュー内の要素に付ける。JSを待たずSSRの時点からフェードインする */
+  eager?: boolean
 }
 
-export default function FadeIn({ children, delay = 0, className }: FadeInProps) {
-  const { ref, isInView } = useInView({ threshold: 0.15 })
+export default function FadeIn({ children, delay = 0, className, eager = false }: FadeInProps) {
+  const { ref, isInView } = useInView({ threshold: 0.15, initialInView: eager })
 
   return (
     <div
       ref={ref}
+      data-fade
       className={`${isInView ? "animate-fade-in" : "opacity-0"}${className ? ` ${className}` : ""}`}
       style={{ animationDelay: `${delay}ms` }}
     >

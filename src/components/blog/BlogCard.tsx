@@ -29,10 +29,12 @@ const BRAND_DOT_COLOR: Record<string, string> = {
 interface BlogCardProps {
   item: BlogCardData
   index: number
+  /** ファーストビュー内のカードに付ける。JSを待たずSSRの時点からフェードインする */
+  eager?: boolean
 }
 
-export default function BlogCard({ item, index }: BlogCardProps) {
-  const { ref, isInView } = useInView({ threshold: 0.15 })
+export default function BlogCard({ item, index, eager = false }: BlogCardProps) {
+  const { ref, isInView } = useInView({ threshold: 0.15, initialInView: eager })
   const external = item.externalSource
   // 一覧の LCP 要素になる先頭だけ優先する。全カードに付けると帯域を奪い合って逆効果になる
   const isPriority = index === 0
@@ -121,6 +123,7 @@ export default function BlogCard({ item, index }: BlogCardProps) {
   return (
     <div
       ref={ref}
+      data-fade
       className={isInView ? "animate-fade-in" : "opacity-0"}
       style={{ animationDelay: `${index * 100}ms` }}
     >
