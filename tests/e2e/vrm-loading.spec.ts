@@ -1,6 +1,8 @@
 import { test, expect, type Page } from '@playwright/test';
 
 const VRM_ASSET_RE = /\/models\/.+\.vrma?$/;
+// GPU の無い CI では、モデルのパースと WebGL の初期化が完了するまで数秒以上かかる
+const VRM_LOAD_TIMEOUT_MS = 30_000;
 
 function recordVrmRequests(page: Page) {
   const urls: string[] = [];
@@ -70,6 +72,7 @@ test.describe('VRM の読み込み', () => {
   });
 
   test('lg以上では load 後に avatar.vrm を取得し、Tech Stack 用の VRMA はスクロールするまで取得しない', async ({ page }) => {
+    test.setTimeout(VRM_LOAD_TIMEOUT_MS * 3);
     await page.setViewportSize({ width: 1440, height: 900 });
     const vrmRequests = recordVrmRequests(page);
     const avatarFetchStartTimes = await recordAvatarFetches(page);
@@ -77,7 +80,9 @@ test.describe('VRM の読み込み', () => {
     test.skip(!(await hasWebGL(page)), 'WebGL が使えない環境では createVrmScene が取得前に失敗する');
     await waitForIdleAfterLoad(page);
 
-    await expect.poll(async () => (await avatarFetchStartTimes()).length).toBe(1);
+    await expect
+      .poll(async () => (await avatarFetchStartTimes()).length, { timeout: VRM_LOAD_TIMEOUT_MS })
+      .toBe(1);
     const loadEventEnd = await page.evaluate(
       () => (performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming).loadEventEnd,
     );
@@ -89,7 +94,9 @@ test.describe('VRM の読み込み', () => {
     const targetY = await showcase.evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
     await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), targetY);
 
-    await expect.poll(() => vrmRequests).toContain('/models/present-card.vrma');
+    await expect
+      .poll(() => vrmRequests, { timeout: VRM_LOAD_TIMEOUT_MS })
+      .toContain('/models/present-card.vrma');
     expect(vrmRequests).toContain('/models/tech-idle.vrma');
     expect(await avatarFetchStartTimes()).toHaveLength(1);
   });
