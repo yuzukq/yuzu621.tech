@@ -207,7 +207,8 @@ Escapeキーでも閉じる(`ProductDetailOverlay.tsx`と挙動を統一)。
 - 品質: `<canvas>` は `aria-hidden`。SEOテキストは通常DOMに置く。低スペック・reduced-motion時は静止。
 - 読み込みのタイミング: Hero/About の 3D(`VrmCanvas` / `FloatingAvatar`)は、`load` イベントの後に
   さらに `requestIdleCallback`(無いブラウザでは 200ms の `setTimeout`)を待ってから初期化する
-  (`runWhenIdleAfterLoad.ts`)。待っている間は `VrmFallback` を表示する。SPA 遷移で来た場合は
+  (`runWhenIdleAfterLoad.ts`)。three 一式のチャンクもこの待機の後に `import()` する(コンポーネントから
+  静的に import すると、描画と同時にチャンクの取得・評価が始まるため)。待っている間は `VrmFallback` を表示する。SPA 遷移で来た場合は
   `load` が発火済みなので、`document.readyState` を見てすぐアイドル待ちに進む。
 - 取得は1回: `/models/*.vrm(a)` は `fetchVrmAssetBuffer`(`fetchVrmAsset.ts`)が URL ごとに
   `Promise<ArrayBuffer>` をメモ化し、Hero/About と Tech Stack のシーンが同時に読みにいっても

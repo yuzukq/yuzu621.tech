@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import VrmFallback from "./VrmFallback"
-import { createVrmScene, type VrmSceneHandle } from "./createVrmScene"
+import type { VrmSceneHandle } from "./createVrmScene"
 import { runWhenIdleAfterLoad } from "./runWhenIdleAfterLoad"
 import { AVATAR_MODEL_URL, HERO_LOOP_ANIMATION_URL } from "./vrmAssets"
 
@@ -21,31 +21,36 @@ export default function VrmCanvas() {
     let cancelled = false
     let handle: VrmSceneHandle | undefined
 
-    // ファーストビューの描画と帯域・CPU を奪い合わないよう、3D の初期化は後回しにする
-    const cancelIdle = runWhenIdleAfterLoad(() => {
-      createVrmScene({
+    const initScene = async () => {
+      // three 一式を静的 import にすると、このコンポーネントの描画と同時にチャンクの取得・評価が
+      // 始まってしまう。アイドル待ちの後まで遅らせるため、ここで初めて読み込む
+      const { createVrmScene } = await import("./createVrmScene")
+      if (cancelled) return
+      const sceneHandle = await createVrmScene({
         canvas,
         container,
         modelUrl: AVATAR_MODEL_URL,
         // 無い/読めない場合は createVrmScene 側でプロシージャル待機に切り替わる
         motion: { mode: "loop", animationUrl: HERO_LOOP_ANIMATION_URL },
       })
-        .then((sceneHandle) => {
-          if (cancelled) {
-            sceneHandle.dispose()
-            return
-          }
-          handle = sceneHandle
-          setStatus("ready")
-        })
-        .catch((error: unknown) => {
-          // モデル未配置は正常系(ファイルを置けば表示される)のため error にしない
-          console.info(
-            "[vrm] avatar.vrm を読み込めなかったため、プレースホルダを表示します。",
-            error,
-          )
-          if (!cancelled) setStatus("failed")
-        })
+      if (cancelled) {
+        sceneHandle.dispose()
+        return
+      }
+      handle = sceneHandle
+      setStatus("ready")
+    }
+
+    // ファーストビューの描画と帯域・CPU を奪い合わないよう、3D の初期化は後回しにする
+    const cancelIdle = runWhenIdleAfterLoad(() => {
+      initScene().catch((error: unknown) => {
+        // モデル未配置は正常系(ファイルを置けば表示される)のため error にしない
+        console.info(
+          "[vrm] avatar.vrm を読み込めなかったため、プレースホルダを表示します。",
+          error,
+        )
+        if (!cancelled) setStatus("failed")
+      })
     })
 
     return () => {

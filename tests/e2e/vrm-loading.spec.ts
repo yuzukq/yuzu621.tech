@@ -3,6 +3,7 @@ import { test, expect, type Page } from '@playwright/test';
 const VRM_ASSET_RE = /\/models\/.+\.vrma?$/;
 // GPU の無い CI では、モデルのパースと WebGL の初期化が完了するまで数秒以上かかる
 const VRM_LOAD_TIMEOUT_MS = 30_000;
+const LOAD_DELAY_MS = 3_000;
 
 function recordVrmRequests(page: Page) {
   const urls: string[] = [];
@@ -69,6 +70,52 @@ test.describe('VRM の読み込み', () => {
     );
     await page.waitForTimeout(500);
     expect(vrmRequests).toEqual([]);
+  });
+
+  test('モバイルでは three 一式のチャンクを load の後まで取得しない', async ({ page }) => {
+    // フォントの preload だけで既定の上限(250件)が埋まり、JS のエントリが記録されなくなる
+    await page.addInitScript(() => performance.setResourceTimingBufferSize(2000));
+    // ローカルではハイドレーションより先に load が来てしまい、チャンクを早く取得していても
+    // 検出できない。応答の遅い画像を置いて、遅い回線と同じく load をハイドレーションより後にする
+    await page.route('**/__delay-load.png', async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, LOAD_DELAY_MS));
+      await route.fulfill({ status: 204 });
+    });
+    await page.addInitScript(() => {
+      document.addEventListener('DOMContentLoaded', () => {
+        const img = document.createElement('img');
+        img.src = '/__delay-load.png';
+        img.hidden = true;
+        document.body.appendChild(img);
+      });
+    });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/profile');
+    await waitForIdleAfterLoad(page);
+
+    // チャンク名はビルドごとのハッシュなので、three-vrm の glTF 拡張名を中身から探して特定する
+    const VRM_CHUNK_MARKER = 'VRMC_vrm';
+    const listScripts = () =>
+      page.evaluate(() => {
+        const { loadEventStart } = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+        return performance
+          .getEntriesByType('resource')
+          .filter((entry) => new URL(entry.name).pathname.endsWith('.js'))
+          .map((entry) => ({ url: entry.name, beforeLoad: entry.startTime < loadEventStart }));
+      });
+    const listVrmChunks = async () => {
+      const chunks = [];
+      for (const script of await listScripts()) {
+        if ((await (await page.request.get(script.url)).text()).includes(VRM_CHUNK_MARKER)) chunks.push(script);
+      }
+      return chunks;
+    };
+
+    // 取得されるまで待ってから時刻を見る(マーカーが外れていてテストが素通りするのを防ぐ)
+    await expect
+      .poll(async () => (await listVrmChunks()).length, { timeout: VRM_LOAD_TIMEOUT_MS })
+      .toBeGreaterThan(0);
+    expect((await listVrmChunks()).filter((chunk) => chunk.beforeLoad)).toEqual([]);
   });
 
   test('lg以上では load 後に avatar.vrm を取得し、Tech Stack 用の VRMA はスクロールするまで取得しない', async ({ page }) => {
