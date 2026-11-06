@@ -105,6 +105,27 @@ test('daily カテゴリ表示時に <html data-world="daily"> になる', async
   await expect(page.locator('html')).toHaveAttribute('data-world', 'daily');
 });
 
+// /?category=daily は rewrite で静的な /daily を返すため、ハードリロードではなく
+// クライアント側の遷移でも rewrite 先の一覧と世界観に切り替わることを確かめる
+test('カテゴリタブで日常へ切り替えると、日常記事の一覧と data-world="daily" になる', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('html')).toHaveAttribute('data-world', 'tech');
+
+  await page.getByRole('link', { name: '日常' }).click();
+
+  await expect(page).toHaveURL('/?category=daily');
+  await expect(page.getByRole('heading', { name: '日常のこと' })).toBeVisible();
+  await expect(page.locator('a[href="/blog/Vket2025"]')).toBeVisible();
+  await expect(page.locator('a[href="/blog/devenv2026"]')).toHaveCount(0);
+  await expect(page.locator('html')).toHaveAttribute('data-world', 'daily');
+
+  await page.getByRole('link', { name: '技術関連' }).click();
+
+  await expect(page).toHaveURL('/?category=tech');
+  await expect(page.locator('a[href="/blog/devenv2026"]')).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('data-world', 'tech');
+});
+
 test('tech カテゴリ表示時は <html data-world="tech"> のままになる', async ({ page }) => {
   await page.goto('/?category=tech');
 
