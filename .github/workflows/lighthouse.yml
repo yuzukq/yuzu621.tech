@@ -36,13 +36,15 @@ jobs:
       - name: Write report links to job summary
         if: always()
         run: |
-          if [ -f .lighthouseci/links.json ]; then
-            {
-              echo '## Lighthouse レポート'
-              echo
+          {
+            echo '## Lighthouse レポート'
+            echo
+            if [ -f .lighthouseci/links.json ]; then
               node -e 'for (const [url, report] of Object.entries(require("./.lighthouseci/links.json"))) console.log(`- [${new URL(url).pathname}](${report})`)'
-            } >> "$GITHUB_STEP_SUMMARY"
-          fi
+            else
+              echo 'レポートのリンクがありません。artifact の lighthouse-reports を確認してください。'
+            fi
+          } | tee -a "$GITHUB_STEP_SUMMARY"
 
       # temporary-public-storage は数日で消えるため、HTML レポートも artifact に残す
       - name: Upload Lighthouse reports
@@ -51,4 +53,6 @@ jobs:
         with:
           name: lighthouse-reports
           path: .lighthouseci
+          # upload-artifact v4 はドットで始まるディレクトリを既定で除外する
+          include-hidden-files: true
           retention-days: 14
