@@ -5,6 +5,7 @@ import NextLink from "next/link"
 import type { BlogCategory } from "@/lib/posts"
 import { formatDateJa } from "@/lib/format-date"
 import { isOptimizableExternalImage } from "@/lib/external-image-hosts"
+import { SITE_NAME } from "@/lib/seo"
 import { useInView } from "@/hooks/useInView"
 import Tag from "./Tag"
 
@@ -29,11 +30,15 @@ const BRAND_DOT_COLOR: Record<string, string> = {
 interface BlogCardProps {
   item: BlogCardData
   index: number
+  /** ファーストビュー内のカードに付ける。JSを待たずSSRの時点からフェードインする */
+  eager?: boolean
 }
 
-export default function BlogCard({ item, index }: BlogCardProps) {
-  const { ref, isInView } = useInView({ threshold: 0.15 })
+export default function BlogCard({ item, index, eager = false }: BlogCardProps) {
+  const { ref, isInView } = useInView({ threshold: 0.15, initialInView: eager })
   const external = item.externalSource
+  // 一覧の LCP 要素になる先頭だけ優先する。全カードに付けると帯域を奪い合って逆効果になる
+  const isPriority = index === 0
 
   const cardClassName =
     "group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-surface transition-[transform,border-color,box-shadow] duration-[250ms] ease-out hover:-translate-y-0.5 hover:border-border-strong hover:shadow-glow"
@@ -47,7 +52,8 @@ export default function BlogCard({ item, index }: BlogCardProps) {
             <img
               src={item.thumbnail}
               alt=""
-              loading="lazy"
+              loading={isPriority ? "eager" : "lazy"}
+              fetchPriority={isPriority ? "high" : undefined}
               className="absolute inset-0 h-full w-full object-cover"
             />
           ) : (
@@ -55,12 +61,19 @@ export default function BlogCard({ item, index }: BlogCardProps) {
               src={item.thumbnail}
               alt={external ? "" : item.title}
               fill
+              priority={isPriority}
+              fetchPriority={isPriority ? "high" : undefined}
               className="object-cover"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           )
         ) : (
-          <NextImage src="/images/blog/placeholder.svg" alt="" fill className="object-cover" />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 flex items-center justify-center font-mono text-sm uppercase tracking-wider text-ink-faint"
+          >
+            {external ?? SITE_NAME}
+          </div>
         )}
       </div>
 
@@ -111,6 +124,7 @@ export default function BlogCard({ item, index }: BlogCardProps) {
   return (
     <div
       ref={ref}
+      data-fade
       className={isInView ? "animate-fade-in" : "opacity-0"}
       style={{ animationDelay: `${index * 100}ms` }}
     >

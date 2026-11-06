@@ -1,7 +1,7 @@
 // 外部プラットフォームの記事をブログ一覧へ混ぜる。取得失敗時は必ず空配列/
 // undefined へフォールバックし、外部要因で一覧を壊さない。
-// fetch は Next.js の Data Cache(revalidate)に載せる: `/` が動的レンダリング
-// のため、素の fetch だとリクエスト毎に外部APIを叩いてしまう。
+// 一覧はビルド時と ISR の再生成時に描画されるため、fetch にタイムアウトを付ける:
+// 相手が応答しないとビルドや再生成が止まってしまう(秒数は markdown/ogp.ts とそろえる)。
 
 import type { BlogCategory } from '@/lib/posts'
 import { manualExternalArticles } from '@/data/external-articles'
@@ -26,6 +26,7 @@ const QIITA_USER = 'yuzukq'
 const QIITA_API = `https://qiita.com/api/v2/users/${QIITA_USER}/items?per_page=100`
 const LIST_REVALIDATE_SEC = 60 * 60 // Qiita記事一覧: 1時間
 const OGP_REVALIDATE_SEC = 60 * 60 * 24 // OGPサムネイル: 24時間
+const FETCH_TIMEOUT_MS = 5000
 
 interface QiitaItem {
   title: string
@@ -38,6 +39,7 @@ async function fetchQiitaArticles(): Promise<ExternalArticle[]> {
   try {
     const res = await fetch(QIITA_API, {
       next: { revalidate: LIST_REVALIDATE_SEC },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
       headers: { accept: 'application/json' },
     })
     if (!res.ok) return []
@@ -62,6 +64,7 @@ async function fetchOgImage(url: string): Promise<string | undefined> {
   try {
     const res = await fetch(url, {
       next: { revalidate: OGP_REVALIDATE_SEC },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
       redirect: 'follow',
       headers: {
         'user-agent': 'Mozilla/5.0 (compatible; yuzu621tech-bot/1.0; +https://yuzu621.tech)',

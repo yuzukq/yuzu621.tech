@@ -4,6 +4,7 @@ import TableOfContents from '@/components/blog/TableOfContents'
 import BlogHeader from '@/components/blog/BlogHeader'
 import { formatDateJa } from '@/lib/format-date'
 import Image from 'next/image'
+import { ARTICLE_IMAGE_SIZES } from '@/lib/image-sizes'
 import Tag from '@/components/blog/Tag'
 import WorldSync from '@/components/blog/WorldSync'
 import { buildWorldPrePaintScript } from '@/lib/theme'
@@ -122,7 +123,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                 src={post.thumbnail}
                 alt={post.title}
                 fill
-                sizes="100vw"
+                // Next 15 の priority は lazy 解除と preload だけで fetchpriority は付けない
+                priority
+                fetchPriority="high"
+                sizes={ARTICLE_IMAGE_SIZES}
                 className="object-cover"
               />
             </div>

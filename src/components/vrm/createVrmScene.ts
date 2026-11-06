@@ -14,6 +14,7 @@ import {
   createVRMAnimationClip,
   type VRMAnimation,
 } from "@pixiv/three-vrm-animation"
+import { fetchVrmAssetBuffer } from "./fetchVrmAsset"
 
 export interface VrmCameraFraming {
   /** 頭ボーンより上の頭部メッシュ+髪ぶん(m) */
@@ -125,7 +126,12 @@ export async function createVrmScene({
   loader.register((parser) => new VRMLoaderPlugin(parser))
   loader.register((parser) => new VRMAnimationLoaderPlugin(parser))
 
-  const gltf = await loader.loadAsync(modelUrl)
+  // loadAsync ではなく parseAsync にするのは、取得を fetchVrmAssetBuffer でシーン間で
+  // 共有するため。VRM のインスタンスは2つのシーンで共有できないので、パースはシーンごとに行う
+  const gltf = await loader.parseAsync(
+    await fetchVrmAssetBuffer(modelUrl),
+    THREE.LoaderUtils.extractUrlBase(modelUrl),
+  )
   const loadedVrm = gltf.userData.vrm as VRM | undefined
   if (!loadedVrm) {
     throw new Error("Loaded glTF does not contain VRM extension data")
@@ -217,7 +223,10 @@ export async function createVrmScene({
   let lastTriggerToken: number | undefined
 
   async function loadClip(url: string): Promise<THREE.AnimationClip | undefined> {
-    const animGltf = await loader.loadAsync(url)
+    const animGltf = await loader.parseAsync(
+      await fetchVrmAssetBuffer(url),
+      THREE.LoaderUtils.extractUrlBase(url),
+    )
     const vrmAnimation = (animGltf.userData.vrmAnimations as VRMAnimation[] | undefined)?.[0]
     return vrmAnimation ? createVRMAnimationClip(vrmAnimation, vrm) : undefined
   }

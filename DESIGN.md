@@ -192,7 +192,8 @@ Escapeキーでも閉じる(`ProductDetailOverlay.tsx`と挙動を統一)。
 
 ## 6. モーション
 
-- 入場: IntersectionObserver で `opacity 0→1` の純フェード、`0.8s ease-out`。連続要素は 100ms ずつ stagger。位置は動かさない(transform併用時にチラつきの原因になったため)。fill-mode は必ず `both`: `forwards` だと stagger の待機中に素の状態が見えて二重発火に見える。
+- 入場: `opacity 0→1` の純フェード、`0.8s ease-out`。ファーストビュー外の要素は IntersectionObserver で発火させる。連続要素は 100ms ずつ stagger。位置は動かさない(transform併用時にチラつきの原因になったため)。fill-mode は必ず `both`: `forwards` だと stagger の待機中に素の状態が見えて二重発火に見える。
+- ファーストビューの要素(プロフィールのHeroのアバター枠、ブログ一覧の先頭3枚のカード)は、SSRの時点から CSS アニメーション(`animate-fade-in`)を付けて出力し、JSを待たずにフェードインさせる(`FadeIn` / `BlogCard` の `eager`)。プロフィールのHeroのテキストは LCP 要素になるためフェードさせず常に表示する(フェードがあると Lighthouse のシミュレーションで LCP が JS の実行完了まで遅れる)。JS無効環境では `<noscript>` のスタイルで `[data-fade]` のフェードを無効化し、常に表示する。
 - `prefers-reduced-motion: reduce` では全アニメーション無効化。
 - ページ遷移やホバーで過剰な動きをつけない。「上品に、少しだけ」。
 
@@ -205,16 +206,38 @@ Escapeキーでも閉じる(`ProductDetailOverlay.tsx`と挙動を統一)。
   マウスへの視線・頭追従を上乗せする。VRMAが読めない場合はプロシージャル待機
   (呼吸・揺れ・まばたき)にフォールバック。いずれも派手に動かさない。
 - 品質: `<canvas>` は `aria-hidden`。SEOテキストは通常DOMに置く。低スペック・reduced-motion時は静止。
+- 読み込みのタイミング: Hero/About の 3D(`VrmCanvas` / `FloatingAvatar`)は、`load` イベントの後に
+  さらに `requestIdleCallback`(無いブラウザでは 200ms の `setTimeout`)を待ってから初期化する
+  (`runWhenIdleAfterLoad.ts`)。three 一式のチャンクもこの待機の後に `import()` する(コンポーネントから
+  静的に import すると、描画と同時にチャンクの取得・評価が始まるため)。待っている間は `VrmFallback` を表示する。SPA 遷移で来た場合は
+  `load` が発火済みなので、`document.readyState` を見てすぐアイドル待ちに進む。
+- 取得は1回: `/models/*.vrm(a)` は `fetchVrmAssetBuffer`(`fetchVrmAsset.ts`)が URL ごとに
+  `Promise<ArrayBuffer>` をメモ化し、Hero/About と Tech Stack のシーンが同時に読みにいっても
+  fetch は1回にまとめる(パースは VRM インスタンスを共有できないのでシーンごと)。URL 定数は
+  `vrmAssets.ts` に集約する。
+- 通信状況による抑制: `navigator.connection` があり、`saveData` が true か `effectiveType` が
+  `slow-2g` / `2g` / `3g` のときは 3D を一切読み込まない(`useVrmShowcaseConditions.ts` の
+  `allow3d`)。Hero は `VrmFallback`、About は丸型写真、Tech Stack は静的グリッドになる。API が無い
+  ブラウザ(Safari / Firefox)では通常どおり読み込む。DevTools の「Slow 4G」は Chromium では
+  `3g` と判定されるため、このプリセットでは 3D が読み込まれない(読み込みタイミングの確認には
+  「Fast 4G」を使う)。
+- 転送時圧縮: 本番(Vercel)は `.vrm` も `content-encoding: br` で配信している(2026-11 確認)。
+  `.gz` を自前で用意する必要は無い。
 
 ## 7.5 スクロール連動アバターショーケース(Tech Stack)
 
-lg以上(1024px)・`prefers-reduced-motion`でない場合のみ、TechStackセクションが「左にアバター・
-右に1カテゴリのカード」の構成になり、スクロールでカードとアバターの演技が連動する
-(`TechStackShowcase.tsx` / `VrmTechStackCanvas.tsx`)。それ以外(狭い画面・reduced-motion・SSR/初回CSR)
-は従来の全カテゴリ一覧グリッド(`TechStackBody.tsx`のフォールバック分岐)を表示する。
-判定はマウント後の`matchMedia`で行い、フォールバックを初期値にすることでhydrationミスマッチと
+lg以上(1024px)・`prefers-reduced-motion`でない・低速回線でない(§7 の`allow3d`)場合のみ、
+TechStackセクションが「左にアバター・右に1カテゴリのカード」の構成になり、スクロールでカードと
+アバターの演技が連動する(`TechStackShowcase.tsx` / `VrmTechStackCanvas.tsx`)。それ以外(狭い画面・
+reduced-motion・低速回線・SSR/初回CSR)は従来の全カテゴリ一覧グリッド(`TechStackBody.tsx`の
+フォールバック分岐)を表示する。判定はマウント後に`useVrmShowcaseConditions`で行い、フォールバックを初期値にすることでhydrationミスマッチと
 no-js/クローラー向けの全文露出を両立する。全カテゴリのカードは常にDOMに存在し、opacity/translateY
 のみで表示を切り替える(内容の出し分けはしない)。
+
+アバター(`VrmTechStackCanvas`)は、ショーケースのラッパーが1画面手前(IntersectionObserver の
+`rootMargin: "100% 0px"`)に入るまで描画せず、`VrmFallback`を置いておく。`next/dynamic`は描画された
+時点でチャンクを読み込むため、描画自体を遅らせないと three 一式と `tech-idle.vrma` /
+`present-card.vrma` がページを開いた直後に読み込まれてしまう。一度描画したら画面外に出ても戻さない。
 
 見出し(`SectionHeading`)とリード文は`TechStack.tsx`ではなく、フォールバック分岐(`TechStackBody.tsx`)
 とショーケース分岐(`TechStackShowcase.tsx`)それぞれの内側で描画する。ショーケース側は
@@ -308,16 +331,17 @@ sticky headerの下に自然に着地させるためのもの。リード文の�
 
 ## 7.7 Hero↔Aboutアバター移動演出
 
-`prefers-reduced-motion`でない場合(画面幅は問わない。モバイルも含む)、Heroで使っている
-VRMアバターと同一のインスタンスが、スクロールでHero→Aboutへ画面上の位置を移動する
-(`AvatarTravelContext.tsx` / `FloatingAvatar.tsx` / `HeroAvatarDock.tsx` /
-`AboutAvatarDock.tsx` / `AboutIntro.tsx`)。それ以外(reduced-motion・SSR/初回CSR)では
-Hero・Aboutそれぞれが従来通り自前の静的なアバター/写真アイコンを描画する(判定は
-TechStackBody.tsxと同じマウント後matchMedia方式)。
+`prefers-reduced-motion`でなく、低速回線でもない(§7 の`allow3d`)場合(画面幅は問わない。
+モバイルも含む)、Heroで使っているVRMアバターと同一のインスタンスが、スクロールでHero→Aboutへ
+画面上の位置を移動する(`AvatarTravelContext.tsx` / `FloatingAvatar.tsx` / `HeroAvatarDock.tsx` /
+`AboutAvatarDock.tsx` / `AboutIntro.tsx`)。それ以外(reduced-motion・低速回線・SSR/初回CSR)では
+Hero・Aboutそれぞれが自前の静的な表示を描画する。Heroは reduced-motion のみなら静止した
+VRMアバター、低速回線なら`VrmFallback`。Aboutは丸型写真アイコン(判定は TechStackBody.tsx と
+共通の`useVrmShowcaseConditions`)。
 
-**あえてlg限定にしていない**: `avatar.vrm`が23MBあり、WebGLコンテキストも限られた
+**あえてlg限定にしていない**: `avatar.vrm`が10MBを超え、WebGLコンテキストも限られた
 リソースのため、showcase=false時にHero/Aboutそれぞれが独立したVrmCanvasを持つと
-2枚目のcanvasと2回目の23MBロードが発生してしまう。共有アバター1枚だけで完結させる
+2枚目のcanvasと2回目のモデルのパースが発生してしまう。共有アバター1枚だけで完結させる
 この設計自体が「2枚目のcanvasを作らずに済ませる手段」になっているため、モバイルでも
 lg版と同じ移動演出を使う方がむしろ軽い。モバイルでの配置は「見出し→アバター→吹き出し」の
 縦積みで、`AboutAvatarDock`のdocker位置がAboutの見出しの直下に来るようレイアウトされる
@@ -378,7 +402,8 @@ Vue+GSAP+Three.jsのフルページ3Dシーンで、1体のアバターを3D空�
 - **フォールバック**: モバイル・reduced-motionでは、Aboutは従来通りの丸型写真
   アイコン(VRMアバターではない)のまま。Hero用の第2のアバターインスタンスを
   増やさずに済み、リスクとスコープを最小化している。
-- **ロード中プレースホルダ**: showcase時、`avatar.vrm`(22MB)の読込完了までHero
+- **ロード中プレースホルダ**: showcase時、3Dの初期化待ち(§7 の`load`+アイドル待ち)と
+  `avatar.vrm`の読込完了までHero
   スロットが空白になるのを避けるため、`AvatarTravelContext`の`avatarReady`
   (`FloatingAvatar`が`createVrmScene()`解決時にtrueへ更新)がfalseの間、
   `HeroAvatarDock`が`VrmFallback`(グラデーション球)を`absolute inset-0`で

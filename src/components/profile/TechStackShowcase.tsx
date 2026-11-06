@@ -1,12 +1,13 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import dynamic from "next/dynamic"
 import type { SkillCategory } from "@/data/skills"
 import VrmFallback from "@/components/vrm/VrmFallback"
 import SectionHeading from "./SectionHeading"
 
-// three一式をこのセクションが画面内に来るまで初回ロードJSに含めない
+// three一式とTech Stack用のVRMAを、このセクションが画面に入る直前まで読み込まない。
+// next/dynamicは描画された時点で読み込みを始めるため、描画自体をisNearViewportで遅らせる
 const VrmTechStackCanvas = dynamic(() => import("@/components/vrm/VrmTechStackCanvas"), {
   ssr: false,
   loading: () => <VrmFallback />,
@@ -22,6 +23,8 @@ const BOUNDARY_HYSTERESIS = 0.06
 const CARD_EXIT_DURATION_MS = 350
 const CARD_ENTER_DURATION_MS = 500
 const CARD_ENTER_DELAY_MS = 0
+// 1画面ぶん手前で読み込みを始め、セクションに着くまでにモデルを用意しておく
+const AVATAR_PRELOAD_ROOT_MARGIN = "100% 0px"
 
 interface TechStackShowcaseProps {
   categories: SkillCategory[]
@@ -35,6 +38,25 @@ export default function TechStackShowcase({ categories }: TechStackShowcaseProps
   // 再レンダーは発生しない(60fps更新をReact stateで行うと重くなるため)。値が
   // 変わるたびpresent-card.vrmaを頭から再生し直すトリガーカウンタとして使う
   const triggerTokenRef = useRef(0)
+  const [isNearViewport, setIsNearViewport] = useState(false)
+
+  useEffect(() => {
+    const wrapper = wrapperRef.current
+    if (!wrapper) return
+
+    // 一度読み込んだら画面外に出ても戻さない(再表示のたびにパースし直さないため)
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setIsNearViewport(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: AVATAR_PRELOAD_ROOT_MARGIN },
+    )
+    observer.observe(wrapper)
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
     const wrapper = wrapperRef.current
@@ -130,7 +152,11 @@ export default function TechStackShowcase({ categories }: TechStackShowcaseProps
               ここでは幅制約を重ねない。列幅はHeroのアバター(max-w-sm=24rem)に揃えた */}
           <div className="grid w-full grid-cols-[24rem_minmax(0,1fr)] items-center gap-12">
             <div className="aspect-square w-full">
-              <VrmTechStackCanvas triggerTokenRef={triggerTokenRef} />
+              {isNearViewport ? (
+                <VrmTechStackCanvas triggerTokenRef={triggerTokenRef} />
+              ) : (
+                <VrmFallback />
+              )}
             </div>
 
             <div className="relative h-80">

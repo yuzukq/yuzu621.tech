@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import type { SkillCategory } from "@/data/skills"
+import { useVrmShowcaseConditions } from "@/components/vrm/useVrmShowcaseConditions"
 import FadeIn from "./FadeIn"
 import SectionHeading from "./SectionHeading"
 import TechStackShowcase from "./TechStackShowcase"
@@ -10,25 +10,12 @@ interface TechStackBodyProps {
   categories: SkillCategory[]
 }
 
-// スクロール連動のアバター演出はlg以上・prefers-reduced-motionでない場合のみ使う。
-// 判定はマウント後(useEffect)に行い、SSR/初回CSRは常にフォールバックの静的グリッドを
-// 描画する: これによりhydrationミスマッチを避けつつ、no-js環境やクローラーにも
-// 全カテゴリの内容がそのまま届く
+// スクロール連動のアバター演出はlg以上・prefers-reduced-motionでない・低速回線でない
+// 場合のみ使う。SSR/初回CSRは常にフォールバックの静的グリッドを描画する: これにより
+// hydrationミスマッチを避けつつ、no-js環境やクローラーにも全カテゴリの内容がそのまま届く
 export default function TechStackBody({ categories }: TechStackBodyProps) {
-  const [showcase, setShowcase] = useState(false)
-
-  useEffect(() => {
-    const widthQuery = window.matchMedia("(min-width: 1024px)")
-    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)")
-    const evaluate = () => setShowcase(widthQuery.matches && !motionQuery.matches)
-    evaluate()
-    widthQuery.addEventListener("change", evaluate)
-    motionQuery.addEventListener("change", evaluate)
-    return () => {
-      widthQuery.removeEventListener("change", evaluate)
-      motionQuery.removeEventListener("change", evaluate)
-    }
-  }, [])
+  const { motionOK, allow3d, isWide } = useVrmShowcaseConditions()
+  const showcase = isWide && motionOK && allow3d
 
   if (showcase) {
     return (

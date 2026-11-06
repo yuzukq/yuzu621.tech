@@ -3,6 +3,10 @@ import { EXTERNAL_IMAGE_HOSTS } from "./src/lib/external-image-hosts";
 
 const nextConfig: NextConfig = {
   images: {
+    // public/ の画像は Cache-Control: max-age=0 で配信され、既定(60秒)のままでは
+    // 最適化済み画像がすぐ失効して再変換が繰り返される。差し替え時はファイル名を
+    // 変える運用にして長く保持する
+    minimumCacheTTL: 60 * 60 * 24 * 31,
     remotePatterns: EXTERNAL_IMAGE_HOSTS.map((hostname) => ({ protocol: "https", hostname })),
   },
   async headers() {
@@ -31,6 +35,20 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
     ];
+  },
+  async rewrites() {
+    return {
+      // 一覧を searchParams で分岐させると動的レンダリングになるため、公開URLは
+      // /?category=daily のまま静的生成した /daily を返す。tech・不正値・指定なしは
+      // rewrite せず静的な / (tech)になる
+      beforeFiles: [
+        {
+          source: "/",
+          has: [{ type: "query", key: "category", value: "daily" }],
+          destination: "/daily",
+        },
+      ],
+    };
   },
 };
 
