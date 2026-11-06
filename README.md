@@ -86,6 +86,7 @@ yuzu621.tech/
 │   ├── images/                    # ブログ・プロダクト画像
 │   └── mov/
 ├── scripts/
+│   ├── optimize-vrm.mjs           # VRM のテクスチャ縮小・重複排除(avatar.vrm の配置前に実行)
 │   └── migrate-posts.mjs          # 旧remark-latex-breaks記法の一括移行に使った歴史的スクリプト(通常運用では実行不要)
 ├── tests/
 │   └── e2e/                       # Playwright E2E
@@ -224,6 +225,7 @@ npm run lint         # ESLint
 npm run typecheck    # TypeScript 型チェック
 npm run test:e2e     # Playwright E2E(内部でビルド+起動してから実行)
 npm run test:e2e:ui  # Playwright UIモード
+npm run optimize:vrm -- <in.vrm> <out.vrm>  # VRM のテクスチャ縮小(public/models/README.md 参照)
 ```
 
 `npm run test:e2e` の前に、自分で起動した `npm run start` 等の3000番ポートのサーバーは停止してください(`playwright.config.ts` の `reuseExistingServer` によりローカルでは既存サーバーが再利用され、古いビルドのままテストされてしまいます)。
