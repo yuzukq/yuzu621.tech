@@ -6,6 +6,11 @@ interface UseInViewOptions {
   threshold?: number
   rootMargin?: string
   triggerOnce?: boolean
+  /**
+   * true なら監視せず最初から表示状態にする。ファーストビューの要素を
+   * ハイドレーションを待たずSSRの時点からCSSアニメーションで表示するため
+   */
+  initialInView?: boolean
 }
 
 /**
@@ -14,11 +19,12 @@ interface UseInViewOptions {
  * @returns ref - 監視対象の要素にアタッチするref, isInView - 要素がビューポートに入っているか
  */
 export function useInView(options: UseInViewOptions = {}) {
-  const { threshold = 0.1, rootMargin = "0px", triggerOnce = true } = options
+  const { threshold = 0.1, rootMargin = "0px", triggerOnce = true, initialInView = false } = options
   const ref = useRef<HTMLDivElement>(null)
-  const [isInView, setIsInView] = useState(false)
+  const [isInView, setIsInView] = useState(initialInView)
 
   useEffect(() => {
+    if (initialInView) return
     const element = ref.current
     if (!element) return
 
@@ -40,7 +46,7 @@ export function useInView(options: UseInViewOptions = {}) {
     return () => {
       observer.disconnect()
     }
-  }, [threshold, rootMargin, triggerOnce])
+  }, [threshold, rootMargin, triggerOnce, initialInView])
 
   return { ref, isInView }
 }
