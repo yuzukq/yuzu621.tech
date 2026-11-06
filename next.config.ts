@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { EXTERNAL_IMAGE_HOSTS } from "./src/lib/external-image-hosts";
 
 const nextConfig: NextConfig = {
   images: {
@@ -6,6 +7,19 @@ const nextConfig: NextConfig = {
     // 最適化済み画像がすぐ失効して再変換が繰り返される。差し替え時はファイル名を
     // 変える運用にして長く保持する
     minimumCacheTTL: 60 * 60 * 24 * 31,
+    remotePatterns: EXTERNAL_IMAGE_HOSTS.map((hostname) => ({ protocol: "https", hostname })),
+  },
+  async headers() {
+    // ファイル名にハッシュが付いていないため immutable にはしない。差し替えるときは
+    // ファイル名を変える(README「静的アセットのキャッシュ」参照)
+    const cacheControl = {
+      key: "Cache-Control",
+      value: "public, max-age=86400, stale-while-revalidate=604800",
+    };
+    return [
+      { source: "/images/:path*", headers: [cacheControl] },
+      { source: "/models/:path*", headers: [cacheControl] },
+    ];
   },
   async redirects() {
     return [
