@@ -92,12 +92,16 @@ yuzu621.tech/
 │       ├── home.spec.ts           # プロフィールの主要セクション表示
 │       ├── blog.spec.ts           # ブログ一覧・記事詳細・カテゴリ切替・世界観(data-world)
 │       ├── seo.spec.ts            # sitemap.xml / robots.txt / canonical / BlogPosting JSON-LD
+│       ├── performance.spec.ts    # パフォーマンス改善(#37〜#40)の回帰チェック(構造のみ)
 │       ├── navigation.spec.ts     # ヘッダー・アンカーリンク・モバイルドロワー
 │       ├── product.spec.ts        # プロダクト詳細オーバーレイ
 │       └── notfound.spec.ts       # 404ページ
 ├── docs/                          # 設計・計画ドキュメント(歴史的経緯を含めそのまま保存)
 ├── DESIGN.md                      # デザインシステム(カラートークン・タイポ・コンポーネント様式)
-└── .github/workflows/ci.yml       # CI(Lint / Typecheck / Build / npm audit / E2E)
+├── lighthouserc.json              # Lighthouse CI の計測対象と目安値(すべて warn)
+└── .github/workflows/
+    ├── ci.yml                     # CI(Lint / Typecheck / Build / npm audit / E2E)
+    └── lighthouse.yml             # PR時のLighthouse計測(参考値、失敗扱いにしない)
 ```
 
 ## ルーティング
@@ -234,6 +238,19 @@ npm run test:e2e:ui  # Playwright UIモード
 canonical/JSON-LD)まで一通りのE2Eテストがあります。`playwright.config.ts` の `webServer` 設定により、
 `npx playwright test` 実行時は本番ビルド(`next build && next start`)に対してテストします。
 
+`performance.spec.ts` は、パフォーマンス改善が後の変更で元に戻っていないかを、HTML の構造で確かめます
+(計測値は毎回ぶれるので使いません)。
+
+| 確認内容 | 対応Issue |
+|---|---|
+| `/`・`/profile`・`/blog/devenv2026` のフォントの preload が3件以下 | #37 |
+| 記事サムネイルが `fetchpriority="high"` で、`loading="lazy"` ではない | #38 |
+| 全記事(`/sitemap.xml` から列挙)の本文画像が `loading="lazy"`。ローカル画像は `/_next/image` 経由で `width`/`height` 付き | #39 |
+| JavaScript 無効でも `/profile` の h1 と `/` の先頭カードが見える(`opacity:0` でない) | #40 |
+
+対応する Issue がまだマージされていないチェックは `test.fixme` でスキップしています。改善の PR をマージするときに、
+その Issue の `test.fixme` を外してください。
+
 ## CI/CDパイプライン
 
 `.github/workflows/ci.yml` により、プルリクエストおよび主要ブランチへのプッシュ時に自動実行されます。
@@ -246,6 +263,12 @@ canonical/JSON-LD)まで一通りのE2Eテストがあります。`playwright.co
 6. **Playwright E2E** — `new-article` ブランチは `blog.spec.ts` のみ、それ以外は全spec
 
 すべてのチェックが通過した後、Vercelが自動デプロイを実行します。
+
+PR では別ワークフローの `.github/workflows/lighthouse.yml` も実行されます。本番ビルドを `npm run start` で起動し、
+`/`・`/profile`・`/blog/devenv2026` をLighthouse(モバイル設定)で各3回計測します。CI 環境の計測値はばらつくので
+目安値(`lighthouserc.json`: Score 0.8以上、LCP 4秒以下、総転送量2.5MB以下)はすべて `warn` で、PR は失敗になりません。
+結果はジョブの Summary にあるレポートのリンク(temporary-public-storage。数日で消える)か、
+artifact の `lighthouse-reports` で確認できます。
 
 ## 開発フロー
 
