@@ -4,6 +4,7 @@ import NextImage from "next/image"
 import NextLink from "next/link"
 import type { BlogCategory } from "@/lib/posts"
 import { formatDateJa } from "@/lib/format-date"
+import { isOptimizableExternalImage } from "@/lib/external-image-hosts"
 import { useInView } from "@/hooks/useInView"
 import Tag from "./Tag"
 
@@ -41,8 +42,8 @@ export default function BlogCard({ item, index }: BlogCardProps) {
     <>
       <div className="relative aspect-video w-full overflow-hidden bg-surface-hover">
         {item.thumbnail ? (
-          external ? (
-            // eslint-disable-next-line @next/next/no-img-element -- 出典先ホストが不定のため next/image の最適化対象にしない
+          external && !isOptimizableExternalImage(item.thumbnail) ? (
+            // eslint-disable-next-line @next/next/no-img-element -- remotePatterns に無いホストは next/image が表示を拒否するため
             <img
               src={item.thumbnail}
               alt=""
@@ -52,7 +53,7 @@ export default function BlogCard({ item, index }: BlogCardProps) {
           ) : (
             <NextImage
               src={item.thumbnail}
-              alt={item.title}
+              alt={external ? "" : item.title}
               fill
               className="object-cover"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

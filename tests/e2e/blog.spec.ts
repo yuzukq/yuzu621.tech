@@ -112,6 +112,19 @@ test('tech カテゴリ表示時は <html data-world="tech"> のままになる'
   await expect(page.locator('html')).toHaveAttribute('data-world', 'tech');
 });
 
+// Qiita の記事はビルド時の外部API取得に依存するため、取得できなかったビルドでは検証しない
+test('一覧のQiita記事のサムネイルは /_next/image 経由で srcset 付きで配信される', async ({ page }) => {
+  await page.goto('/');
+
+  const thumbnails = page.locator('a[href^="https://qiita.com/"] img');
+  test.skip((await thumbnails.count()) === 0, 'Qiita の記事を取得できなかった');
+
+  for (const img of await thumbnails.all()) {
+    await expect(img).toHaveAttribute('src', /^\/_next\/image\?url=https%3A%2F%2Fqiita-user-contents\.imgix\.net/);
+    await expect(img).toHaveAttribute('srcset', /\/_next\/image\?/);
+  }
+});
+
 // 記事本文の描画テスト
 test('記事ページで Markdown 本文(.markdown-body)が描画される', async ({ page }) => {
   await page.goto('/blog/vr-seminar');

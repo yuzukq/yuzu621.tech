@@ -79,6 +79,7 @@ yuzu621.tech/
 │       ├── products.ts            # _products 読み込み・Markdown本文のHTML化(gray-matter)
 │       ├── theme.ts               # テーマ定数(tech/daily) + pre-paint初期化スクリプト生成
 │       ├── external-articles.ts   # Qiita API取得 + OGPサムネイル
+│       ├── external-image-hosts.ts # next/imageで最適化する外部サムネイルのホスト(next.config.tsと共有)
 │       ├── format-date.ts         # 日付表示用フォーマッタ
 │       └── seo.ts                 # SITE_URL 等の定数 + JSON-LDビルダー
 ├── public/
@@ -212,6 +213,20 @@ id/title/thumbnail/techStack/screenshots/description/urls)で管理します。�
   投稿後はデプロイ不要で最長1時間で反映されます。取得失敗時はローカル記事のみで表示。
 - **Zenn・会社Techブログ等**: `src/data/external-articles.ts` に1エントリ追加するだけ。
 - サムネイルは未指定なら記事URLのog:imageを自動取得。外部記事はsitemapに含めません。
+- サムネイルのホストが `src/lib/external-image-hosts.ts` の許可リストにあれば、`next/image` で
+  縮小・WebP化して配信します(`next.config.ts` の `images.remotePatterns` も同じリストを参照)。
+  リストに無いホストは原寸の `<img>` で表示されるので、新しい出典を足すときは実際の
+  og:image のホストを確認してリストに追加してください(現在は Qiita の `qiita-user-contents.imgix.net` のみ)。
+
+## 静的アセットのキャッシュ
+
+`public/images/` と `public/models/` 配下は `next.config.ts` の `headers()` で
+`Cache-Control: public, max-age=86400, stale-while-revalidate=604800` を付けて配信します
+(再訪問のたびに23MBの `avatar.vrm` などを再検証しないため)。
+
+ファイル名にハッシュが付いていないので、**画像やモデルを同じファイル名で差し替えると、
+最大1日(stale-while-revalidate を含めると最大1週間)古いものが表示されます。
+差し替えるときはファイル名を変えてください。**
 
 ## 開発
 
