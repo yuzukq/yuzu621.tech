@@ -1,8 +1,6 @@
 import { test, expect, type APIRequestContext, type Locator } from '@playwright/test';
 
 // #37〜#40 の改善が後の変更で元に戻ったことを検知する構造チェック。
-// 各 describe 冒頭の test.fixme は、対応する Issue の PR がマージされたら外す
-// (改善が入る前の main では必ず失敗するため)。
 
 const PAGES_WITH_FONTS = ['/', '/profile', '/blog/devenv2026'];
 const MAX_FONT_PRELOADS = 3;
@@ -30,7 +28,6 @@ async function expectOpaque(locator: Locator) {
 }
 
 test.describe('フォントの preload(#37)', () => {
-  test.fixme(true, '#37 のマージ後に外す');
 
   for (const path of PAGES_WITH_FONTS) {
     test(`${path} でフォントの preload が${MAX_FONT_PRELOADS}件以下`, async ({ page }) => {
@@ -43,7 +40,6 @@ test.describe('フォントの preload(#37)', () => {
 });
 
 test.describe('記事サムネイルの優先読み込み(#38)', () => {
-  test.fixme(true, '#38 のマージ後に外す');
 
   test('/blog/devenv2026 のサムネイルは fetchpriority="high" で、lazy load しない', async ({ page }) => {
     await page.goto('/blog/devenv2026');
@@ -57,7 +53,6 @@ test.describe('記事サムネイルの優先読み込み(#38)', () => {
 });
 
 test.describe('Markdown 本文の画像(#39)', () => {
-  test.fixme(true, '#39 のマージ後に外す');
 
   test('全記事の本文画像が lazy load され、ローカル画像は /_next/image 経由で width/height を持つ', async ({
     page,
@@ -82,7 +77,6 @@ test.describe('Markdown 本文の画像(#39)', () => {
 });
 
 test.describe('JavaScript 無しでのファーストビュー(#40)', () => {
-  test.fixme(true, '#40 のマージ後に外す');
   test.use({ javaScriptEnabled: false });
 
   test('/profile の h1「Yuzu」が JS 実行前から見える', async ({ page }) => {
